@@ -35,8 +35,13 @@
 
     <v-card v-if="model" class="mx-12" color="grey lighten-3">
       <v-card-title
-        :class="readOnly ? 'pt-3 pl-3 secondary white--text' : 'pt-3 pl-3 warning white--text'"
-      >{{ model.FullName }}</v-card-title>
+        :class="
+          readOnly
+            ? 'pt-3 pl-3 secondary white--text'
+            : 'pt-3 pl-3 warning white--text'
+        "
+        >{{ model.FullName }}</v-card-title
+      >
       <v-form class="mt-8">
         <v-container>
           <v-row>
@@ -54,7 +59,11 @@
             <!-- Name of Contact -->
             <v-col cols="12" md="2">
               <v-text-field
-                :value="`${model.FirstName ? model.FirstName : ''} ${model.LastName ? model.LastName: ''}`"
+                :value="
+                  `${model.FirstName ? model.FirstName : ''} ${
+                    model.LastName ? model.LastName : ''
+                  }`
+                "
                 :clearable="!readOnly"
                 label="Contacts Name"
                 outlined
@@ -90,7 +99,13 @@
             <!-- Billing Address -->
             <v-col cols="12" md="4">
               <v-text-field
-                :value="model.BillAddress ? `${model.BillAddress.Addr1} ${model.BillAddress.City? model.BillAddress.City : ''}` : ''"
+                :value="
+                  model.BillAddress
+                    ? `${model.BillAddress.Addr1} ${
+                        model.BillAddress.City ? model.BillAddress.City : ''
+                      }`
+                    : ''
+                "
                 label="Address"
                 outlined
                 :clearable="!readOnly"
@@ -102,7 +117,7 @@
             </v-col>
             <v-col cols="6" md="2">
               <v-text-field
-                :value="`${model.BillAddress? model.BillAddress.City : ''}`"
+                :value="`${model.BillAddress ? model.BillAddress.City : ''}`"
                 label="city"
                 outlined
                 :clearable="!readOnly"
@@ -113,7 +128,15 @@
             <!-- Postal Code -->
             <v-col cols="6" md="2">
               <v-text-field
-                :value="model.BillAddress ? `${model.BillAddress.PostalCode? model.BillAddress.PostalCode : ''}` : ''"
+                :value="
+                  model.BillAddress
+                    ? `${
+                        model.BillAddress.PostalCode
+                          ? model.BillAddress.PostalCode
+                          : ''
+                      }`
+                    : ''
+                "
                 label="Postal Code"
                 outlined
                 dense
@@ -124,42 +147,62 @@
 
             <!-- PO Number -->
             <v-col cols="12" md="2">
-              <v-text-field value="17921" label="PO Number" outlined dense :readonly="true"></v-text-field>
+              <v-text-field
+                value="17921"
+                label="PO Number"
+                outlined
+                dense
+                :readonly="true"
+              ></v-text-field>
             </v-col>
           </v-row>
           <!-- Buttons -->
           <v-layout align-end justify-end>
             <v-btn color="primary">Create WO</v-btn>
-            <v-btn color="warning" v-if="readOnly" @click="readOnly = !readOnly">Edit Customer</v-btn>
+            <v-btn color="warning" v-if="readOnly" @click="readOnly = !readOnly"
+              >Edit Customer</v-btn
+            >
           </v-layout>
-          <v-btn large color="success" v-if="!readOnly" @click="readOnly = !readOnly">Save Changes</v-btn>
+          <v-btn
+            large
+            color="success"
+            v-if="!readOnly"
+            @click="readOnly = !readOnly"
+            >Save Changes</v-btn
+          >
         </v-container>
       </v-form>
     </v-card>
 
-    <v-data-table :headers="headers" :items="items" :items-per-page="20" :search="model" class></v-data-table>
+    <v-data-table
+      :headers="headers"
+      :items="items"
+      :items-per-page="20"
+      :search="model"
+      class
+    ></v-data-table>
   </div>
 </template>
 <script>
 export default {
   data: () => ({
-    model: '',
+    model: "",
     customerNames: [],
     items: [],
     hello: "",
     readOnly: true,
     headers: [
-          {
-            text: 'Company Name',
-            align: 'start',
-            value: 'FullName',
-          },
-          { text: 'Email', value: 'Email' },
-          { text: 'Phone', value: 'Phone' },
-        ],
+      {
+        text: "Company Name",
+        align: "start",
+        value: "FullName"
+      },
+      { text: "Email", value: "Email" },
+      { text: "Phone", value: "Phone" }
+    ]
   }),
 
-  methods: {    
+  methods: {
     filterObject(item, queryText) {
       if (!item.Phone) {
         item.Phone = "";

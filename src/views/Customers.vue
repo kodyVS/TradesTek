@@ -5,25 +5,25 @@
   </div>
 </template>
 <script>
-import Table from './TableOne.vue'
+import Table from "./TableOne.vue";
 export default {
   components: { Table },
   data() {
     return {
       customerNames: [],
       items: [],
-      search: '',
+      search: "",
       showExpand: false,
       headers: [
-          {
-            text: 'Company Name',
-            align: 'start',
-            value: 'FullName',
-          },
-          { text: 'Email', value: 'Email' },
-          { text: 'Phone', value: 'Phone' },
-          {text: 'Actions', value: 'Actions'}
-        ],
+        {
+          text: "Company Name",
+          align: "start",
+          value: "FullName"
+        },
+        { text: "Email", value: "Email" },
+        { text: "Phone", value: "Phone" },
+        { text: "Actions", value: "Actions" }
+      ]
     };
   },
   methods: {
@@ -34,6 +34,6 @@ export default {
 
   created: function() {
     this.items = this.$store.state.customerList;
-  },
+  }
 };
 </script>
