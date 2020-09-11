@@ -6,26 +6,51 @@
         <v-form class="mt-8">
           <v-row>
             <v-col cols="12" sm="4">
-              <v-text-field label="Job Name" outlined clearable dense></v-text-field>
+              <v-text-field
+                label="Job Name"
+                outlined
+                clearable
+                dense
+              ></v-text-field>
             </v-col>
 
             <v-col cols="12" sm="2">
-              <v-text-field v-model="customer" label="Customer" outlined clearable dense></v-text-field>
+              <v-text-field
+                v-model="customer"
+                label="Customer"
+                outlined
+                clearable
+                dense
+              ></v-text-field>
             </v-col>
 
             <v-col cols="12" sm="4">
-              <v-text-field label="Address" outlined clearable dense></v-text-field>
+              <v-text-field
+                label="Address"
+                outlined
+                clearable
+                dense
+              ></v-text-field>
             </v-col>
 
             <v-col cols="12" sm="2">
-              <v-text-field value="17921" label="PO Number" readonly outlined dense></v-text-field>
+              <v-text-field
+                value="17921"
+                label="PO Number"
+                readonly
+                outlined
+                dense
+              ></v-text-field>
             </v-col>
 
             <v-col cols="12" sm="2">
               <v-text-field label="Contact Name" outlined></v-text-field>
             </v-col>
             <v-col cols="12" sm="3">
-              <v-text-field label="Contact Phone Number" outlined></v-text-field>
+              <v-text-field
+                label="Contact Phone Number"
+                outlined
+              ></v-text-field>
             </v-col>
 
             <!-- Date Picker -->
@@ -50,8 +75,8 @@
           </v-row>
 
           <v-textarea
-            label="Job Description"
             v-model="content"
+            label="Job Description"
             prepend-icon="mdi-pencil"
             :rules="inputRules"
           ></v-textarea>
@@ -74,28 +99,28 @@ export default {
       content: "",
       date: null,
       inputRules: [],
-      customer: ''
+      customer: "",
     };
   },
+  computed: {
+    formattedDate() {
+      return this.date ? moment(this.date).format("Do MMMM YYYY") : "";
+    },
+  },
   created() {
-    this.customerPopulate()
+    this.customerPopulate();
   },
   methods: {
     customerPopulate() {
-      if(this.$store.state.itemInfo){
-        this.customer = this.$store.state.itemInfo.FullName
+      if (this.$store.state.itemInfo) {
+        this.customer = this.$store.state.itemInfo.FullName;
       }
     },
     submit() {
       if (this.$refs.form.validate()) {
         console.log(this.title, this.content);
       }
-    }
+    },
   },
-  computed: {
-    formattedDate() {
-      return this.date ? moment(this.date).format("Do MMMM YYYY") : "";
-    }
-  }
 };
 </script>

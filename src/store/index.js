@@ -7,9 +7,8 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    customerList: [
-    ],
-    itemInfo: {}
+    customerList: [],
+    itemInfo: {},
   },
   getters: {
     // getCustomerNames: (state) => {
@@ -24,7 +23,6 @@ export default new Vuex.Store({
     //     .catch(function (error) {
     //       console.log(error);
     //     });
-
     // },
   },
   mutations: {},

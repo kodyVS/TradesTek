@@ -21,14 +21,14 @@ export default {
       {
         text: "hello",
         description: "something",
-        date: "2020"
+        date: "2020",
       },
       {
         tex: "bye",
         description: "no",
-        date: "2021"
-      }
-    ]
+        date: "2021",
+      },
+    ],
   }),
   methods: {
     filterObject(item, queryText, itemText) {
@@ -37,7 +37,7 @@ export default {
         item.text.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) >
         -1
       );
-    }
-  }
+    },
+  },
 };
 </script>

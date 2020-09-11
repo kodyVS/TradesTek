@@ -109,22 +109,22 @@ export default {
         { icon: "mdi-folder", text: "Projects", route: "/projects" },
         { icon: "mdi-account-box", text: "Customers", route: "/Customers" },
         { icon: "mdi-account", text: "Team", route: "/team" },
-        { icon: "mdi-account", text: "Test", route: "/test1" }
+        { icon: "mdi-account", text: "Test", route: "/test1" },
       ],
       dropDownLinks: [
         {
           icon: "mdi-folder-multiple-outline",
           text: "Overview",
-          route: "/OverviewWO"
+          route: "/OverviewWO",
         },
         {
           icon: "mdi-text-box-plus-outline",
           text: "Create New",
-          route: "/CreateWO"
-        }
+          route: "/CreateWO",
+        },
       ],
-      mini: true
+      mini: true,
     };
-  }
+  },
 };
 </script>

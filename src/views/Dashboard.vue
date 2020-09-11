@@ -23,7 +23,7 @@
         </v-tooltip>
       </v-layout>
 
-      <v-card text v-for="project in projects" :key="project.title">
+      <v-card v-for="project in projects" :key="project.title" text>
         <v-layout wrap :class="`pa-3 project ${project.status}`">
           <v-flex xs12 md6>
             <div class="caption grey--text">Project Title</div>
@@ -41,9 +41,7 @@
             <div class="text-right">
               <v-chip
                 small
-                :class="
-                  `${project.status} white--text font-weight-medium caption my-2 text-md`
-                "
+                :class="`${project.status} white--text font-weight-medium caption my-2 text-md`"
                 >{{ project.status }}</v-chip
               >
             </div>
@@ -66,7 +64,7 @@ export default {
           due: "1st Jan 2019",
           status: "ongoing",
           content:
-            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt consequuntur eos eligendi illum minima adipisci deleniti, dicta mollitia enim explicabo fugiat quidem ducimus praesentium voluptates porro molestias non sequi animi!"
+            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt consequuntur eos eligendi illum minima adipisci deleniti, dicta mollitia enim explicabo fugiat quidem ducimus praesentium voluptates porro molestias non sequi animi!",
         },
         {
           title: "Befesda project",
@@ -74,7 +72,7 @@ export default {
           due: "10th Jan 2019",
           status: "complete",
           content:
-            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt consequuntur eos eligendi illum minima adipisci deleniti, dicta mollitia enim explicabo fugiat quidem ducimus praesentium voluptates porro molestias non sequi animi!"
+            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt consequuntur eos eligendi illum minima adipisci deleniti, dicta mollitia enim explicabo fugiat quidem ducimus praesentium voluptates porro molestias non sequi animi!",
         },
         {
           title: "Matolok",
@@ -82,7 +80,7 @@ export default {
           due: "20th Dec 2018",
           status: "complete",
           content:
-            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt consequuntur eos eligendi illum minima adipisci deleniti, dicta mollitia enim explicabo fugiat quidem ducimus praesentium voluptates porro molestias non sequi animi!"
+            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt consequuntur eos eligendi illum minima adipisci deleniti, dicta mollitia enim explicabo fugiat quidem ducimus praesentium voluptates porro molestias non sequi animi!",
         },
         {
           title: "Semi Witches",
@@ -90,9 +88,9 @@ export default {
           due: "20th Oct 2018",
           status: "overdue",
           content:
-            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt consequuntur eos eligendi illum minima adipisci deleniti, dicta mollitia enim explicabo fugiat quidem ducimus praesentium voluptates porro molestias non sequi animi!"
-        }
-      ]
+            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt consequuntur eos eligendi illum minima adipisci deleniti, dicta mollitia enim explicabo fugiat quidem ducimus praesentium voluptates porro molestias non sequi animi!",
+        },
+      ],
     };
   },
   methods: {
@@ -100,8 +98,8 @@ export default {
       this.projects.sort((a, b) => {
         return a[prop] < b[prop] ? -1 : 1;
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

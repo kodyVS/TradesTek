@@ -8,16 +8,16 @@
         <v-card-title class="headline grey lighten-2" primary-title
           >New Work order</v-card-title
         >
-        <v-form class="px-3" ref="form">
+        <v-form ref="form" class="px-3">
           <v-text-field
-            label="Title"
             v-model="title"
+            label="Title"
             prepend-icon="mdi-folder"
             :rules="inputRules"
           ></v-text-field>
           <v-textarea
-            label="Information"
             v-model="content"
+            label="Information"
             prepend-icon="mdi-pencil"
             :rules="inputRules"
           ></v-textarea>
@@ -53,20 +53,20 @@ export default {
       content: "",
       dialog: false,
       date: null,
-      inputRules: [v => v.length >= 3 || "Minimum length is 3 characters"]
+      inputRules: [(v) => v.length >= 3 || "Minimum length is 3 characters"],
     };
+  },
+  computed: {
+    formattedDate() {
+      return this.date ? moment(this.date).format("Do MMMM YYYY") : "";
+    },
   },
   methods: {
     submit() {
       if (this.$refs.form.validate()) {
         console.log(this.title, this.content);
       }
-    }
+    },
   },
-  computed: {
-    formattedDate() {
-      return this.date ? moment(this.date).format("Do MMMM YYYY") : "";
-    }
-  }
 };
 </script>

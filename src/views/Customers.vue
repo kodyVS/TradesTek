@@ -18,22 +18,22 @@ export default {
         {
           text: "Company Name",
           align: "start",
-          value: "FullName"
+          value: "FullName",
         },
         { text: "Email", value: "Email" },
         { text: "Phone", value: "Phone" },
-        { text: "Actions", value: "Actions" }
-      ]
+        { text: "Actions", value: "Actions" },
+      ],
     };
+  },
+
+  created: function () {
+    this.items = this.$store.state.customerList;
   },
   methods: {
     showExpandMethod() {
       this.showExpand = !this.showExpand;
-    }
+    },
   },
-
-  created: function() {
-    this.items = this.$store.state.customerList;
-  }
 };
 </script>

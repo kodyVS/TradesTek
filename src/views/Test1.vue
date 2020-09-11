@@ -59,11 +59,9 @@
             <!-- Name of Contact -->
             <v-col cols="12" md="2">
               <v-text-field
-                :value="
-                  `${model.FirstName ? model.FirstName : ''} ${
-                    model.LastName ? model.LastName : ''
-                  }`
-                "
+                :value="`${model.FirstName ? model.FirstName : ''} ${
+                  model.LastName ? model.LastName : ''
+                }`"
                 :clearable="!readOnly"
                 label="Contacts Name"
                 outlined
@@ -159,14 +157,14 @@
           <!-- Buttons -->
           <v-layout align-end justify-end>
             <v-btn color="primary">Create WO</v-btn>
-            <v-btn color="warning" v-if="readOnly" @click="readOnly = !readOnly"
+            <v-btn v-if="readOnly" color="warning" @click="readOnly = !readOnly"
               >Edit Customer</v-btn
             >
           </v-layout>
           <v-btn
+            v-if="!readOnly"
             large
             color="success"
-            v-if="!readOnly"
             @click="readOnly = !readOnly"
             >Save Changes</v-btn
           >
@@ -195,12 +193,20 @@ export default {
       {
         text: "Company Name",
         align: "start",
-        value: "FullName"
+        value: "FullName",
       },
       { text: "Email", value: "Email" },
-      { text: "Phone", value: "Phone" }
-    ]
+      { text: "Phone", value: "Phone" },
+    ],
   }),
+  watch: {
+    model: function (val) {
+      console.log(val);
+    },
+  },
+  created() {
+    this.items = this.$store.state.customerList;
+  },
 
   methods: {
     filterObject(item, queryText) {
@@ -220,16 +226,8 @@ export default {
           queryText.toLocaleLowerCase()
         ) > -1
       );
-    }
+    },
   },
-  watch: {
-    model: function(val) {
-      console.log(val);
-    }
-  },
-  created() {
-    this.items = this.$store.state.customerList;
-  }
 };
 </script>
 

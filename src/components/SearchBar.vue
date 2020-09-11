@@ -3,8 +3,8 @@
     <h1>Overview</h1>
     <v-container>
       <v-autocomplete
-        :filter="filterObject"
         v-model="model"
+        :filter="filterObject"
         :items="items"
         label="Search"
         chips
@@ -34,12 +34,12 @@
 export default {
   props: ["items"],
   data: () => ({
-    model: null
+    model: null,
   }),
+  computed: () => {},
   created: () => {
     this.items = this.$store.state.customerList;
   },
-  computed: () => {},
   methods: {
     filterObject(item, queryText, itemText) {
       if (!item.Phone) {
@@ -59,7 +59,7 @@ export default {
           queryText.toLocaleLowerCase()
         ) > -1
       );
-    }
-  }
+    },
+  },
 };
 </script>

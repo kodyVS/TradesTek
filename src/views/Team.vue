@@ -3,7 +3,7 @@
     <h1>team</h1>
     <v-container class="my-5">
       <v-layout row wrap>
-        <v-flex xs12 sm6 md4 lg3 v-for="person in team" :key="person.name">
+        <v-flex v-for="person in team" :key="person.name" xs12 sm6 md4 lg3>
           <v-card text class="text-center ma-3">
             <v-responsive class="pt-4">
               <span>{{ person.name }}</span>
@@ -33,10 +33,10 @@ export default {
         { name: "Ryu Lois", role: "Plumber" },
         { name: "Chun Li", role: "HVAC Tech" },
         { name: "Gordon Li", role: "HVAC Tech" },
-        { name: "Shamus Murphy", role: "Plumber" }
-      ]
+        { name: "Shamus Murphy", role: "Plumber" },
+      ],
     };
-  }
+  },
 };
 </script>
 { title: 'Kurcher project', person: '', due: '1st Jan 2019', status: 'ongoing',
