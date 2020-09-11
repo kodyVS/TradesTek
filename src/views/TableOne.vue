@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 <template>
   <div>
     <!-- Search function for the table -->
