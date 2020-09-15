@@ -2,6 +2,46 @@
   <div class="mt-12">
     <h2 class="mb-3">Customer List</h2>
 
+    <template>
+      <v-autocomplete
+        v-model="selectedEmployees"
+        :items="employees"
+        filled
+        chips
+        color="blue-grey lighten-2"
+        label="Select"
+        item-text="name"
+        item-value="name"
+        multiple
+      >
+        <template v-slot:selection="data">
+          <v-chip
+            v-bind="data.attrs"
+            :input-value="data.selected"
+            close
+            color="blue darken-2 white--text"
+            @click="data.select"
+            @click:close="remove(data.item)"
+          >
+            {{ data.item.name }}
+          </v-chip>
+        </template>
+        <template v-slot:item="data">
+          <template v-if="typeof data.item !== 'object'">
+            <v-list-item-content v-text="data.item"></v-list-item-content>
+          </template>
+          <template v-else>
+            <v-list-item-content>
+              <v-list-item-title v-html="data.item.name"></v-list-item-title>
+              <v-list-item-subtitle
+                v-html="data.item.group"
+              ></v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
+        </template>
+      </v-autocomplete>
+    </template>
+
     <!-- Search function -->
 
     <div class="Search">
@@ -183,52 +223,96 @@
 </template>
 <script>
 export default {
-  data: () => ({
-    model: "",
-    customerNames: [],
-    items: [],
-    hello: "",
-    readOnly: true,
-    headers: [
-      {
-        text: "Company Name",
-        align: "start",
-        value: "FullName",
-      },
-      { text: "Email", value: "Email" },
-      { text: "Phone", value: "Phone" },
-    ],
-  }),
-  watch: {
-    model: function (val) {
-      console.log(val);
-    },
+  data() {
+    const srcs = {
+      1: "https://cdn.vuetifyjs.com/images/lists/1.jpg",
+      2: "https://cdn.vuetifyjs.com/images/lists/2.jpg",
+      3: "https://cdn.vuetifyjs.com/images/lists/3.jpg",
+      4: "https://cdn.vuetifyjs.com/images/lists/4.jpg",
+      5: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+    };
+
+    return {
+      autoUpdate: true,
+      selectedEmployees: ["Sandra Adams", "Britta Holt"],
+      isUpdating: false,
+      name: "Midnight Crew",
+      employees: [
+        { name: "Sandra Adams", group: "HVAC", avatar: srcs[1] },
+        { name: "Ali Connors", group: "HVAC", avatar: srcs[2] },
+        { name: "Trevor Hansen", group: "HVAC", avatar: srcs[3] },
+        { name: "Tucker Smith", group: "HVAC", avatar: srcs[2] },
+        { name: "Britta Holt", group: "Plumber", avatar: srcs[4] },
+        { name: "Jane Smith ", group: "Plumber", avatar: srcs[5] },
+        { name: "John Smith", group: "Plumber", avatar: srcs[1] },
+        { name: "Sandra Williams", group: "Plumber", avatar: srcs[3] },
+      ],
+      title: "The summer breeze",
+    };
   },
-  created() {
-    this.items = this.$store.state.customerList;
+
+  watch: {
+    isUpdating(val) {
+      if (val) {
+        setTimeout(() => (this.isUpdating = false), 3000);
+      }
+    },
   },
 
   methods: {
-    filterObject(item, queryText) {
-      if (!item.Phone) {
-        item.Phone = "";
-      }
-      if (!item.Company) {
-        item.Company = "";
-      }
-      return (
-        item.FullName.toLocaleLowerCase().indexOf(
-          queryText.toLocaleLowerCase()
-        ) > -1 ||
-        item.Phone.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) >
-          -1 ||
-        item.Company.toLocaleLowerCase().indexOf(
-          queryText.toLocaleLowerCase()
-        ) > -1
-      );
+    remove(item) {
+      const index = this.selectedEmployees.indexOf(item.name);
+      if (index >= 0) this.selectedEmployees.splice(index, 1);
     },
   },
 };
+
+//   data: () => ({
+//     model: "",
+//     customerNames: [],
+//     items: [],
+//     hello: "",
+//     readOnly: true,
+//     headers: [
+//       {
+//         text: "Company Name",
+//         align: "start",
+//         value: "FullName",
+//       },
+//       { text: "Email", value: "Email" },
+//       { text: "Phone", value: "Phone" },
+//     ],
+//   }),
+//   watch: {
+//     model: function (val) {
+//       console.log(val);
+//     },
+//   },
+//   created() {
+//     this.items = this.$store.state.customerList;
+//   },
+
+//   methods: {
+//     filterObject(item, queryText) {
+//       if (!item.Phone) {
+//         item.Phone = "";
+//       }
+//       if (!item.Company) {
+//         item.Company = "";
+//       }
+//       return (
+//         item.FullName.toLocaleLowerCase().indexOf(
+//           queryText.toLocaleLowerCase()
+//         ) > -1 ||
+//         item.Phone.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) >
+//           -1 ||
+//         item.Company.toLocaleLowerCase().indexOf(
+//           queryText.toLocaleLowerCase()
+//         ) > -1
+//       );
+//     },
+//   },
+// };
 </script>
 
 <style scoped></style>

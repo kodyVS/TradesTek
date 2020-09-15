@@ -7,6 +7,7 @@ import CreateWO from "../views/WorkOrders/CreateWO.vue";
 import OverviewWO from "../views/WorkOrders/OverviewWO.vue";
 import Customers from "../views/Customers.vue";
 import Test1 from "../views/Test1.vue";
+import SingleWorkOrder from "../views/WorkOrders/SingleWO.vue";
 Vue.use(VueRouter);
 const routes = [
   {
@@ -26,7 +27,7 @@ const routes = [
     component: CreateWO,
   },
   {
-    path: "/OverviewWO",
+    path: "/WorkOrders",
     name: "OverviewWO",
     component: OverviewWO,
   },
@@ -36,6 +37,12 @@ const routes = [
     component: Customers,
   },
   { path: "/Test1", name: "Test1", component: Test1 },
+  {
+    path: "/WorkOrders/:id",
+    name: "SingleWorkOrder",
+    component: SingleWorkOrder,
+    meta: { transitionName: "slide" },
+  },
   {
     path: "*",
     name: "Wild",

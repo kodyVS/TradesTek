@@ -13,19 +13,54 @@ export default new Vuex.Store({
   getters: {
     // getCustomerNames: (state) => {
     // },
-    // getCustomers: async (state) => {
-    //   let data = ''
-    //   data = await axios.get(process.env.VUE_APP_API_URL + '/api/v1/customer/all')
-    //     .then((response) => {
-    //       console.log(response);
-    //       return response.data
-    //     })
-    //     .catch(function (error) {
-    //       console.log(error);
-    //     });
-    // },
   },
   mutations: {},
-  actions: {},
+  actions: {
+    getEmployees: async (state) => {
+      let data = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all")
+        .then((response) => {
+          console.log(response.data);
+          return response.data.data;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return data;
+    },
+    async getCustomers() {
+      let data = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all")
+        .then((response) => {
+          return response.data.data;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return data;
+    },
+    async getJobs() {
+      let data = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/job/all")
+        .then((response) => {
+          return response.data.data;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return data;
+    },
+    async getJob(context, param) {
+      let data = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/job/" + param)
+        .then((response) => {
+          return response.data.data.data;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return data;
+    },
+  },
   modules: {},
 });

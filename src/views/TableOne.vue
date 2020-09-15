@@ -16,13 +16,7 @@
     </v-container>
 
     <!-- Table  -->
-    <v-data-table
-      :headers="headers"
-      :items="items"
-      sort-by="calories"
-      class="elevation-1"
-      :search="search"
-    >
+    <v-data-table :headers="headers" :items="items" :search="search">
       <template v-slot:top>
         <!-- Top bar -->
         <v-toolbar flat color="secondary">
@@ -137,17 +131,6 @@
                         :clearable="!readOnly"
                       ></v-text-field>
                     </v-col>
-
-                    <!-- PO Number -->
-                    <v-col cols="12" md="2">
-                      <v-text-field
-                        value="17921"
-                        label="PO Number"
-                        outlined
-                        dense
-                        :readonly="true"
-                      ></v-text-field>
-                    </v-col>
                   </v-row>
                   <!-- Buttons for create WO and edit customer and save changes on dialog-->
                   <v-layout align-end justify-end>
@@ -208,9 +191,6 @@
           >Create WO</v-btn
         >
       </template>
-      <template v-slot:no-data>
-        <v-btn color="primary">Resest</v-btn>
-      </template>
     </v-data-table>
   </div>
 </template>
@@ -248,18 +228,7 @@ export default {
 
     //Values for items that are open on the menu's
     editedIndex: -1,
-    editedItem: {
-      ListID: "",
-      EditSequence: "",
-      Name: "",
-      FullName: "",
-      CompanyName: "",
-      FirstName: "",
-      LastName: "",
-      BillAddress: "",
-      Phone: "",
-      Email: "",
-    },
+    editedItem: {},
   }),
 
   computed: {},
@@ -276,19 +245,27 @@ export default {
   //When the page is created call the getCustomer method
   created() {
     this.getCustomers();
+    this.clearEdit();
   },
   methods: {
+    clearEdit() {
+      this.editedItem = {
+        ListID: "",
+        EditSequence: "",
+        Name: "",
+        FullName: "",
+        CompanyName: "",
+        FirstName: "",
+        LastName: "",
+        BillAddress: "",
+        Phone: "",
+        Email: "",
+      };
+    },
+
     //Will get customer from the Db and console log an error if there is an error
     async getCustomers() {
-      console.log("getting customers");
-      await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all")
-        .then((response) => {
-          this.items = response.data.data;
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+      this.items = await this.$store.dispatch("getCustomers");
     },
     //Used to view a pop up
     ViewItem(item) {
@@ -328,7 +305,7 @@ export default {
     newCustomer() {
       this.readOnly = !this.readOnly;
       this.fullName = false;
-      this.editedItem = [];
+      this.clearEdit();
     },
     async createCustomer(item) {
       if (this.$refs.form.validate()) {
@@ -341,6 +318,7 @@ export default {
             CompanyName: item.CompanyName,
             FirstName: item.FirstName,
             LastName: item.LastName,
+            BillAddress: item.BillAddress,
             Phone: item.Phone,
             Email: item.Email,
             Synced: false,

@@ -53,7 +53,7 @@
 
       <!-- Drop Down List -->
       <v-list class="mt-2">
-        <v-list-group>
+        <v-list-group value="true">
           <v-icon slot="appendIcon" class="white--text"
             >mdi-chevron-down</v-icon
           >
@@ -115,7 +115,7 @@ export default {
         {
           icon: "mdi-folder-multiple-outline",
           text: "Overview",
-          route: "/OverviewWO",
+          route: "/WorkOrders",
         },
         {
           icon: "mdi-text-box-plus-outline",
