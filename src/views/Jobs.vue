@@ -7,7 +7,7 @@
           <v-text-field
             v-model="search"
             append-icon="mdi-magnify"
-            label="Search Customers"
+            label="Search Jobs"
             single-line
             hide-details
           ></v-text-field>
@@ -20,14 +20,14 @@
       <template v-slot:top>
         <!-- Top bar -->
         <v-toolbar flat color="secondary">
-          <v-toolbar-title class="white--text">Customer List</v-toolbar-title>
+          <v-toolbar-title class="white--text">Job Site List</v-toolbar-title>
           <v-spacer></v-spacer>
 
           <!-- Details and edit dialog up menu -->
           <v-dialog v-model="dialog" max-width="90%" :persistent="!readOnly">
             <template v-slot:activator="{ on }">
-              <v-btn color="primary" v-on="on" @click.native="newCustomer()"
-                >New Customer</v-btn
+              <v-btn color="primary" v-on="on" @click.native="newJob()"
+                >New Job Site</v-btn
               >
             </template>
             <v-card class color="grey lighten-3">
@@ -37,22 +37,33 @@
                     ? 'pt-3 pl-3 secondary white--text'
                     : 'pt-3 pl-3 warning white--text'
                 "
-                >{{ editedItem.FullName }}</v-card-title
+                >{{ editedItem.Name }}</v-card-title
               >
               <v-form ref="form" class="mt-8">
                 <v-container>
                   <v-row>
-                    <!-- Full Name for Customer Name -->
+                    <!-- Full Name for Job Name -->
                     <v-col cols="12" md="4">
                       <v-text-field
-                        v-model="editedItem.FullName"
+                        v-model="editedItem.Name"
                         class="grey--text"
-                        label="Customer Name"
+                        label="Job Site Name"
                         outlined
                         :readonly="fullName"
                         dense
                         :rules="fullNameRules"
                       ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-autocomplete
+                        v-model="editedItem.Customer"
+                        :items="customerList"
+                        dense
+                        outlined
+                        label="Customer"
+                        :readonly="fullName"
+                        :clearable="!fullName"
+                      ></v-autocomplete>
                     </v-col>
                     <!-- Name of Contact -->
                     <v-col cols="12" md="2">
@@ -132,7 +143,7 @@
                       ></v-text-field>
                     </v-col>
                   </v-row>
-                  <!-- Buttons for create WO and edit customer and save changes on dialog-->
+                  <!-- Buttons for create WO and edit job and save changes on dialog-->
                   <v-layout align-end justify-end>
                     <v-btn
                       v-if="readOnly"
@@ -144,7 +155,7 @@
                       v-if="readOnly"
                       color="warning"
                       @click="readOnly = !readOnly"
-                      >Edit Customer</v-btn
+                      >Edit Job</v-btn
                     >
                   </v-layout>
                   <v-btn
@@ -163,8 +174,8 @@
                     class="mr-2"
                     large
                     color="success"
-                    @click="createCustomer(editedItem)"
-                    >Create new customer</v-btn
+                    @click="createJob(editedItem)"
+                    >Create new job</v-btn
                   >
                   <v-btn
                     v-if="!readOnly"
@@ -204,7 +215,7 @@ export default {
     dialog: false,
 
     //rules
-    fullNameRules: [(v) => !!v || "Name is required"],
+    fullNameRules: [(v) => !!v || "required"],
     //Truth for if editting is turned on
     readOnly: true,
 
@@ -214,9 +225,13 @@ export default {
     //Fields for the table
     headers: [
       {
-        text: "Company Name",
+        text: "Job Name",
         align: "start",
-        value: "FullName",
+        value: "Name",
+      },
+      {
+        text: "Customer",
+        value: "Customer",
       },
       { text: "Email", value: "Email", sortable: false },
       { text: "Phone", value: "Phone", sortable: false },
@@ -229,6 +244,8 @@ export default {
     //Values for items that are open on the menu's
     editedIndex: -1,
     editedItem: {},
+
+    customerList: [],
   }),
 
   computed: {},
@@ -242,10 +259,11 @@ export default {
     },
   },
 
-  //When the page is created call the getCustomer method
+  //When the page is created call the getJob method
   created() {
-    this.getCustomers();
+    this.getJobs();
     this.clearEdit();
+    this.getCustomers();
   },
   methods: {
     clearEdit() {
@@ -253,19 +271,32 @@ export default {
         ListID: "",
         EditSequence: "",
         Name: "",
-        FullName: "",
         CompanyName: "",
         FirstName: "",
         LastName: "",
-        BillAddress: "",
+        BillAddress: {
+          Addr1: "",
+          City: "",
+          PostalCode: "",
+        },
         Phone: "",
         Email: "",
       };
     },
 
-    //Will get customer from the Db and console log an error if there is an error
-    async getCustomers() {
-      this.items = await this.$store.dispatch("getCustomers");
+    //Will get job from the Db and console log an error if there is an error
+    async getJobs() {
+      this.items = await this.$store.dispatch("getJobs");
+      this.items.map((item) => {
+        if (!item.BillAddress) {
+          item.BillAddress = {
+            Addr1: "",
+            City: "",
+            PostalCode: "",
+          };
+        }
+        item.Customer = item.ParentRef.FullName;
+      });
     },
     //Used to view a pop up
     ViewItem(item) {
@@ -274,47 +305,59 @@ export default {
       this.dialog = true;
     },
 
-    //save changes to a customer to the database
+    async getCustomers() {
+      this.customerList = await this.$store.dispatch("getCustomers");
+      this.customerList = this.customerList.map((customer) => {
+        return customer.FullName;
+      });
+    },
+
+    //save changes to a job to the database
     async saveItem(item) {
       const res = await axios
-        .post(process.env.VUE_APP_API_URL + "/api/v1/customer/edit", {
+        .post(process.env.VUE_APP_API_URL + "/api/v1/job/edit", {
           ListID: item.ListID,
+          FullName: item.FullName,
           EditSequence: item.EditSequence,
           Name: item.Name,
-          FullName: item.FullName,
-          CompanyName: item.CompanyName,
+          ParentRef: item.ParentRef,
           FirstName: item.FirstName,
           LastName: item.LastName,
           BillAddress: item.BillAddress,
           Phone: item.Phone,
           Email: item.Email,
+          Synced: false,
         })
         .then(async (response) => {
-          await this.getCustomers();
+          await this.getJobs();
           console.log(response.data.data.data);
         })
         .catch((err) => console.log(err, res));
     },
 
-    //This will route someone to the create work order page with the customer field filled out
+    //This will route someone to the create work order page with the job field filled out
     createWO(item) {
       this.$store.state.itemInfo = item;
       this.$router.push("CreateWO");
       console.log(this.$store.state.itemInfo);
     },
-    newCustomer() {
+    newJob() {
       this.readOnly = !this.readOnly;
       this.fullName = false;
       this.clearEdit();
     },
-    async createCustomer(item) {
+    async createJob(item) {
       if (this.$refs.form.validate()) {
         this.dialog = !this.dialog;
         this.readOnly = !this.readOnly;
+        item.FullName = `${item.Customer}:${item.Name}`;
         const res = await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/customer/add", {
-            Name: item.FullName,
+          .post(process.env.VUE_APP_API_URL + "/api/v1/job/add", {
+            Name: item.Name,
             FullName: item.FullName,
+            ParentRef: {
+              FullName: item.Customer,
+            },
             CompanyName: item.CompanyName,
             FirstName: item.FirstName,
             LastName: item.LastName,
@@ -324,7 +367,7 @@ export default {
             Synced: false,
           })
           .then(async (response) => {
-            await this.getCustomers();
+            await this.getJobs();
             console.log(response);
           })
           .catch((err) => console.log(err, res));

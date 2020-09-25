@@ -16,7 +16,17 @@
     </v-container>
 
     <!-- Table  -->
-    <v-data-table :headers="headers" :items="items" :search="search">
+    <v-btn small text @click="filterItems(null)">Show All</v-btn>
+    <v-btn small text @click="filterItems(false)">Show Active WO's</v-btn>
+    <v-btn small text @click="filterItems(true)">Show Complete WO's</v-btn>
+
+    <v-data-table
+      :headers="headers"
+      :items="filteredItems"
+      :search="search"
+      :items-per-page="20"
+      :footer-props="{ 'items-per-page-options': [20, 30, 50, 100] }"
+    >
       <template v-slot:top>
         <!-- Top bar -->
         <v-toolbar flat color="secondary">
@@ -25,14 +35,47 @@
           >
           <v-spacer></v-spacer>
 
-          <v-btn color="primary" v-on="on" @click="newJob()"
-            >New Work Order</v-btn
-          >
+          <v-btn color="primary" @click="newJob()">New Work Order</v-btn>
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-        <v-btn small class="success" @click="ViewItem(item)">View</v-btn>
-        <v-btn small class="primary ml-2" @click="createWO(item)">Edit</v-btn>
+        <v-btn small class="success ma-1" @click="ViewItem(item)">View</v-btn>
+        <v-btn small class="primary ml-1 ma-1" @click="createWO(item)"
+          >Edit</v-btn
+        >
+      </template>
+
+      <template v-slot:item.Description="{ item }">
+        {{ item.Description | capitalize }}
+      </template>
+
+      <template v-slot:item.Complete="{ item }">
+        <v-chip v-if="item.Complete" class="success">
+          {{ "Completed" }}
+        </v-chip>
+        <v-chip v-else color="warning"> Active </v-chip>
+      </template>
+
+      <template v-slot:item.Employees="{ item }">
+        <v-chip
+          v-for="employees in item.Employees"
+          :key="employees"
+          small
+          color="blue darken-4"
+          class="ma-1"
+          dark
+        >
+          {{
+            employees.split(" ")[0] +
+            " " +
+            employees
+              .split(" ")[1]
+              .match(/\b(\w)/g)
+              .join("")
+              .toUpperCase()
+          }}
+        </v-chip>
+        <!-- <v-btn v-if="item.Employees.length > 3" small>more</v-btn> -->
       </template>
     </v-data-table>
   </div>
@@ -40,9 +83,20 @@
 
 <script>
 export default {
+  filters: {
+    capitalize: function (value) {
+      if (!value) return "";
+      value = value.toString();
+      if (value.length > 50) {
+        return value.split("").slice(0, 55).join("") + "...";
+      }
+      return value;
+    },
+  },
   data: () => ({
     //V-model for searching
     search: "",
+    modelArray: [],
 
     //Fields for the table
     headers: [
@@ -51,17 +105,19 @@ export default {
         align: "start",
         value: "Name",
       },
-      { text: "Customer", value: "ParentRef.FullName" },
-      { text: "PO Number", value: "" },
-      { text: "Employees", value: "", sortable: false },
+      { text: "Customer", value: "Job.ParentRef.FullName" },
+      { text: "Job Name", value: "Job.Name" },
+      { text: "Description", value: "Description" },
+      { text: "PO Number", value: "PONumber" },
+      { text: "Employees", value: "Employees", sortable: false },
       { text: "Actions", value: "actions", sortable: false },
-      { text: "type", value: "" },
-      { text: "Status", value: "" },
+      { text: "Job Type", value: "JobType" },
+      { text: "Status", value: "Complete" },
     ],
 
     //Array of objects for table taken from back end
     items: [],
-
+    filteredItems: [],
     //Values for items that are open on the menu's
     editedIndex: -1,
     editedItem: {},
@@ -78,9 +134,14 @@ export default {
     this.getJobs();
   },
   methods: {
+    testing() {
+      console.log(this.modelArray);
+    },
+
     //Will get Job from the Db and console log an error if there is an error
     async getJobs() {
-      this.items = await this.$store.dispatch("getJobs");
+      this.items = await this.$store.dispatch("getWorkOrders");
+      this.filteredItems = [...this.items];
     },
     //Used to view a pop up
     ViewItem(item) {
@@ -89,13 +150,28 @@ export default {
 
     //This will route someone to the create work order page with the Job field filled out
     createWO(item) {
-      this.$store.state.itemInfo = item;
+      this.$store.state.item = item;
+      this.$store.state.item.Job.Customer = item.Job.ParentRef.FullName;
+      this.$router.push("createWO");
     },
     newJob() {
       this.$router.push("CreateWO");
     },
     async createJob(item) {
       console.log(item);
+    },
+    filterItems(boolean) {
+      if (boolean) {
+        return (this.filteredItems = this.items.filter((i) => {
+          return i.Complete === true;
+        }));
+      } else if (boolean === false) {
+        return (this.filteredItems = this.items.filter((i) => {
+          return i.Complete === false;
+        }));
+      } else if (boolean === null) {
+        return (this.filteredItems = this.items);
+      }
     },
   },
 };

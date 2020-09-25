@@ -105,9 +105,15 @@ export default {
     return {
       drawer: false,
       links: [
+        {
+          icon: "mdi-clock-outline",
+          text: "TimeManager",
+          route: "/TimeManager",
+        },
         { icon: "mdi-view-dashboard", text: "Dashboard", route: "/" },
         { icon: "mdi-folder", text: "Projects", route: "/projects" },
         { icon: "mdi-account-box", text: "Customers", route: "/Customers" },
+        { icon: "mdi-account-box", text: "Job Sites", route: "/Jobs" },
         { icon: "mdi-account", text: "Team", route: "/team" },
         { icon: "mdi-account", text: "Test", route: "/test1" },
       ],

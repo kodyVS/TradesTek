@@ -2,7 +2,7 @@
   <div class="mt-12">
     <h2 class="mb-3">Customer List</h2>
 
-    <template>
+    <!--<template>
       <v-autocomplete
         v-model="selectedEmployees"
         :items="employees"
@@ -40,7 +40,7 @@
           </template>
         </template>
       </v-autocomplete>
-    </template>
+    </template> -->
 
     <!-- Search function -->
 
@@ -223,96 +223,96 @@
 </template>
 <script>
 export default {
-  data() {
-    const srcs = {
-      1: "https://cdn.vuetifyjs.com/images/lists/1.jpg",
-      2: "https://cdn.vuetifyjs.com/images/lists/2.jpg",
-      3: "https://cdn.vuetifyjs.com/images/lists/3.jpg",
-      4: "https://cdn.vuetifyjs.com/images/lists/4.jpg",
-      5: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-    };
+  //   data() {
+  //     const srcs = {
+  //       1: "https://cdn.vuetifyjs.com/images/lists/1.jpg",
+  //       2: "https://cdn.vuetifyjs.com/images/lists/2.jpg",
+  //       3: "https://cdn.vuetifyjs.com/images/lists/3.jpg",
+  //       4: "https://cdn.vuetifyjs.com/images/lists/4.jpg",
+  //       5: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+  //     };
 
-    return {
-      autoUpdate: true,
-      selectedEmployees: ["Sandra Adams", "Britta Holt"],
-      isUpdating: false,
-      name: "Midnight Crew",
-      employees: [
-        { name: "Sandra Adams", group: "HVAC", avatar: srcs[1] },
-        { name: "Ali Connors", group: "HVAC", avatar: srcs[2] },
-        { name: "Trevor Hansen", group: "HVAC", avatar: srcs[3] },
-        { name: "Tucker Smith", group: "HVAC", avatar: srcs[2] },
-        { name: "Britta Holt", group: "Plumber", avatar: srcs[4] },
-        { name: "Jane Smith ", group: "Plumber", avatar: srcs[5] },
-        { name: "John Smith", group: "Plumber", avatar: srcs[1] },
-        { name: "Sandra Williams", group: "Plumber", avatar: srcs[3] },
-      ],
-      title: "The summer breeze",
-    };
-  },
+  //     return {
+  //       autoUpdate: true,
+  //       selectedEmployees: ["Sandra Adams", "Britta Holt"],
+  //       isUpdating: false,
+  //       name: "Midnight Crew",
+  //       employees: [
+  //         { name: "Sandra Adams", group: "HVAC", avatar: srcs[1] },
+  //         { name: "Ali Connors", group: "HVAC", avatar: srcs[2] },
+  //         { name: "Trevor Hansen", group: "HVAC", avatar: srcs[3] },
+  //         { name: "Tucker Smith", group: "HVAC", avatar: srcs[2] },
+  //         { name: "Britta Holt", group: "Plumber", avatar: srcs[4] },
+  //         { name: "Jane Smith ", group: "Plumber", avatar: srcs[5] },
+  //         { name: "John Smith", group: "Plumber", avatar: srcs[1] },
+  //         { name: "Sandra Williams", group: "Plumber", avatar: srcs[3] },
+  //       ],
+  //       title: "The summer breeze",
+  //     };
+  //   },
 
+  //   watch: {
+  //     isUpdating(val) {
+  //       if (val) {
+  //         setTimeout(() => (this.isUpdating = false), 3000);
+  //       }
+  //     },
+  //   },
+
+  //   methods: {
+  //     remove(item) {
+  //       const index = this.selectedEmployees.indexOf(item.name);
+  //       if (index >= 0) this.selectedEmployees.splice(index, 1);
+  //     },
+  //   },
+  // };
+
+  data: () => ({
+    model: "",
+    customerNames: [],
+    items: [],
+    hello: "",
+    readOnly: true,
+    headers: [
+      {
+        text: "Company Name",
+        align: "start",
+        value: "FullName",
+      },
+      { text: "Email", value: "Email" },
+      { text: "Phone", value: "Phone" },
+    ],
+  }),
   watch: {
-    isUpdating(val) {
-      if (val) {
-        setTimeout(() => (this.isUpdating = false), 3000);
-      }
+    model: function (val) {
+      console.log(val);
     },
+  },
+  created() {
+    this.items = this.$store.state.customerList;
   },
 
   methods: {
-    remove(item) {
-      const index = this.selectedEmployees.indexOf(item.name);
-      if (index >= 0) this.selectedEmployees.splice(index, 1);
+    filterObject(item, queryText) {
+      if (!item.Phone) {
+        item.Phone = "";
+      }
+      if (!item.Company) {
+        item.Company = "";
+      }
+      return (
+        item.FullName.toLocaleLowerCase().indexOf(
+          queryText.toLocaleLowerCase()
+        ) > -1 ||
+        item.Phone.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) >
+          -1 ||
+        item.Company.toLocaleLowerCase().indexOf(
+          queryText.toLocaleLowerCase()
+        ) > -1
+      );
     },
   },
 };
-
-//   data: () => ({
-//     model: "",
-//     customerNames: [],
-//     items: [],
-//     hello: "",
-//     readOnly: true,
-//     headers: [
-//       {
-//         text: "Company Name",
-//         align: "start",
-//         value: "FullName",
-//       },
-//       { text: "Email", value: "Email" },
-//       { text: "Phone", value: "Phone" },
-//     ],
-//   }),
-//   watch: {
-//     model: function (val) {
-//       console.log(val);
-//     },
-//   },
-//   created() {
-//     this.items = this.$store.state.customerList;
-//   },
-
-//   methods: {
-//     filterObject(item, queryText) {
-//       if (!item.Phone) {
-//         item.Phone = "";
-//       }
-//       if (!item.Company) {
-//         item.Company = "";
-//       }
-//       return (
-//         item.FullName.toLocaleLowerCase().indexOf(
-//           queryText.toLocaleLowerCase()
-//         ) > -1 ||
-//         item.Phone.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) >
-//           -1 ||
-//         item.Company.toLocaleLowerCase().indexOf(
-//           queryText.toLocaleLowerCase()
-//         ) > -1
-//       );
-//     },
-//   },
-// };
 </script>
 
 <style scoped></style>

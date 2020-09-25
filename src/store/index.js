@@ -9,6 +9,7 @@ export default new Vuex.Store({
   state: {
     customerList: [],
     itemInfo: {},
+    item: null,
   },
   getters: {
     // getCustomerNames: (state) => {
@@ -42,6 +43,17 @@ export default new Vuex.Store({
     async getJobs() {
       let data = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/job/all")
+        .then((response) => {
+          return response.data.data;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return data;
+    },
+    async getWorkOrders() {
+      let data = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/all")
         .then((response) => {
           return response.data.data;
         })

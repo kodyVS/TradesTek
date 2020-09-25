@@ -6,8 +6,10 @@ import Team from "../views/Team.vue";
 import CreateWO from "../views/WorkOrders/CreateWO.vue";
 import OverviewWO from "../views/WorkOrders/OverviewWO.vue";
 import Customers from "../views/Customers.vue";
+import Jobs from "../views/Jobs.vue";
 import Test1 from "../views/Test1.vue";
 import SingleWorkOrder from "../views/WorkOrders/SingleWO.vue";
+import TimeManager from "../views/TimeManager.vue";
 Vue.use(VueRouter);
 const routes = [
   {
@@ -36,12 +38,21 @@ const routes = [
     name: "Customers",
     component: Customers,
   },
+  {
+    path: "/Jobs",
+    name: "Jobs",
+    component: Jobs,
+  },
   { path: "/Test1", name: "Test1", component: Test1 },
   {
     path: "/WorkOrders/:id",
     name: "SingleWorkOrder",
     component: SingleWorkOrder,
-    meta: { transitionName: "slide" },
+  },
+  {
+    path: "/TimeManager",
+    name: "TimeManager",
+    component: TimeManager,
   },
   {
     path: "*",
