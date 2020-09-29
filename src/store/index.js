@@ -8,12 +8,17 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     customerList: [],
+    newJobData: {},
     itemInfo: {},
     item: null,
+    employeeInfo: "",
   },
   getters: {
     // getCustomerNames: (state) => {
     // },
+    getNewJobData: (state) => {
+      return state.newJobData;
+    },
   },
   mutations: {},
   actions: {
@@ -21,7 +26,6 @@ export default new Vuex.Store({
       let data = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all")
         .then((response) => {
-          console.log(response.data);
           return response.data.data;
         })
         .catch(function (error) {
@@ -51,7 +55,18 @@ export default new Vuex.Store({
         });
       return data;
     },
-    async getWorkOrders() {
+    async getAllActiveWorkOrders() {
+      let data = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/allActive")
+        .then((response) => {
+          return response.data.data;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return data;
+    },
+    async getAllWorkOrders() {
       let data = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/all")
         .then((response) => {

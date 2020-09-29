@@ -17,20 +17,9 @@
     </v-container>
     <v-container class="my-5">
       <v-layout wrap>
-        <v-flex
-          v-for="(person, index) in filteredList"
-          :key="person.Name"
-          xs12
-          sm12
-          md6
-          lg4
-          xl3
-        >
+        <v-flex v-for="(person, index) in filteredList" :key="person.Name" xs12 sm12 md6 lg4 xl3>
           <v-hover v-slot:default="{ hover }">
-            <v-card
-              class="text-left ma-3 rounded-card"
-              :elevation="hover ? 16 : 4"
-            >
+            <v-card class="text-left ma-3 rounded-card" :elevation="hover ? 16 : 4">
               <v-responsive
                 style="text-align: center"
                 class="pt-2 pb-2 primary darken-3 white--text"
@@ -56,22 +45,14 @@
                 ></v-text-field>
               </v-card-text>
               <v-card-actions class="grey lighten-2">
-                <v-btn
-                  small
-                  text
-                  color="secondary"
-                  class="success ml-4"
-                  @click="createWO(person.Name)"
-                >
+                <v-btn small text color="secondary" class="success ml-4" @click="createWO(person)">
                   <v-icon small left color="white">mdi-folder</v-icon>
                   <span class="white--text">Create WO</span>
                 </v-btn>
                 <v-btn small @click="activeJobsButton(index, person)">
                   Active Jobs
                   <v-icon>{{
-                    selectedIndex === index
-                      ? "mdi-chevron-up"
-                      : "mdi-chevron-down"
+                    selectedIndex === index ? "mdi-chevron-up" : "mdi-chevron-down"
                   }}</v-icon>
                 </v-btn>
                 <v-btn
@@ -82,11 +63,7 @@
                   @click="readOnly = index"
                   >Edit</v-btn
                 >
-                <v-btn
-                  v-if="readOnly === index"
-                  small
-                  class="ml-2 success"
-                  @click="readOnly = true"
+                <v-btn v-if="readOnly === index" small class="ml-2 success" @click="readOnly = true"
                   >Save</v-btn
                 >
               </v-card-actions>
@@ -97,22 +74,16 @@
                 </v-card-text>  -->
                   <v-list>
                     <v-subheader>Work Orders</v-subheader>
-                    <v-list-item
-                      v-for="job in person.Jobs"
-                      :key="job.FullName"
-                      class="ml-4"
-                    >
+                    <v-list-item v-for="job in person.Jobs" :key="job.FullName" class="ml-4">
                       <v-list-item-content>
-                        <v-list-item-title
-                          v-text="job.Name"
-                        ></v-list-item-title>
-                        <v-list-item-subtitle v-text="job.ParentRef.FullName">
+                        <v-list-item-title v-text="job.Name"></v-list-item-title>
+                        <v-list-item-subtitle v-text="job.CustomerRef.FullName">
                         </v-list-item-subtitle>
                       </v-list-item-content>
                     </v-list-item>
                   </v-list>
                   <v-row justify="end" class="mr-2">
-                    <v-btn small class="warning mb-2">Add Work Order</v-btn>
+                    <v-btn small class="warning mb-2" @click="addWO()">Add Work Order</v-btn>
                   </v-row>
                 </div>
               </v-expand-transition>
@@ -145,20 +116,19 @@ export default {
     },
   },
   created() {
-    this.getEmployees();
-    this.getJobs();
+    this.editData();
   },
 
   methods: {
-    async getEmployees() {
+    async getData() {
       this.team = await this.$store.dispatch("getEmployees");
+      this.jobs = await this.$store.dispatch("getAllActiveWorkOrders");
     },
-    async getJobs() {
-      this.jobs = await this.$store.dispatch("getJobs");
-      this.team.map((employee) => {
-        employee.Jobs = this.jobs.filter(
-          (job) => job.Employees.indexOf(employee.Name) > -1
-        );
+    async editData() {
+      await this.getData().then(() => {
+        this.team.map((employee) => {
+          employee.Jobs = this.jobs.filter((job) => job.Employees.indexOf(employee.Name) > -1);
+        });
       });
     },
     async activeJobsButton(index, person) {
@@ -167,23 +137,22 @@ export default {
         await this.getJobs();
       }
       await this.jobsFilter(person).then(() => {
-        this.selectedIndex === index
-          ? (this.selectedIndex = null)
-          : (this.selectedIndex = index);
+        this.selectedIndex === index ? (this.selectedIndex = null) : (this.selectedIndex = index);
       });
     },
 
     //Need to add functionality to push name when clicked to list of employees on the work order
     createWO(currentPerson) {
-      // this.$store.state.itemInfo = `${}`currentPerson;
+      this.$store.state.employeeInfo = currentPerson.Name;
       this.$router.push("CreateWO");
-      console.log(currentPerson);
+      console.log(this.$store.state.employeeInfo);
     },
 
     async jobsFilter(person) {
-      this.jobsFiltered = await this.jobs.filter(
-        (job) => job.Employees.indexOf(person.Name) > -1
-      );
+      this.jobsFiltered = await this.jobs.filter((job) => job.Employees.indexOf(person.Name) > -1);
+    },
+    addWO() {
+      this.$router.push("WorkOrders");
     },
   },
 };

@@ -10,7 +10,9 @@
             >
             <v-autocomplete
               v-model="workOrder"
+              :filter="filterObject"
               :items="workOrders"
+              clearable
               dense
               outlined
               hide-no-data
@@ -18,6 +20,9 @@
               label="Work Order"
               return-object
               item-text="Name"
+              hint="Only shows active work orders"
+              persistent-hint
+              class="mb-2"
             >
               <template v-slot:item="data">
                 <v-list-item-content>
@@ -104,12 +109,18 @@ export default {
 
   //When created Fetch all employees and work orders
   created() {
-    this.getWorkOrders(), this.getEmployees();
+    this.getAllActiveWorkOrders(), this.getEmployees();
   },
   methods: {
+    filterObject(item, Text) {
+      return (
+        item.Name.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1 ||
+        item.CustomerRef.FullName.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1
+      );
+    },
     //Methods for fetching employees and work orders
-    async getWorkOrders() {
-      this.workOrders = await this.$store.dispatch("getWorkOrders");
+    async getAllActiveWorkOrders() {
+      this.workOrders = await this.$store.dispatch("getAllActiveWorkOrders");
     },
     async getEmployees() {
       this.employees = await this.$store.dispatch("getEmployees");
@@ -118,34 +129,39 @@ export default {
     //Time in Function
     async timeIn() {
       //Check for if there is a work order and employee selected
-      if (this.workOrder._id && this.employee._id) {
-        //push info into the log
-        this.status.push(
-          `${this.employee.Name} Timed In at ${new Date()
-            .toISOString()
-            .substr(11, 8)} on ${new Date().toISOString().substr(0, 10)} into ${
-            this.workOrder.Name
-          }`
-        );
-        //create timeStamp of current time
-        let timeData = new Date().toISOString();
+      try {
+        if (this.workOrder._id && this.employee._id) {
+          //push info into the log
+          this.status.push(
+            `${this.employee.Name} Timed In at ${new Date()
+              .toISOString()
+              .substr(11, 8)} on ${new Date().toISOString().substr(0, 10)} into ${
+              this.workOrder.Name
+            }`
+          );
+          //create timeStamp of current time
+          let timeData = new Date().toISOString();
 
-        //Send timestamp to the back end and create a time log
-        const req = await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/time/timeIn", {
-            WOReference: this.workOrder._id,
-            EmployeeReference: this.employee._id,
-            TimeData: timeData,
-            TimedIn: true,
-          })
-          .then(async () => {
-            //if the request comes back successful, reload employees and set the employee's timedIn value to true because the employee data isn't reloaded until selected again
-            this.getEmployees();
-            this.employee.TimedIn = true;
-          })
-          .catch((err) => console.log(err, req));
-      } else {
-        //create an alert that tells the user to pick a work order and employee
+          //Send timestamp to the back end and create a time log
+          const req = await axios
+            .post(process.env.VUE_APP_API_URL + "/api/v1/time/timeIn", {
+              WOReference: this.workOrder._id,
+              EmployeeReference: this.employee._id,
+              TimeData: timeData,
+              TimedIn: true,
+            })
+            .then(async () => {
+              //if the request comes back successful, reload employees and set the employee's timedIn value to true because the employee data isn't reloaded until selected again
+              await this.getEmployees().then(() => {
+                this.employee.TimedIn = true;
+              });
+            })
+            .catch((err) => console.log(err, req));
+        } else {
+          //create an alert that tells the user to pick a work order and employee
+          alert("pick a work order and employee");
+        }
+      } catch (err) {
         alert("pick a work order and employee");
       }
     },

@@ -26,10 +26,7 @@ export default {
   },
   created() {
     this.$router.beforeEach((to, from, next) => {
-      let transitionName =
-        to.meta.transitionName ||
-        from.meta.transitionName ||
-        DEFAULT_TRANSITION;
+      let transitionName = to.meta.transitionName || from.meta.transitionName || DEFAULT_TRANSITION;
       if (transitionName === `slide`) {
         const toDepth = to.path.split(`/`).length;
         const fromDepth = from.path.split(`/`).length;

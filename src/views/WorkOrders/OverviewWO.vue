@@ -10,15 +10,18 @@
             label="Search Work Orders"
             single-line
             hide-details
+            clearable
           ></v-text-field>
         </v-col>
       </v-row>
     </v-container>
 
     <!-- Table  -->
-    <v-btn small text @click="filterItems(null)">Show All</v-btn>
-    <v-btn small text @click="filterItems(false)">Show Active WO's</v-btn>
-    <v-btn small text @click="filterItems(true)">Show Complete WO's</v-btn>
+    <v-btn-toggle v-model="buttonToggle" color="blue darken-3">
+      <v-btn small text @click="filterItems(false)">Display Active WO's</v-btn>
+      <v-btn small text @click="getAllJobs(true)">Display Complete WO's</v-btn>
+      <v-btn small text @click="getAllJobs(null)">Display All</v-btn>
+    </v-btn-toggle>
 
     <v-data-table
       :headers="headers"
@@ -30,9 +33,7 @@
       <template v-slot:top>
         <!-- Top bar -->
         <v-toolbar flat color="secondary">
-          <v-toolbar-title class="white--text">
-            Work Order List</v-toolbar-title
-          >
+          <v-toolbar-title class="white--text"> Work Order List</v-toolbar-title>
           <v-spacer></v-spacer>
 
           <v-btn color="primary" @click="newJob()">New Work Order</v-btn>
@@ -40,9 +41,7 @@
       </template>
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success ma-1" @click="ViewItem(item)">View</v-btn>
-        <v-btn small class="primary ml-1 ma-1" @click="createWO(item)"
-          >Edit</v-btn
-        >
+        <v-btn small class="primary ml-1 ma-1" @click="createWO(item)">Edit</v-btn>
       </template>
 
       <template v-slot:item.Description="{ item }">
@@ -94,6 +93,8 @@ export default {
     },
   },
   data: () => ({
+    completeWO: false,
+    buttonToggle: 0,
     //V-model for searching
     search: "",
     modelArray: [],
@@ -134,14 +135,19 @@ export default {
     this.getJobs();
   },
   methods: {
-    testing() {
-      console.log(this.modelArray);
+    //Will get Job from the Db
+    async getJobs() {
+      this.items = await this.$store.dispatch("getAllActiveWorkOrders");
+      this.filteredItems = [...this.items];
     },
 
-    //Will get Job from the Db and console log an error if there is an error
-    async getJobs() {
-      this.items = await this.$store.dispatch("getWorkOrders");
-      this.filteredItems = [...this.items];
+    async getAllJobs(boolean) {
+      if (!this.completeWO) {
+        this.items = await this.$store.dispatch("getAllWorkOrders");
+        this.completeWO = true;
+        this.filteredItems = [...this.items];
+      }
+      this.filterItems(boolean);
     },
     //Used to view a pop up
     ViewItem(item) {
@@ -156,9 +162,6 @@ export default {
     },
     newJob() {
       this.$router.push("CreateWO");
-    },
-    async createJob(item) {
-      console.log(item);
     },
     filterItems(boolean) {
       if (boolean) {

@@ -1,5 +1,12 @@
 <template>
   <div>
+    <v-snackbar v-model="createdAlert" color="" class="success--text" top
+      ><template v-slot:action="{ attrs }">
+        <v-btn color="success" text v-bind="attrs" @click="createdAlert = false"> Close </v-btn>
+      </template>
+      <v-icon color="green">mdi-check</v-icon>
+      <span> Customer has been successfully created </span>
+    </v-snackbar>
     <!-- Search function for the table -->
     <v-container mb-4>
       <v-row justify="center">
@@ -16,7 +23,13 @@
     </v-container>
 
     <!-- Table  -->
-    <v-data-table :headers="headers" :items="items" :search="search">
+    <v-data-table
+      :headers="headers"
+      :items="items"
+      :search="search"
+      :items-per-page="20"
+      :footer-props="{ 'items-per-page-options': [20, 30, 50, 100] }"
+    >
       <template v-slot:top>
         <!-- Top bar -->
         <v-toolbar flat color="secondary">
@@ -26,16 +39,12 @@
           <!-- Details and edit dialog up menu -->
           <v-dialog v-model="dialog" max-width="90%" :persistent="!readOnly">
             <template v-slot:activator="{ on }">
-              <v-btn color="primary" v-on="on" @click.native="newJob()"
-                >New Job Site</v-btn
-              >
+              <v-btn color="primary" v-on="on" @click.native="newJob()">New Job Site</v-btn>
             </template>
             <v-card class color="grey lighten-3">
               <v-card-title
                 :class="
-                  readOnly
-                    ? 'pt-3 pl-3 secondary white--text'
-                    : 'pt-3 pl-3 warning white--text'
+                  readOnly ? 'pt-3 pl-3 secondary white--text' : 'pt-3 pl-3 warning white--text'
                 "
                 >{{ editedItem.Name }}</v-card-title
               >
@@ -47,10 +56,11 @@
                       <v-text-field
                         v-model="editedItem.Name"
                         class="grey--text"
+                        dense
                         label="Job Site Name"
                         outlined
-                        :readonly="fullName"
-                        dense
+                        :readonly="!newJobBoolean"
+                        :disabled="!newJobBoolean && !readOnly"
                         :rules="fullNameRules"
                       ></v-text-field>
                     </v-col>
@@ -61,8 +71,10 @@
                         dense
                         outlined
                         label="Customer"
-                        :readonly="fullName"
-                        :clearable="!fullName"
+                        :readonly="!newJobBoolean"
+                        :disabled="!newJobBoolean && !readOnly"
+                        :clearable="newJobBoolean"
+                        :rules="fullNameRules"
                       ></v-autocomplete>
                     </v-col>
                     <!-- Name of Contact -->
@@ -145,21 +157,15 @@
                   </v-row>
                   <!-- Buttons for create WO and edit job and save changes on dialog-->
                   <v-layout align-end justify-end>
-                    <v-btn
-                      v-if="readOnly"
-                      color="primary"
-                      @click="createWO(editedItem)"
+                    <v-btn v-if="readOnly" color="primary" @click="createWO(editedItem)"
                       >Create WO</v-btn
                     >
-                    <v-btn
-                      v-if="readOnly"
-                      color="warning"
-                      @click="readOnly = !readOnly"
+                    <v-btn v-if="readOnly" color="warning" @click="readOnly = !readOnly"
                       >Edit Job</v-btn
                     >
                   </v-layout>
                   <v-btn
-                    v-if="!readOnly && fullName"
+                    v-if="!readOnly && !newJobBoolean"
                     large
                     color="success"
                     @click="
@@ -170,7 +176,7 @@
                     >Save Changes</v-btn
                   >
                   <v-btn
-                    v-if="!fullName"
+                    v-if="newJobBoolean"
                     class="mr-2"
                     large
                     color="success"
@@ -198,9 +204,7 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success" @click="ViewItem(item)">Details</v-btn>
-        <v-btn small class="primary ml-2" @click="createWO(item)"
-          >Create WO</v-btn
-        >
+        <v-btn small class="primary ml-2" @click="createWO(item)">Create WO</v-btn>
       </template>
     </v-data-table>
   </div>
@@ -211,8 +215,9 @@ import axios from "axios";
 export default {
   data: () => ({
     //Truth for if the dialog is open
-    fullName: true,
+    newJobBoolean: true,
     dialog: false,
+    createdAlert: false,
 
     //rules
     fullNameRules: [(v) => !!v || "required"],
@@ -243,7 +248,21 @@ export default {
 
     //Values for items that are open on the menu's
     editedIndex: -1,
-    editedItem: {},
+    editedItem: {
+      ListID: "",
+      EditSequence: "",
+      Name: "",
+      CompanyName: "",
+      FirstName: "",
+      LastName: "",
+      BillAddress: {
+        Addr1: "",
+        City: "",
+        PostalCode: "",
+      },
+      Phone: "",
+      Email: "",
+    },
 
     customerList: [],
   }),
@@ -252,20 +271,37 @@ export default {
 
   watch: {
     //Watching if the dialog is open and when it closes. If it closes set readOnly back to true
-    //Not sure what the val val is
     dialog() {
-      this.readOnly = true;
-      this.fullName = true;
+      if (this.dialog === false) {
+        this.readOnly = true;
+        this.newJobBoolean = true;
+      }
     },
   },
-
   //When the page is created call the getJob method
   created() {
     this.getJobs();
-    this.clearEdit();
+    this.populateJob();
     this.getCustomers();
   },
   methods: {
+    async populateJob() {
+      this.newJobData = await JSON.parse(JSON.stringify(this.$store.getters.getNewJobData));
+      if (this.$store.state.newJobData.FullName) {
+        this.dialog = true;
+        this.newJobBoolean = true;
+        this.readOnly = !this.readOnly;
+        this.editedItem = this.$store.state.newJobData;
+        this.editedItem.Customer = this.editedItem.FullName;
+        this.editedItem.Name = "";
+        this.editedItem.BillAddress = {
+          Addr1: "",
+          City: "",
+          PostalCode: "",
+        };
+        this.$store.state.newJobData = {};
+      }
+    },
     clearEdit() {
       this.editedItem = {
         ListID: "",
@@ -303,6 +339,8 @@ export default {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
+      this.readOnly = true;
+      this.newJobBoolean = false;
     },
 
     async getCustomers() {
@@ -343,21 +381,20 @@ export default {
     },
     newJob() {
       this.readOnly = !this.readOnly;
-      this.fullName = false;
+      this.newJobBoolean = true;
       this.clearEdit();
     },
     async createJob(item) {
       if (this.$refs.form.validate()) {
-        this.dialog = !this.dialog;
-        this.readOnly = !this.readOnly;
         item.FullName = `${item.Customer}:${item.Name}`;
+        item.ParentRef = {
+          FullName: item.FullName,
+        };
         const res = await axios
           .post(process.env.VUE_APP_API_URL + "/api/v1/job/add", {
             Name: item.Name,
             FullName: item.FullName,
-            ParentRef: {
-              FullName: item.Customer,
-            },
+            ParentRef: item.ParentRef,
             CompanyName: item.CompanyName,
             FirstName: item.FirstName,
             LastName: item.LastName,
@@ -366,9 +403,11 @@ export default {
             Email: item.Email,
             Synced: false,
           })
-          .then(async (response) => {
+          .then(async () => {
             await this.getJobs();
-            console.log(response);
+            this.createdAlert = true;
+            this.readOnly = !this.readOnly;
+            this.newJobBoolean = false;
           })
           .catch((err) => console.log(err, res));
       }

@@ -32,7 +32,8 @@
             <v-col cols="12" md="3">
               <v-autocomplete
                 v-model="workOrder.Job"
-                :items="customerList"
+                :filter="filterObject"
+                :items="jobList"
                 dense
                 outlined
                 hide-no-data
@@ -43,7 +44,14 @@
                 :rules="NameRules"
                 return-object
                 item-text="Name"
-              ></v-autocomplete>
+              >
+                <template v-slot:item="data">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ data.item.Name }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ data.item.ParentRef.FullName }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </template>
+              </v-autocomplete>
             </v-col>
             <v-col cols="12" md="3">
               <v-text-field
@@ -187,7 +195,7 @@ export default {
       NameRules: [(v) => !!v || "required"],
       customer: [],
       employees: [],
-      customerList: [],
+      jobList: [],
       FullName: "",
       workOrder: {
         Name: "",
@@ -216,18 +224,24 @@ export default {
       return this.date ? moment(this.date).format("Do MMMM YYYY") : "";
     },
     getCustomer: function () {
-      return this.workOrder.Job.ParentRef.FullName;
+      if (!this.workOrder.Job) {
+        this.clearJob();
+        return "";
+      } else {
+        return this.workOrder.Job.ParentRef.FullName;
+      }
     },
     getAddress: function () {
-      if (this.workOrder.Job.BillAddress) {
-        return this.workOrder.Job.BillAddress.Addr1;
-      } else {
-        return "";
+      if (this.workOrder.Job) {
+        if (this.workOrder.Job.BillAddress) {
+          return this.workOrder.Job.BillAddress.Addr1;
+        }
       }
+      return "";
     },
   },
   created() {
-    this.getCustomers();
+    this.getJobs();
     this.jobEditPopulate();
     this.getEmployees();
   },
@@ -235,22 +249,45 @@ export default {
     this.editBoolean = false;
   },
   methods: {
+    clearJob() {
+      this.workOrder.Job = {
+        FirstName: "",
+        LastName: "",
+        Phone: "",
+        Email: "",
+        ParentRef: {
+          FullName: "",
+          ListID: "",
+        },
+      };
+      this.workOrder.BillAddress = "";
+    },
+    filterObject(item, Text) {
+      return (
+        item.Name.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1 ||
+        item.ParentRef.FullName.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1
+      );
+    },
     async getEmployees() {
       this.employees = await this.$store.dispatch("getEmployees");
     },
     jobEditPopulate() {
-      if (this.$store.state.item) {
-        this.workOrder = this.$store.state.item;
-        this.editBoolean = true;
+      if (this.$store.state.itemInfo.Name) {
+        this.workOrder.Job = this.$store.state.itemInfo;
         this.$store.state.item = null;
       }
-      console.log(this.workOrder);
+      if (this.$store.state.employeeInfo) {
+        console.log(this.workOrder);
+        this.workOrder.Employees.push(this.$store.state.employeeInfo);
+        this.$store.state.employeeInfo = "";
+      }
     },
-    async getCustomers() {
-      this.customerList = await this.$store.dispatch("getJobs");
+    async getJobs() {
+      this.jobList = await this.$store.dispatch("getJobs");
     },
     async submit() {
       if (this.$refs.form.validate()) {
+        let jobFullName = `${this.workOrder.Job.ParentRef.FullName}:${this.workOrder.Job.Name}`;
         const req = await axios
           .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/add", {
             Name: this.workOrder.Name,
@@ -260,6 +297,9 @@ export default {
             Employees: this.workOrder.Employees,
             Description: this.workOrder.Description,
             Complete: this.workOrder.Complete,
+            CustomerRef: {
+              FullName: jobFullName,
+            },
             Synced: false,
           })
           .then(async () => {
@@ -270,15 +310,6 @@ export default {
     },
     async editSubmit() {
       if (this.$refs.form.validate()) {
-        if (this.workOrder.Complete === true) {
-          await axios
-            .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/complete", {
-              WorkOrderID: this.workOrder._id,
-              Complete: this.workOrder.Complete,
-              Synced: false,
-            })
-            .catch((err) => console.log(err, req));
-        }
         const req = await axios
           .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/edit", {
             WorkOrderId: this.workOrder._id,
@@ -288,9 +319,17 @@ export default {
             Employees: this.workOrder.Employees,
             Description: this.workOrder.Description,
             Complete: this.workOrder.Complete,
-            Synced: false,
           })
           .then(async () => {
+            if (this.workOrder.Complete === true && this.workOrder.Synced === false) {
+              await axios
+                .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/complete", {
+                  WorkOrderID: this.workOrder._id,
+                  Complete: this.workOrder.Complete,
+                  Synced: false,
+                })
+                .catch((err) => console.log(err, req));
+            }
             this.$router.replace(`WorkOrders`);
           })
           .catch((err) => console.log(err, req));
