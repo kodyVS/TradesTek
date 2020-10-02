@@ -77,15 +77,49 @@ export default new Vuex.Store({
         });
       return data;
     },
-    async getJob(context, param) {
+    async getWorkOrder(context, param) {
       let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/job/" + param)
+        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/" + param)
         .then((response) => {
           return response.data.data.data;
         })
         .catch(function (error) {
           console.log(error);
         });
+      return data;
+    },
+    async getAllTimes(context, param) {
+      let data = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/time/all" + param)
+        .then((response) => {
+          return response.data.data;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return data;
+    },
+    async editTime(context, editedTime) {
+      let data = await axios
+        .patch(process.env.VUE_APP_API_URL + "/api/v1/time/edit", editedTime)
+        .then((response) => {
+          return response;
+        });
+      return data;
+    },
+    async deleteTime(context, timeStamp) {
+      let data = await axios
+        .delete(process.env.VUE_APP_API_URL + "/api/v1/time/delete/" + timeStamp._id)
+        .then((response) => {
+          return response;
+        });
+      console.log(data);
+      return data;
+    },
+    async addTime(context, timeStamp) {
+      let data = await axios
+        .post(process.env.VUE_APP_API_URL + "/api/v1/time/add/", timeStamp)
+        .then((res) => res);
       return data;
     },
   },

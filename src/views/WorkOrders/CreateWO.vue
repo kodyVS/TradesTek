@@ -168,7 +168,9 @@
             prepend-icon="mdi-pencil"
           ></v-textarea>
           <!-- <v-col> -->
-          <v-btn v-if="!editBoolean" text class="success px-3 mt-0" @click="submit">Submit</v-btn>
+          <v-btn v-if="!editBoolean" text class="success px-3 mt-0" @click="submit"
+            >Create new WO</v-btn
+          >
           <v-btn v-else text class="success px-3 mt-0" @click="editSubmit">Save Changes</v-btn>
           <v-btn text class="red white--text px-3 mt-0" @click="$router.go(-1)">Cancel</v-btn>
           <v-switch
@@ -242,7 +244,7 @@ export default {
   },
   created() {
     this.getJobs();
-    this.jobEditPopulate();
+    this.importStoreData();
     this.getEmployees();
   },
   beforeDestroy() {
@@ -271,15 +273,23 @@ export default {
     async getEmployees() {
       this.employees = await this.$store.dispatch("getEmployees");
     },
-    jobEditPopulate() {
+    importStoreData() {
+      if (this.$store.state.item) {
+        this.workOrder = this.$store.state.item;
+        this.$store.state.item = null;
+        this.editBoolean = true;
+      }
+
       if (this.$store.state.itemInfo.Name) {
         this.workOrder.Job = this.$store.state.itemInfo;
-        this.$store.state.item = null;
+        this.$store.state.itemInfo = null;
+        this.editBoolean = true;
       }
       if (this.$store.state.employeeInfo) {
         console.log(this.workOrder);
         this.workOrder.Employees.push(this.$store.state.employeeInfo);
         this.$store.state.employeeInfo = "";
+        this.editBoolean = true;
       }
     },
     async getJobs() {

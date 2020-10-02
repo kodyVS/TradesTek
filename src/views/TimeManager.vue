@@ -1,4 +1,7 @@
-//todo change employees to only match the work orders when they are timed into //todo them
+<script>
+//todo change employees to only match the work orders when they are timed into
+</script>
+
 <template>
   <div>
     <v-container>
@@ -145,10 +148,13 @@ export default {
           //Send timestamp to the back end and create a time log
           const req = await axios
             .post(process.env.VUE_APP_API_URL + "/api/v1/time/timeIn", {
+              WorkOrder: this.workOrder.Name,
               WOReference: this.workOrder._id,
+              Employee: this.employee.Name,
               EmployeeReference: this.employee._id,
               TimeData: timeData,
               TimedIn: true,
+              PONumber: this.workOrder.PONumber,
             })
             .then(async () => {
               //if the request comes back successful, reload employees and set the employee's timedIn value to true because the employee data isn't reloaded until selected again
@@ -162,7 +168,8 @@ export default {
           alert("pick a work order and employee");
         }
       } catch (err) {
-        alert("pick a work order and employee");
+        //alert("pick a work order and employee");
+        console.log(err);
       }
     },
 

@@ -95,6 +95,7 @@ export default {
           text: "TimeManager",
           route: "/TimeManager",
         },
+        { icon: "mdi-calendar", text: "Timesheets", route: "/TimeSheets" },
         { icon: "mdi-view-dashboard", text: "Dashboard", route: "/" },
 
         { icon: "mdi-account", text: "Team", route: "/team" },

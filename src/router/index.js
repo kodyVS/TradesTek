@@ -10,6 +10,7 @@ import Jobs from "../views/Jobs.vue";
 import Test1 from "../views/Test1.vue";
 import SingleWorkOrder from "../views/WorkOrders/SingleWO.vue";
 import TimeManager from "../views/TimeManager.vue";
+import TimeSheets from "../views/TimeSheets.vue";
 Vue.use(VueRouter);
 const routes = [
   {
@@ -53,6 +54,11 @@ const routes = [
     path: "/TimeManager",
     name: "TimeManager",
     component: TimeManager,
+  },
+  {
+    path: "/TimeSheets",
+    name: "TimeSheets",
+    component: TimeSheets,
   },
   {
     path: "*",
