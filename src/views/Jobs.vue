@@ -388,7 +388,7 @@ export default {
       if (this.$refs.form.validate()) {
         item.FullName = `${item.Customer}:${item.Name}`;
         item.ParentRef = {
-          FullName: item.FullName,
+          FullName: item.Customer,
         };
         const res = await axios
           .post(process.env.VUE_APP_API_URL + "/api/v1/job/add", {

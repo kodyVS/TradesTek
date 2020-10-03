@@ -41,7 +41,7 @@
 
             <v-card-actions>
               <v-btn color="success">Click #1</v-btn>
-              <v-btn color="primary" @click="editRoute()">Edit</v-btn>
+              <v-btn color="primary" @click="editWorkOrder()">Edit</v-btn>
               <v-spacer></v-spacer>
               <v-btn icon><v-icon>mdi-bookmark</v-icon></v-btn>
             </v-card-actions>
@@ -71,7 +71,7 @@
         <v-flex>
           <v-card class="mt-4 text-center">
             <v-card-title class="justify-center">
-              <v-btn large color="success darken-1" @click="getDailyComments(false)">
+              <v-btn large color="success darken-1" @click="showTimeBreakdown(false)">
                 <span> Show Time breakdown </span>
                 <v-icon>{{ showComments ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
               </v-btn>
@@ -111,36 +111,6 @@
               </v-card-text>
             </v-expand-transition>
           </v-card>
-
-          <!--<v-expand-transition>
-            <v-card v-if="showComments">
-              <v-list three-line>
-                <v-list-item
-                  v-if="dailyCommentsFiltered.length < 1"
-                  v-text="'No Time Data'"
-                ></v-list-item>
-                <template v-for="(dailyComment, index) in dailyCommentsFiltered">
-                  <v-list-item :key="index">
-                    <v-list-item-content>
-                      <v-list-item-title v-text="dailyComment.Date"></v-list-item-title>
-                      <v-list-item-subtitle
-                        v-text="
-                          `${dailyComment.TimeIn} to ${dailyComment.TimeOut} (${dailyComment.Minutes}) Minutes`
-                        "
-                      ></v-list-item-subtitle>
-                      <v-list-item-subtitle
-                        class="black--text"
-                        v-text="
-                          dailyComment.Desc ? 'Notes: ' + dailyComment.Desc : 'Notes: No Comment'
-                        "
-                      ></v-list-item-subtitle>
-                      <v-list-item-subtitle v-text="dailyComment.Employee"></v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-                </template>
-              </v-list>
-            </v-card>
-          </v-expand-transition> -->
         </v-flex>
       </v-row>
     </v-container>
@@ -202,6 +172,7 @@ export default {
     };
   },
   computed: {
+    //calcuates the hours worked with adding EPSILON to fix some of javascripts rounding issues
     hoursWorked: function () {
       let totalTime = 0;
       this.workOrder.TimeReference.map((timeStamp) => {
@@ -211,30 +182,30 @@ export default {
       return totalTime;
     },
   },
+  //at create call getWorkOrders
   created() {
     this.getWorkOrder();
   },
   methods: {
+    //Call get work order from the database
     async getWorkOrder() {
-      let workOrder1 = await this.$store.dispatch("getWorkOrder", this.$route.params.id);
-      Object.assign(this.workOrder, workOrder1);
+      this.workOrder = await this.$store.dispatch("getWorkOrder", this.$route.params.id);
       console.log(this.workOrder);
     },
-    editRoute() {
+
+    //send work order to the edit/create work order function
+    editWorkOrder() {
       this.$store.state.item = this.workOrder;
       this.$router.replace({ name: "CreateWO" });
     },
-    //!
-    //todo use substr instead of the split method
-    getDailyComments() {
+
+    //Shows the breakdown of the times
+    //todo lazyload this data instead of loading on button push
+    showTimeBreakdown() {
       this.showComments = !this.showComments;
       if (this.dailyComments.length < 1) {
         this.workOrder.TimeReference.map((timeStamp) => {
-          let structuredDate = new Date(timeStamp.TimeData[0])
-            .toString()
-            .split(" ")
-            .slice(0, 4)
-            .join(" ");
+          let structuredDate = new Date(timeStamp.TimeData[0]).toString().substr(0, 15);
           let structuredTimeIn = timeStamp.TimeData[0].substr(11, 8);
           let structuredTimeOut = timeStamp.TimeData[1].substr(11, 8);
           let data = {
@@ -251,7 +222,6 @@ export default {
         });
       }
       this.dailyCommentsFiltered = this.dailyComments;
-      console.log(this.dailyCommentsFiltered);
     },
   },
 };

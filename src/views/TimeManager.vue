@@ -26,6 +26,7 @@
               hint="Only shows active work orders"
               persistent-hint
               class="mb-2"
+              @change="filterEmployees()"
             >
               <template v-slot:item="data">
                 <v-list-item-content>
@@ -38,7 +39,7 @@
             </v-autocomplete>
             <v-autocomplete
               v-model="employee"
-              :items="employees"
+              :items="filteredEmployees"
               dense
               outlined
               hide-no-data
@@ -103,6 +104,7 @@ export default {
       workOrders: [],
       employee: {},
       employees: [],
+      filteredEmployees: [],
       headingColor: "",
       status: [],
       requestStatus: "",
@@ -121,6 +123,15 @@ export default {
         item.CustomerRef.FullName.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1
       );
     },
+    filterEmployees() {
+      this.employee = {};
+      this.filteredEmployees = [];
+      this.employees.map((employee) => {
+        if (this.workOrder.Employees.indexOf(employee.Name) > -1) {
+          this.filteredEmployees.push(employee);
+        }
+      });
+    },
     //Methods for fetching employees and work orders
     async getAllActiveWorkOrders() {
       this.workOrders = await this.$store.dispatch("getAllActiveWorkOrders");
@@ -137,15 +148,13 @@ export default {
           //create timeStamp of current time
           let timeData = new Date();
           timeData.setHours(timeData.getHours() - 6);
-          console.log(timeData);
-          //push info into the log
-          // this.status.push(
-          //   `${this.employee.Name} Timed In at ${timeData.substr(11, 8)} on ${timeData.substr(
-          //     0,
-          //     10
-          //   )} into ${this.workOrder.Name}`
-          // );
-          // Send timestamp to the back end and create a time log
+          this.status.push(
+            `${this.employee.Name} Timed in at ${timeData
+              .toISOString()
+              .substr(11, 8)} on ${timeData.toISOString().substr(0, 10)} from ${
+              this.workOrder.Name
+            }`
+          );
           const req = await axios
             .post(process.env.VUE_APP_API_URL + "/api/v1/time/timeIn", {
               WorkOrder: this.workOrder.Name,
@@ -175,15 +184,17 @@ export default {
 
     //Time out function
     async timeOut() {
-      //Pushes time out data into the log
-      this.status.push(
-        `${this.employee.Name} Timed Out at ${new Date()
-          .toISOString()
-          .substr(11, 8)} on ${new Date().toISOString().substr(0, 10)} from ${this.workOrder.Name}`
-      );
-      //Creates timestamp of when the time request finishes
       let timeData = new Date();
       timeData.setHours(timeData.getHours() - 6);
+
+      //Pushes time out data into the log
+      this.status.push(
+        `${this.employee.Name} Timed Out at ${timeData
+          .toISOString()
+          .substr(11, 8)} on ${timeData.toISOString().substr(0, 10)} from ${this.workOrder.Name}`
+      );
+      //Creates timestamp of when the time request finishes
+
       //sends data to the back end
       const req = await axios
         .post(process.env.VUE_APP_API_URL + "/api/v1/time/timeOut", {

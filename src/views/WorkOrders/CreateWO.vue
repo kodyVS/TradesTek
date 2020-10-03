@@ -1,3 +1,7 @@
+<script>
+//todo rename this to something else
+</script>
+
 <template>
   <div class="createWO mt-2">
     <h1>{{ editBoolean ? "Edit Work Order" : "Create Work Order" }}</h1>
@@ -14,7 +18,7 @@
                 :clearable="!editBoolean"
                 :readonly="editBoolean"
                 dense
-                :rules="NameRules"
+                :rules="lengthRule"
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="2">
@@ -41,7 +45,7 @@
                 :readonly="editBoolean"
                 filled
                 label="Job Site"
-                :rules="NameRules"
+                :rules="requiredRule"
                 return-object
                 item-text="Name"
               >
@@ -60,7 +64,7 @@
                 outlined
                 readonly
                 dense
-                :rules="NameRules"
+                :rules="requiredRule"
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
@@ -113,7 +117,7 @@
                 <v-date-picker v-model="date"></v-date-picker>
               </v-menu>
             </v-col>
-            <v-radio-group v-model="workOrder.JobType" :rules="NameRules">
+            <v-radio-group v-model="workOrder.JobType" :rules="requiredRule">
               <v-radio label="Service" value="Service"></v-radio>
               <v-radio label="Construction" value="Construction"></v-radio>
             </v-radio-group>
@@ -194,7 +198,11 @@ export default {
       content: "",
       date: null,
       editBoolean: false,
-      NameRules: [(v) => !!v || "required"],
+      requiredRule: [(v) => !!v || "required"],
+      lengthRule: [
+        (v) => !!v || "required",
+        (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
+      ],
       customer: [],
       employees: [],
       jobList: [],

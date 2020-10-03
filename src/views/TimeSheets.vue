@@ -1,6 +1,5 @@
 <script>
 //General
-//todo Change the time format on edit requests to the v-input-field input=time to allow for more consistent results
 //todo Convert times into the timezone specified by an env variable
 //todo ERROR HANDLE
 //todo Less blocking
@@ -8,8 +7,6 @@
 //fix when the employee field gets cleared to remove error
 
 //Specific
-//todo getEvents() Filter the times based off month as well and sync 3 months of data on each request  --!Important
-//todo Add be able to create and send time to the database
 //todo showEvents() research a bit more how this works
 </script>
 
@@ -343,8 +340,8 @@ export default {
       let calendarDateStart = new Date(this.start.date);
       let calendarDateEnd = new Date(this.end.date);
       if (!this.storedLowRange) {
-        this.storedLowRange = calendarDateStart;
-        this.storedHighRange = calendarDateEnd;
+        this.storedLowRange = lowRange;
+        this.storedHighRange = highRange;
       }
 
       try {
