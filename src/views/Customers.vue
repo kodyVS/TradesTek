@@ -25,6 +25,7 @@
 
     <!-- Table  -->
     <v-data-table
+      dense
       :headers="headers"
       :items="items"
       :search="search"
@@ -264,9 +265,7 @@ export default {
     this.clearEdit();
   },
   methods: {
-    testMethod() {
-      this.createdAlert = true;
-    },
+    //Clear the edit fields when this is called
     clearEdit() {
       this.editedItem = {
         ListID: "",

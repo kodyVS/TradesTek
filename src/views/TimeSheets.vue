@@ -8,7 +8,7 @@
 //fix when the employee field gets cleared to remove error
 
 //Specific
-//todo getEvents() Filter the times based off month as well and sync 3 months of data on each request
+//todo getEvents() Filter the times based off month as well and sync 3 months of data on each request  --!Important
 //todo Add be able to create and send time to the database
 //todo showEvents() research a bit more how this works
 </script>
@@ -27,7 +27,7 @@
         label="Employee"
         return-object
         item-text="Name"
-        @change="getEvents()"
+        @change="getEvents(storedLowRange, storedHighRange, true)"
         class="pt-5 pl-4"
       ></v-autocomplete>
     </v-col>
@@ -225,6 +225,9 @@
 <script>
 export default {
   data: () => ({
+    storedLowRange: null,
+    storedHighRange: null,
+
     selectedEventTime: {
       date: null,
       start: null,
@@ -336,23 +339,51 @@ export default {
 
     //gets events when then employee is selected. Sends a request to the database that will filter the times
     //todo getEvents() Filter the times based off month as well and sync 3 months of data on each request
-    async getEvents() {
-      let events = [];
-      let param = `?filter=${this.employee.Name}`;
-      await this.$store.dispatch("getAllTimes", param).then((times) => {
-        times.map((time) => {
-          events.push({
-            _id: time._id,
-            name: time.WorkOrder,
-            start: `${time.TimeData[0].substr(0, 10)} ${time.TimeData[0].substr(11, 8)}`,
-            end: `${time.TimeData[1].substr(0, 10)} ${time.TimeData[1].substr(11, 8)}`,
-            description: time.Desc,
-            color: "#1948f7",
-          });
-        });
-        this.events = events;
-        this.newTime.employee = this.employee;
-      });
+    async getEvents(lowRange, highRange, boolean) {
+      let calendarDateStart = new Date(this.start.date);
+      let calendarDateEnd = new Date(this.end.date);
+      if (!this.storedLowRange) {
+        this.storedLowRange = calendarDateStart;
+        this.storedHighRange = calendarDateEnd;
+      }
+
+      try {
+        if (this.employee.Name) {
+          if (
+            this.storedLowRange.getTime() >= calendarDateStart.getTime() ||
+            this.storedHighRange.getTime() <= calendarDateEnd.getTime() ||
+            boolean
+          ) {
+            this.storedEmployee = this.employee.Name;
+            this.storedLowRange = lowRange;
+            this.storedHighRange = highRange;
+            let events = [];
+            let param = `?filter=${
+              this.employee.Name
+            }&lowRange=${lowRange.toISOString()}&highRange=${highRange.toISOString()}`; //send parameters for ranges
+            await this.$store.dispatch("getAllTimes", param).then((times) => {
+              times.map((time) => {
+                if (time.TimeData[1]) {
+                  let time1 = new Date(time.TimeData[0]);
+                  let time2 = new Date(time.TimeData[1]);
+                  events.push({
+                    _id: time._id,
+                    name: time.WorkOrder,
+                    start: `${time.TimeData[0].substr(0, 10)} ${time.TimeData[0].substr(11, 8)}`,
+                    end: `${time.TimeData[1].substr(0, 10)} ${time.TimeData[1].substr(11, 8)}`,
+                    description: time.Desc,
+                    color: "#1948f7",
+                  });
+                }
+              });
+              this.events = events;
+              this.newTime.employee = this.employee;
+            });
+          }
+        }
+      } catch (err) {
+        console.log(err);
+      }
     },
 
     //Shows new time dialog
@@ -397,9 +428,8 @@ export default {
           Employee: this.newTime.employee.Name,
           EmployeeReference: this.newTime.employee._id,
         };
-        console.log(timeEntry);
         await this.$store.dispatch("addTime", timeEntry).then(() => {
-          this.getEvents();
+          this.getEvents(this.storedLowRange, this.storedHighRange, true);
           this.dialog = false;
           this.newTime = {
             workOrder: null,
@@ -430,7 +460,6 @@ export default {
       if (this.$refs.form.validate()) {
         this.selectedOpen = false;
         this.currentlyEditing = null;
-        console.log(selectedEvent);
         let editedTime = {
           TimeData: [
             `${this.selectedEventTime.date}T${this.selectedEventTime.start}:00.000z`,
@@ -443,14 +472,14 @@ export default {
       } else {
         alert("Form Invalid");
       }
-      this.getEvents();
+      this.getEvents(this.storedLowRange, this.storedHighRange, true);
     },
 
     //deletes event from the database
     async deleteEvent(selectedEvent) {
       (this.selectedOpen = false),
         await this.$store.dispatch("deleteTime", selectedEvent).then(() => {
-          this.getEvents();
+          this.getEvents(this.storedLowRange, this.storedHighRange, true);
         });
     },
 
@@ -475,6 +504,12 @@ export default {
     updateRange({ start, end }) {
       this.start = start;
       this.end = end;
+      let lowRange = new Date(this.start.date);
+      let highRange = new Date(this.end.date);
+      lowRange.setMonth(lowRange.getMonth() - 1);
+      highRange.setMonth(highRange.getMonth() + 1);
+
+      this.getEvents(lowRange, highRange);
     },
 
     filterObject(item, Text) {

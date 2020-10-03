@@ -121,8 +121,12 @@ export default {
 
   methods: {
     async getData() {
-      this.team = await this.$store.dispatch("getEmployees");
-      this.jobs = await this.$store.dispatch("getAllActiveWorkOrders");
+      try {
+        this.team = await this.$store.dispatch("getEmployees");
+        this.jobs = await this.$store.dispatch("getAllActiveWorkOrders");
+      } catch (err) {
+        alert("problem connecting to server");
+      }
     },
     async editData() {
       await this.getData().then(() => {

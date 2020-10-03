@@ -23,26 +23,30 @@ export default new Vuex.Store({
   mutations: {},
   actions: {
     getEmployees: async (state) => {
-      let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all")
-        .then((response) => {
-          return response.data.data;
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      return data;
+      try {
+        let data = await axios
+          .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all")
+          .then((response) => {
+            return response.data.data;
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+        return data;
+      } catch (err) {}
     },
     async getCustomers() {
-      let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all")
-        .then((response) => {
-          return response.data.data;
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      return data;
+      try {
+        let data = await axios
+          .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all")
+          .then((response) => {
+            return response.data.data;
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+        return data;
+      } catch (err) {}
     },
     async getJobs() {
       let data = await axios
@@ -56,15 +60,19 @@ export default new Vuex.Store({
       return data;
     },
     async getAllActiveWorkOrders() {
-      let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/allActive")
-        .then((response) => {
-          return response.data.data;
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      return data;
+      try {
+        let data = await axios
+          .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/allActive")
+          .then((response) => {
+            return response.data.data;
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+        return data;
+      } catch (err) {
+        console.log(err);
+      }
     },
     async getAllWorkOrders() {
       let data = await axios

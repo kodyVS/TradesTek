@@ -134,18 +134,18 @@ export default {
       //Check for if there is a work order and employee selected
       try {
         if (this.workOrder._id && this.employee._id) {
-          //push info into the log
-          this.status.push(
-            `${this.employee.Name} Timed In at ${new Date()
-              .toISOString()
-              .substr(11, 8)} on ${new Date().toISOString().substr(0, 10)} into ${
-              this.workOrder.Name
-            }`
-          );
           //create timeStamp of current time
-          let timeData = new Date().toISOString();
-
-          //Send timestamp to the back end and create a time log
+          let timeData = new Date();
+          timeData.setHours(timeData.getHours() - 6);
+          console.log(timeData);
+          //push info into the log
+          // this.status.push(
+          //   `${this.employee.Name} Timed In at ${timeData.substr(11, 8)} on ${timeData.substr(
+          //     0,
+          //     10
+          //   )} into ${this.workOrder.Name}`
+          // );
+          // Send timestamp to the back end and create a time log
           const req = await axios
             .post(process.env.VUE_APP_API_URL + "/api/v1/time/timeIn", {
               WorkOrder: this.workOrder.Name,
@@ -182,7 +182,8 @@ export default {
           .substr(11, 8)} on ${new Date().toISOString().substr(0, 10)} from ${this.workOrder.Name}`
       );
       //Creates timestamp of when the time request finishes
-      let timeData = new Date().toISOString();
+      let timeData = new Date();
+      timeData.setHours(timeData.getHours() - 6);
       //sends data to the back end
       const req = await axios
         .post(process.env.VUE_APP_API_URL + "/api/v1/time/timeOut", {

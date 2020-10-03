@@ -283,13 +283,13 @@ export default {
       if (this.$store.state.itemInfo.Name) {
         this.workOrder.Job = this.$store.state.itemInfo;
         this.$store.state.itemInfo = null;
-        this.editBoolean = true;
+        this.editBoolean = false;
       }
       if (this.$store.state.employeeInfo) {
         console.log(this.workOrder);
         this.workOrder.Employees.push(this.$store.state.employeeInfo);
         this.$store.state.employeeInfo = "";
-        this.editBoolean = true;
+        this.editBoolean = false;
       }
     },
     async getJobs() {
