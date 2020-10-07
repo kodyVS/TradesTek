@@ -1,3 +1,7 @@
+<script>
+//! Currently not in use - Will delete in the f
+</script>
+
 <template>
   <div class="Search">
     <h1>Overview</h1>
@@ -50,14 +54,9 @@ export default {
       }
       console.log(item, queryText, itemText);
       return (
-        item.FullName.toLocaleLowerCase().indexOf(
-          queryText.toLocaleLowerCase()
-        ) > -1 ||
-        item.Phone.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) >
-          -1 ||
-        item.Company.toLocaleLowerCase().indexOf(
-          queryText.toLocaleLowerCase()
-        ) > -1
+        item.FullName.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1 ||
+        item.Phone.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1 ||
+        item.Company.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1
       );
     },
   },

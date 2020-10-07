@@ -157,7 +157,6 @@
                     large
                     color="success"
                     @click="
-                      dialog = !dialog;
                       readOnly = !readOnly;
                       saveItem(editedItem);
                     "
@@ -221,8 +220,9 @@ export default {
         align: "start",
         value: "FullName",
       },
-      { text: "Email", value: "Email", sortable: false },
       { text: "Phone", value: "Phone", sortable: false },
+      { text: "Email", value: "Email", sortable: false },
+
       { text: "Actions", value: "actions", sortable: false },
     ],
 
@@ -310,9 +310,8 @@ export default {
           Phone: item.Phone,
           Email: item.Email,
         })
-        .then(async (response) => {
+        .then(async () => {
           await this.getCustomers();
-          console.log(response.data.data.data);
         })
         .catch((err) => console.log(err, res));
     },

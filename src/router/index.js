@@ -10,7 +10,9 @@ import Jobs from "../views/Jobs.vue";
 import Test1 from "../views/Test1.vue";
 import SingleWorkOrder from "../views/WorkOrders/SingleWO.vue";
 import TimeManager from "../views/TimeManager.vue";
-import TimeSheets from "../views/TimeSheets.vue";
+import TimeSheets from "../views/timeSheets/TimeHome.vue";
+import TimeCalendar from "../views/timeSheets/TimeCalendar.vue";
+import TimeList from "../views/timeSheets/TimeList.vue";
 Vue.use(VueRouter);
 const routes = [
   {
@@ -59,6 +61,18 @@ const routes = [
     path: "/TimeSheets",
     name: "TimeSheets",
     component: TimeSheets,
+    children: [
+      {
+        path: "Calendar",
+        name: "TimeCalendar",
+        component: TimeCalendar,
+      },
+      {
+        path: "List",
+        name: "TimeList",
+        component: TimeList,
+      },
+    ],
   },
   {
     path: "*",

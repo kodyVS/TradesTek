@@ -23,19 +23,33 @@
             </v-card-title>
             <v-card-subtitle></v-card-subtitle>
             <v-card-text>
-              <h3>Customer: {{ workOrder.Job.ParentRef.FullName }}</h3>
-              <h3>Contact Name: {{ workOrder.Job.FirstName + " " + workOrder.Job.LastName }}</h3>
-              <h3>Email: {{ workOrder.Job.Email }}</h3>
-              <h3>Phone: {{ workOrder.Job.Phone }}</h3>
-              <h3>
-                Location:
-                {{
-                  `${workOrder.Job.BillAddress.Addr1 ? workOrder.Job.BillAddress.Addr1 : ""} ${
-                    workOrder.Job.BillAddress.City ? workOrder.Job.BillAddress.City : ""
-                  }`
-                }}
-              </h3>
-              <h3>Description: {{ workOrder.Description }}</h3>
+              <v-list class="pl-2" outlined>
+                <v-list-item-content>
+                  <v-list-item-title
+                    v-text="`Customer: ${workOrder.Job.ParentRef.FullName}`"
+                  ></v-list-item-title>
+                  <v-list-item-title
+                    v-text="
+                      `Contact Name: ${workOrder.Job.FirstName + ' ' + workOrder.Job.LastName}`
+                    "
+                  ></v-list-item-title>
+                </v-list-item-content>
+
+                <v-list-item-title v-text="`Email: ${workOrder.Job.Email}`"></v-list-item-title>
+                <v-list-item-title v-text="`Phone: ${workOrder.Job.Phone}`"></v-list-item-title>
+                <v-list-item-title
+                  >Address:
+                  <a
+                    :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString}`"
+                    >{{ getAddressString }}</a
+                  >
+                </v-list-item-title>
+
+                <v-list-item-title
+                  v-text="`Description: ${workOrder.Description}`"
+                ></v-list-item-title>
+              </v-list>
+
               <p></p>
             </v-card-text>
 
@@ -180,6 +194,13 @@ export default {
       });
       totalTime = Math.round((totalTime / 60 + Number.EPSILON) * 100) / 100;
       return totalTime;
+    },
+    getAddressString: function () {
+      return `${this.workOrder.Job.BillAddress.Addr1 ? this.workOrder.Job.BillAddress.Addr1 : ""} ${
+        this.workOrder.Job.BillAddress.City ? this.workOrder.Job.BillAddress.City : ""
+      } ${
+        this.workOrder.Job.BillAddress.PostalCode ? this.workOrder.Job.BillAddress.PostalCode : ""
+      }`;
     },
   },
   //at create call getWorkOrders

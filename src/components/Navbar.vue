@@ -1,4 +1,10 @@
+<script>
+//New Features
+//todo Make an option to pin the drawer the the side
+</script>
+
 <template>
+  <!-- Top Navigation app bar -->
   <nav>
     <v-app-bar text color="primary" src="../../public\Images\NavBar.png">
       <v-app-bar-nav-icon class="grey--text" @click="drawer = !drawer"></v-app-bar-nav-icon>
@@ -26,7 +32,7 @@
       </v-btn>
     </v-app-bar>
 
-    <!-- Drawer -->
+    <!-- Drawer side navigation -->
 
     <v-navigation-drawer v-model="drawer" app class="secondary" temporary>
       <v-layout column align-center>
@@ -41,7 +47,7 @@
         </v-flex>
       </v-layout>
 
-      <!-- Lists -->
+      <!-- Lists on drawer -->
 
       <!-- Drop Down List -->
       <v-list class="mt-2">
@@ -86,7 +92,10 @@ export default {
   components: { Popup },
   data() {
     return {
+      //true or false for if the drawer is open
       drawer: false,
+
+      //Links for the drawer
       links: [
         { icon: "mdi-account-box", text: "Job Sites", route: "/Jobs" },
         { icon: "mdi-account-box", text: "Customers", route: "/Customers" },
@@ -95,13 +104,15 @@ export default {
           text: "TimeManager",
           route: "/TimeManager",
         },
-        { icon: "mdi-calendar", text: "Timesheets", route: "/TimeSheets" },
+        { icon: "mdi-calendar", text: "Timesheets", route: "/TimeSheets/Calendar" },
         { icon: "mdi-view-dashboard", text: "Dashboard", route: "/" },
 
         { icon: "mdi-account", text: "Team", route: "/team" },
         { icon: "mdi-folder", text: "Projects", route: "/projects" },
         { icon: "mdi-account", text: "Test", route: "/test1" },
       ],
+
+      //Links for the dropdown folder which is set to be open atm
       dropDownLinks: [
         {
           icon: "mdi-folder-multiple-outline",

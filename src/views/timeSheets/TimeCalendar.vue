@@ -12,9 +12,8 @@
 //Specific
 //todo showEvents() research a bit more how this works
 </script>
-
 <template>
-  <v-row class="fill-height">
+  <v-row justify="center">
     <v-col cols="4">
       <v-autocomplete
         v-model.lazy="employee"
@@ -23,15 +22,13 @@
         outlined
         hide-no-data
         filled
-        rounded
         label="Employee"
         return-object
         item-text="Name"
-        @change="getEvents(storedLowRange, storedHighRange, true)"
         class="pt-5 pl-4"
+        @change="getEvents(storedLowRange, storedHighRange, true)"
       ></v-autocomplete>
     </v-col>
-
     <v-col cols="12">
       <v-sheet>
         <v-toolbar flat color="white">
@@ -178,9 +175,9 @@
                 </p>
               </v-form>
               <v-form v-else ref="form">
-                <v-text-field dense v-model="selectedEventTime.start" type="time"></v-text-field>
-                <v-text-field dense v-model="selectedEventTime.end" type="time"></v-text-field>
-                <v-text-field dense v-model="selectedEventTime.date" type="date"></v-text-field>
+                <v-text-field v-model="selectedEventTime.start" dense type="time"></v-text-field>
+                <v-text-field v-model="selectedEventTime.end" dense type="time"></v-text-field>
+                <v-text-field v-model="selectedEventTime.date" dense type="date"></v-text-field>
                 <v-textarea
                   v-model="selectedEvent.description"
                   type="text"

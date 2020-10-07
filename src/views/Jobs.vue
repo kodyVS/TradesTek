@@ -238,8 +238,9 @@ export default {
         text: "Customer",
         value: "Customer",
       },
-      { text: "Email", value: "Email", sortable: false },
       { text: "Phone", value: "Phone", sortable: false },
+      { text: "Email", value: "Email", sortable: false },
+
       { text: "Actions", value: "actions", sortable: false },
     ],
 

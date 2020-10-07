@@ -1,5 +1,8 @@
 <script>
+//! FIX BROKEN WORK ORDER SYNCING
 //todo rename this to something else
+//todo When completing work orders Add complete to all times associcated with the work order
+//todo Add a method to resync workorders after being completed
 </script>
 
 <template>
@@ -109,7 +112,7 @@
                   <v-text-field
                     disabled
                     :value="formattedDate"
-                    label="Start Date"
+                    label="Date"
                     prepend-icon="mdi-calendar-range"
                     v-on="on"
                   ></v-text-field>
@@ -318,7 +321,6 @@ export default {
             CustomerRef: {
               FullName: jobFullName,
             },
-            Synced: false,
           })
           .then(async () => {
             this.$router.replace(`WorkOrders`);
@@ -339,11 +341,12 @@ export default {
             Complete: this.workOrder.Complete,
           })
           .then(async () => {
-            if (this.workOrder.Complete === true && this.workOrder.Synced === false) {
+            if (this.workOrder.Complete === true) {
               await axios
                 .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/complete", {
                   WorkOrderID: this.workOrder._id,
                   Complete: this.workOrder.Complete,
+                  //! look into this its broken ATM
                   Synced: false,
                 })
                 .catch((err) => console.log(err, req));

@@ -1,3 +1,7 @@
+<script>
+//! Not Used - Will delete
+</script>
+
 <template>
   <div class="text-center">
     <v-dialog v-model="dialog" width="500">
@@ -5,9 +9,7 @@
         <v-btn class="success" v-on="on">New Work Order</v-btn>
       </template>
       <v-card>
-        <v-card-title class="headline grey lighten-2" primary-title
-          >New Work order</v-card-title
-        >
+        <v-card-title class="headline grey lighten-2" primary-title>New Work order</v-card-title>
         <v-form ref="form" class="px-3">
           <v-text-field
             v-model="title"
@@ -34,9 +36,7 @@
             <v-date-picker v-model="date"></v-date-picker>
           </v-menu>
           <!-- <v-col> -->
-          <v-btn text class="success px-3 mt-0" @click="submit"
-            >Add project</v-btn
-          >
+          <v-btn text class="success px-3 mt-0" @click="submit">Add project</v-btn>
           <!-- </v-col> -->
         </v-form>
       </v-card>
