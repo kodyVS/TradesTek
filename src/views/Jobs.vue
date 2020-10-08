@@ -1,3 +1,7 @@
+<script>
+//todo Figure out if I want to option to fill the form out with customer data when I select a customer
+</script>
+
 <template>
   <div>
     <v-snackbar v-model="createdAlert" color="" class="success--text" top
@@ -168,11 +172,7 @@
                     v-if="!readOnly && !newJobBoolean"
                     large
                     color="success"
-                    @click="
-                      dialog = !dialog;
-                      readOnly = !readOnly;
-                      saveItem(editedItem);
-                    "
+                    @click="editJob(editedItem)"
                     >Save Changes</v-btn
                   >
                   <v-btn
@@ -193,6 +193,13 @@
                     "
                     >cancel</v-btn
                   >
+                  <!--Loading circle during Requests -->
+                  <v-progress-circular
+                    v-if="isLoading"
+                    indeterminate
+                    color="primary"
+                    class="ml-4"
+                  ></v-progress-circular>
                 </v-container>
               </v-form>
             </v-card>
@@ -214,6 +221,7 @@
 import axios from "axios";
 export default {
   data: () => ({
+    isLoading: false,
     //Truth for if the dialog is open
     newJobBoolean: true,
     dialog: false,
@@ -349,29 +357,40 @@ export default {
       this.customerList = this.customerList.map((customer) => {
         return customer.FullName;
       });
+      console.log(this.customerList);
     },
 
     //save changes to a job to the database
-    async saveItem(item) {
-      const res = await axios
-        .post(process.env.VUE_APP_API_URL + "/api/v1/job/edit", {
-          ListID: item.ListID,
-          FullName: item.FullName,
-          EditSequence: item.EditSequence,
-          Name: item.Name,
-          ParentRef: item.ParentRef,
-          FirstName: item.FirstName,
-          LastName: item.LastName,
-          BillAddress: item.BillAddress,
-          Phone: item.Phone,
-          Email: item.Email,
-          Synced: false,
-        })
-        .then(async (response) => {
-          await this.getJobs();
-          console.log(response.data.data.data);
-        })
-        .catch((err) => console.log(err, res));
+    async editJob(item) {
+      if (this.$refs.form.validate()) {
+        this.isLoading = true;
+        await axios
+          .post(process.env.VUE_APP_API_URL + "/api/v1/job/edit", {
+            ListID: item.ListID,
+            FullName: item.FullName,
+            EditSequence: item.EditSequence,
+            Name: item.Name,
+            ParentRef: item.ParentRef,
+            FirstName: item.FirstName,
+            LastName: item.LastName,
+            BillAddress: item.BillAddress,
+            Phone: item.Phone,
+            Email: item.Email,
+          })
+          .then(async () => {
+            this.readOnly = !this.readOnly;
+            await this.getJobs();
+            this.isLoading = false;
+          })
+          .catch((error) => {
+            if (error.response) {
+              alert(error.response.data.message);
+            } else {
+              alert("Something went wrong! Check Network Connection");
+            }
+            this.isLoading = false;
+          });
+      }
     },
 
     //This will route someone to the create work order page with the job field filled out
@@ -387,11 +406,12 @@ export default {
     },
     async createJob(item) {
       if (this.$refs.form.validate()) {
+        this.isLoading = true;
         item.FullName = `${item.Customer}:${item.Name}`;
         item.ParentRef = {
           FullName: item.Customer,
         };
-        const res = await axios
+        await axios
           .post(process.env.VUE_APP_API_URL + "/api/v1/job/add", {
             Name: item.Name,
             FullName: item.FullName,
@@ -402,15 +422,22 @@ export default {
             BillAddress: item.BillAddress,
             Phone: item.Phone,
             Email: item.Email,
-            Synced: false,
           })
           .then(async () => {
             await this.getJobs();
             this.createdAlert = true;
             this.readOnly = !this.readOnly;
             this.newJobBoolean = false;
+            this.isLoading = false;
           })
-          .catch((err) => console.log(err, res));
+          .catch((error) => {
+            if (error.response) {
+              alert(error.response.data.message);
+            } else {
+              alert("Something went wrong! Check Network Connection");
+            }
+            this.isLoading = false;
+          });
       }
     },
   },

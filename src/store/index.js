@@ -2,7 +2,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
-
+import router from "../router";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
@@ -12,6 +12,7 @@ export default new Vuex.Store({
     itemInfo: {},
     item: null,
     employeeInfo: "",
+    error: null,
   },
   getters: {
     // getCustomerNames: (state) => {
@@ -67,12 +68,10 @@ export default new Vuex.Store({
             return response.data.data;
           })
           .catch(function (error) {
-            console.log(error);
+            throw error;
           });
         return data;
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     },
     async getAllWorkOrders() {
       let data = await axios
@@ -80,9 +79,7 @@ export default new Vuex.Store({
         .then((response) => {
           return response.data.data;
         })
-        .catch(function (error) {
-          console.log(error);
-        });
+        .catch(function (error) {});
       return data;
     },
     async getWorkOrder(context, param) {
@@ -91,8 +88,15 @@ export default new Vuex.Store({
         .then((response) => {
           return response.data.data.data;
         })
-        .catch(function (error) {
-          console.log(error);
+        .catch((error) => {
+          if (error.response) {
+            alert(error.response.data.message);
+            router.go(-1);
+            this.state.error = error.response.data;
+          } else {
+            alert("Something went wrong!");
+            router.go(-1);
+          }
         });
       return data;
     },

@@ -464,12 +464,14 @@ export default {
       this.getEvents(this.storedLowRange, this.storedHighRange, true);
     },
 
+    //fix error on calendar month when deleting the event. selectedEvent is wrong.
     //deletes event from the database
     async deleteEvent(selectedEvent) {
-      (this.selectedOpen = false),
-        await this.$store.dispatch("deleteTime", selectedEvent).then(() => {
-          this.getEvents(this.storedLowRange, this.storedHighRange, true);
-        });
+      this.selectedOpen = false;
+      await this.$store.dispatch("deleteTime", selectedEvent).then(() => {
+        this.getEvents(this.storedLowRange, this.storedHighRange, true);
+        console.log(this.selectedElement);
+      });
     },
 
     //Shows a specific event when clicked

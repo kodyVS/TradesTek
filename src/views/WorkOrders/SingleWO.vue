@@ -211,7 +211,6 @@ export default {
     //Call get work order from the database
     async getWorkOrder() {
       this.workOrder = await this.$store.dispatch("getWorkOrder", this.$route.params.id);
-      console.log(this.workOrder);
     },
 
     //send work order to the edit/create work order function

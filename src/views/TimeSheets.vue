@@ -1,4 +1,4 @@
-<script>
+<!--<script>
 //Additions
 //todo Add TimeSheet view to add a basic non-calendar view
 //todo Change Color based off completed or not
@@ -408,7 +408,6 @@ export default {
     },
 
     // Adds a time entry
-    //todo Add be able to create and send time to the database
     async addTimeStamp() {
       if (this.newTime.workOrder && this.newTime.start && this.newTime.end) {
         let time1 = `${this.newTime.date}T${this.newTime.start}:00.000z`;
@@ -467,12 +466,16 @@ export default {
       this.getEvents(this.storedLowRange, this.storedHighRange, true);
     },
 
-    //deletes event from the database
+    //fix when deleting multiple times from month view it screws up the selected event position
+    // deletes event from the database
     async deleteEvent(selectedEvent) {
-      (this.selectedOpen = false),
-        await this.$store.dispatch("deleteTime", selectedEvent).then(() => {
-          this.getEvents(this.storedLowRange, this.storedHighRange, true);
-        });
+      this.selectedOpen = false;
+      console.log("hello");
+      await this.$store.dispatch("deleteTime", selectedEvent).then(() => {
+        this.getEvents(this.storedLowRange, this.storedHighRange, true);
+        console.log(this.selectedEvent);
+        console.log("hello");
+      });
     },
 
     //Shows a specific event when clicked
@@ -521,3 +524,4 @@ export default {
   },
 };
 </script>
+-->

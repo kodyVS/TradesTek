@@ -7,7 +7,6 @@
       <v-icon color="green">mdi-check</v-icon>
       <span> Customer has been successfully created </span>
     </v-snackbar>
-
     <!-- Search function for the table -->
     <v-container mb-4>
       <v-row justify="center">
@@ -62,9 +61,10 @@
                         outlined
                         :readonly="newCustomerBoolean"
                         dense
-                        :rules="fullNameRules"
+                        :rules="nameRules"
                       ></v-text-field>
                     </v-col>
+
                     <!-- Name of Contact -->
                     <v-col cols="12" md="2">
                       <v-text-field
@@ -86,6 +86,7 @@
                         dense
                       ></v-text-field>
                     </v-col>
+
                     <!-- Phone Number -->
                     <v-col cols="12" md="2">
                       <v-text-field
@@ -152,16 +153,15 @@
                       >Edit Customer</v-btn
                     >
                   </v-layout>
+
                   <v-btn
                     v-if="!readOnly && newCustomerBoolean"
                     large
                     color="success"
-                    @click="
-                      readOnly = !readOnly;
-                      saveItem(editedItem);
-                    "
+                    @click="editCustomer(editedItem)"
                     >Save Changes</v-btn
                   >
+
                   <v-btn
                     v-show="newCustomerBoolean === false"
                     class="mr-2"
@@ -180,6 +180,13 @@
                     "
                     >cancel</v-btn
                   >
+                  <!--Loading circle during Requests -->
+                  <v-progress-circular
+                    v-if="isLoading"
+                    indeterminate
+                    color="primary"
+                    class="ml-4"
+                  ></v-progress-circular>
                 </v-container>
               </v-form>
             </v-card>
@@ -204,9 +211,10 @@ export default {
     //Truth for if the dialog is
     newCustomerBoolean: true,
     dialog: false,
+    isLoading: false,
 
     //rules
-    fullNameRules: [(v) => !!v || "Name is required"],
+    nameRules: [(v) => !!v || "Name is required"],
     //Truth for if editting is turned on
     readOnly: true,
 
@@ -262,7 +270,6 @@ export default {
   //When the page is created call the getCustomer method
   created() {
     this.getCustomers();
-    this.clearEdit();
   },
   methods: {
     //Clear the edit fields when this is called
@@ -296,42 +303,55 @@ export default {
     },
 
     //save changes to a customer to the database
-    async saveItem(item) {
-      const res = await axios
-        .post(process.env.VUE_APP_API_URL + "/api/v1/customer/edit", {
-          ListID: item.ListID,
-          EditSequence: item.EditSequence,
-          Name: item.Name,
-          FullName: item.FullName,
-          CompanyName: item.CompanyName,
-          FirstName: item.FirstName,
-          LastName: item.LastName,
-          BillAddress: item.BillAddress,
-          Phone: item.Phone,
-          Email: item.Email,
-        })
-        .then(async () => {
-          await this.getCustomers();
-        })
-        .catch((err) => console.log(err, res));
+    //todo Move Into Store
+    async editCustomer(item) {
+      if (this.$refs.form.validate()) {
+        this.isLoading = true;
+        await axios
+          .post(process.env.VUE_APP_API_URL + "/api/v1/customer/edit", {
+            ListID: item.ListID,
+            EditSequence: item.EditSequence,
+            Name: item.Name,
+            FullName: item.FullName,
+            CompanyName: item.CompanyName,
+            FirstName: item.FirstName,
+            LastName: item.LastName,
+            BillAddress: item.BillAddress,
+            Phone: item.Phone,
+            Email: item.Email,
+          })
+          .then(async () => {
+            await this.getCustomers();
+            this.isLoading = false;
+            this.readOnly = !this.readOnly;
+          })
+          .catch((error) => {
+            if (error.response) {
+              alert(error.response.data.message);
+            } else {
+              alert("Something went wrong! Check Network Connection");
+            }
+            this.isLoading = false;
+          });
+      }
     },
 
     //This will route someone to the create work order page with the customer field filled out
     createJob(item) {
       this.$store.state.newJobData = item;
       this.$router.push("Jobs");
-      console.log(this.$store.state.newJobData);
     },
     newCustomer() {
       this.readOnly = false;
       this.newCustomerBoolean = false;
       this.clearEdit();
     },
+    //todo Move into Store
     async createCustomer(item) {
       if (this.$refs.form.validate()) {
-        //this.dialog = !this.dialog;
-        //this.readOnly = !this.readOnly;
-        const res = await axios
+        this.isLoading = true;
+        //due to quickbooks formatting Name and FullName have to be the same
+        await axios
           .post(process.env.VUE_APP_API_URL + "/api/v1/customer/add", {
             Name: item.FullName,
             FullName: item.FullName,
@@ -341,15 +361,22 @@ export default {
             BillAddress: item.BillAddress,
             Phone: item.Phone,
             Email: item.Email,
-            Synced: false,
           })
           .then(async () => {
             await this.getCustomers();
             this.readOnly = !this.readOnly;
             this.createdAlert = true;
             this.newCustomerBoolean = true;
+            this.isLoading = false;
           })
-          .catch((err) => console.log(err, res));
+          .catch((error) => {
+            if (error.response) {
+              alert(error.response.data.message);
+            } else {
+              alert("Something went wrong! Check Network Connection");
+            }
+            this.isLoading = false;
+          });
       }
     },
   },
