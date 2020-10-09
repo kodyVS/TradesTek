@@ -1,5 +1,5 @@
 <script>
-//todo Add Shared data between table and list to allow for less ajax requests
+//todo Add Shared data between table and list to send less requests
 </script>
 <template>
   <div>
@@ -13,7 +13,6 @@
         </v-col>
       </v-row>
     </v-flex>
-
     <router-view></router-view>
   </div>
 </template>

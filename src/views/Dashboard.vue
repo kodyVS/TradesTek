@@ -1,3 +1,9 @@
+<script>
+//! Not Built Yet
+//todo build the dashboard
+//todo add a v-calendar that displays all employees single days side by side so the manager can see what everyone is working on and which work orders are on their phone
+</script>
+
 <template>
   <div class="home">
     <h1>Dashboard</h1>

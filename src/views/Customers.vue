@@ -213,10 +213,11 @@ export default {
     dialog: false,
     isLoading: false,
 
-    //rules
-    nameRules: [(v) => !!v || "Name is required"],
     //Truth for if editting is turned on
     readOnly: true,
+
+    //rules
+    nameRules: [(v) => !!v || "Name is required"],
 
     //V-model for searching
     search: "",

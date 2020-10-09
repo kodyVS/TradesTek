@@ -1,5 +1,5 @@
 <script>
-//! Currently not in use - Will delete in the f
+//! Currently not in use - Will delete in the future
 </script>
 
 <template>

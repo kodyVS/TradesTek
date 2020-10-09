@@ -123,6 +123,7 @@ export default {
         item.CustomerRef.FullName.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1
       );
     },
+    //filter for only showing employees that are assigned to that work order
     filterEmployees() {
       this.employee = {};
       this.filteredEmployees = [];
@@ -171,7 +172,7 @@ export default {
                 this.employee.TimedIn = true;
               });
             })
-            .catch((err) => console.log(err, req));
+            .catch((err) => alert(err));
         } else {
           //create an alert that tells the user to pick a work order and employee
           alert("pick a work order and employee");

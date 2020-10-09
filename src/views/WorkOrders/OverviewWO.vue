@@ -19,8 +19,8 @@
     <!-- Table  -->
     <v-btn-toggle v-model="buttonToggle" color="blue darken-3">
       <v-btn small text @click="filterItems(false)">Display Active WO's</v-btn>
-      <v-btn small text @click="getAllJobs(true)">Display Complete WO's</v-btn>
-      <v-btn small text @click="getAllJobs(null)">Display All</v-btn>
+      <v-btn small text @click="getAllWorkOrders(true)">Display Complete WO's</v-btn>
+      <v-btn small text @click="getAllWorkOrders(null)">Display All</v-btn>
     </v-btn-toggle>
 
     <v-data-table
@@ -36,12 +36,12 @@
           <v-toolbar-title class="white--text"> Work Order List</v-toolbar-title>
           <v-spacer></v-spacer>
 
-          <v-btn color="primary" @click="newJob()">New Work Order</v-btn>
+          <v-btn color="primary" @click="newWorkOrder()">New Work Order</v-btn>
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success ma-1" @click="ViewItem(item)">View</v-btn>
-        <v-btn small class="primary ml-1 ma-1" @click="createWO(item)">Edit</v-btn>
+        <v-btn small class="primary ml-1 ma-1" @click="editWorkOrder(item)">Edit</v-btn>
       </template>
 
       <template v-slot:item.Description="{ item }">
@@ -130,18 +130,18 @@ export default {
     //Watching if the dialog is open and when it closes. If it closes set readOnly back to true
   },
 
-  //When the page is created call the getJob method
+  //When the page is created call the getactiveworkorders method
   created() {
-    this.getJobs();
+    this.getActiveWorkOrders();
   },
   methods: {
-    //Will get Job from the Db
-    async getJobs() {
+    //Will get Work Orders from the Db
+    async getActiveWorkOrders() {
       this.items = await this.$store.dispatch("getAllActiveWorkOrders");
       this.filteredItems = [...this.items];
     },
 
-    async getAllJobs(boolean) {
+    async getAllWorkOrders(boolean) {
       if (!this.completeWO) {
         this.items = await this.$store.dispatch("getAllWorkOrders");
         this.completeWO = true;
@@ -149,20 +149,23 @@ export default {
       }
       this.filterItems(boolean);
     },
-    //Used to view a pop up
+    //Used to route to the individual work orders
     ViewItem(item) {
       this.$router.push("WorkOrders/" + item._id);
     },
 
-    //This will route someone to the create work order page with the Job field filled out
-    createWO(item) {
+    //This will route someone to the create work order page with the workOrder info filled out
+    editWorkOrder(item) {
       this.$store.state.item = item;
       this.$store.state.item.Job.Customer = item.Job.ParentRef.FullName;
       this.$router.push("createWO");
     },
-    newJob() {
+    //creates a new WO
+    newWorkOrder() {
       this.$router.push("CreateWO");
     },
+
+    //Custom filter for which work orders to display
     filterItems(boolean) {
       if (boolean) {
         return (this.filteredItems = this.items.filter((i) => {

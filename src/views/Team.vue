@@ -1,3 +1,7 @@
+<script>
+//todo Rename to employees
+//todo fix naming in this file. I switched around a few names during the build so the naming convention might be confusing
+</script>
 <template>
   <div class="team">
     <h1>Team</h1>
@@ -49,35 +53,35 @@
                   <v-icon small left color="white">mdi-folder</v-icon>
                   <span class="white--text">Create WO</span>
                 </v-btn>
-                <v-btn small @click="activeJobsButton(index, person)">
-                  Active Jobs
+                <v-btn small @click="activeWOButton(index, person)">
+                  Active Work Orders
                   <v-icon>{{
                     selectedIndex === index ? "mdi-chevron-up" : "mdi-chevron-down"
                   }}</v-icon>
                 </v-btn>
-                <v-btn
+                <!--<v-btn
                   v-if="readOnly !== index"
                   disabled
                   small
                   class="ml-2 warning"
                   @click="readOnly = index"
                   >Edit</v-btn
-                >
+                > -->
                 <v-btn v-if="readOnly === index" small class="ml-2 success" @click="readOnly = true"
                   >Save</v-btn
                 >
               </v-card-actions>
               <v-expand-transition>
                 <div v-if="index === selectedIndex">
-                  <!--<v-card-text v-for="job in jobsFiltered" :key="job.FullName">
+                  <!--<v-card-text v-for="job in workOrdersFiltered" :key="job.FullName">
                   {{ job.FullName }}
                 </v-card-text>  -->
                   <v-list>
                     <v-subheader>Work Orders</v-subheader>
-                    <v-list-item v-for="job in person.Jobs" :key="job.FullName" class="ml-4">
+                    <v-list-item v-for="WO in person.workOrders" :key="WO.FullName" class="ml-4">
                       <v-list-item-content>
-                        <v-list-item-title v-text="job.Name"></v-list-item-title>
-                        <v-list-item-subtitle v-text="job.CustomerRef.FullName">
+                        <v-list-item-title v-text="WO.Name"></v-list-item-title>
+                        <v-list-item-subtitle v-text="WO.CustomerRef.FullName">
                         </v-list-item-subtitle>
                       </v-list-item-content>
                     </v-list-item>
@@ -104,8 +108,8 @@ export default {
       search: "",
       selectedIndex: null,
       readOnly: true,
-      jobs: [],
-      jobsFiltered: [],
+      workOrders: [],
+      workOrdersFiltered: [],
     };
   },
   computed: {
@@ -123,7 +127,7 @@ export default {
     async getData() {
       try {
         this.team = await this.$store.dispatch("getEmployees");
-        this.jobs = await this.$store.dispatch("getAllActiveWorkOrders");
+        this.workOrders = await this.$store.dispatch("getAllActiveWorkOrders");
       } catch (err) {
         alert("problem connecting to server");
       }
@@ -131,16 +135,17 @@ export default {
     async editData() {
       await this.getData().then(() => {
         this.team.map((employee) => {
-          employee.Jobs = this.jobs.filter((job) => job.Employees.indexOf(employee.Name) > -1);
+          employee.workOrders = this.workOrders.filter(
+            (WO) => WO.Employees.indexOf(employee.Name) > -1
+          );
         });
       });
     },
-    async activeJobsButton(index, person) {
-      this.jobsFiltered = [];
-      if (this.jobs.length < 1) {
-        await this.getJobs();
-      }
-      await this.jobsFilter(person).then(() => {
+
+    //Shows active work Orders
+    async activeWOButton(index, person) {
+      this.workOrdersFiltered = [];
+      await this.workOrdersFilter(person).then(() => {
         this.selectedIndex === index ? (this.selectedIndex = null) : (this.selectedIndex = index);
       });
     },
@@ -152,8 +157,10 @@ export default {
       console.log(this.$store.state.employeeInfo);
     },
 
-    async jobsFilter(person) {
-      this.jobsFiltered = await this.jobs.filter((job) => job.Employees.indexOf(person.Name) > -1);
+    async workOrdersFilter(person) {
+      this.workOrdersFiltered = await this.workOrders.filter(
+        (job) => job.Employees.indexOf(person.Name) > -1
+      );
     },
     addWO() {
       this.$router.push("WorkOrders");

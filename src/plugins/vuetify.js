@@ -1,6 +1,9 @@
 import Vue from "vue";
 import Vuetify from "vuetify/lib";
 Vue.use(Vuetify, {});
+//Setting theme colors.
+
+//todo add more colors and options for changing the colors
 export default new Vuetify({
   iconfont: "md",
   theme: {

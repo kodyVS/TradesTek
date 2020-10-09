@@ -15,6 +15,7 @@
 <template>
   <v-row justify="center">
     <v-col cols="4">
+      <!-- Employee search that returns the entire employee object -->
       <v-autocomplete
         v-model.lazy="employee"
         :items="employees"
@@ -31,6 +32,7 @@
     </v-col>
     <v-col cols="12">
       <v-sheet>
+        <!-- Top Bar of calendar -->
         <v-toolbar flat color="white">
           <v-btn color="primary" dark @click="showNewTimeDialog()"> New Time </v-btn>
           <v-btn outlined class="mr-4" @click="focus = today"> Today </v-btn>
@@ -52,6 +54,7 @@
         </v-toolbar>
       </v-sheet>
 
+      <!-- Dialog for creating a work order -->
       <v-dialog v-model="dialog" max-width="500">
         <v-card>
           <v-container class="px-12">
@@ -73,7 +76,9 @@
                     hint="Only shows active work orders"
                     persistent-hint
                     class="mb-2"
-                    ><template v-slot:item="data">
+                  >
+                    <!-- Template for the work order dropdown list -->
+                    <template v-slot:item="data">
                       <v-list-item-content>
                         <v-list-item-title>{{ data.item.Name }}</v-list-item-title>
                         <v-list-item-subtitle>{{
@@ -130,6 +135,7 @@
         </v-card>
       </v-dialog>
       <v-sheet>
+        <!-- Code for calendar -->
         <v-calendar
           ref="calendar"
           v-model="focus"
@@ -156,6 +162,7 @@
           :activator="selectedElement"
           offset-x
         >
+          <!-- Card that pops up when you click on an event -->
           <v-card color="grey lighten-4" :width="350" flat>
             <v-toolbar :color="selectedEvent.color" dark>
               <v-btn icon @click="deleteEvent(selectedEvent)">
@@ -222,9 +229,11 @@
 <script>
 export default {
   data: () => ({
+    //The stored Low range and high range for sending a filter request
     storedLowRange: null,
     storedHighRange: null,
 
+    //The time of a selected event
     selectedEventTime: {
       date: null,
       start: null,
@@ -234,23 +243,19 @@ export default {
     //Sets the default calendar view to day week or month (0,1,2)
     calendarView: 2,
     type: "month",
-
-    //For loading in employees and having a selected employee to show times for
-    //When this employee is selected it will send a request to the back end to show the employee's times
-    employee: {},
-    employees: [],
-    workOrders: [],
-    //holds the value of today's date
-    today: new Date().toISOString().substr(0, 10),
-    focus: new Date().toISOString().substr(0, 10),
-
-    //holds the value of the calendar view
-
     typeToLabel: {
       month: "Month",
       week: "Week",
       day: "Day",
     },
+    //For loading in employees and having a selected employee to show times for
+    //When this employee is selected it will send a request to the back end to show the employee's times
+    employee: {},
+    employees: [],
+    workOrders: [],
+    //holds the value of today's date //todo make sure that this works for early times/other time zones as isoString might change the date
+    today: new Date().toISOString().substr(0, 10),
+    focus: new Date().toISOString().substr(0, 10),
 
     //New time form information
     newTime: {
@@ -328,7 +333,6 @@ export default {
     },
 
     //gets events when then employee is selected. Sends a request to the database that will filter the times
-    //todo getEvents() Filter the times based off month as well and sync 3 months of data on each request
     async getEvents(lowRange, highRange, boolean) {
       let calendarDateStart = new Date(this.start.date);
       let calendarDateEnd = new Date(this.end.date);
@@ -405,7 +409,6 @@ export default {
     },
 
     // Adds a time entry
-    //todo Add be able to create and send time to the database
     async addTimeStamp() {
       if (this.newTime.workOrder && this.newTime.start && this.newTime.end) {
         let time1 = `${this.newTime.date}T${this.newTime.start}:00.000z`;
@@ -475,7 +478,7 @@ export default {
     },
 
     //Shows a specific event when clicked
-    //todo showEvents() reaseach a bit more how this works ( I stole this code )
+    //todo showEvents() reaseach a bit more how this works ( I stole most of this function )
     showEvent({ nativeEvent, event }) {
       this.currentlyEditing = false;
       const open = () => {
@@ -505,6 +508,7 @@ export default {
       this.getEvents(lowRange, highRange);
     },
 
+    //Custom filter for filtering the employee search function
     filterObject(item, Text) {
       return (
         item.Name.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1 ||

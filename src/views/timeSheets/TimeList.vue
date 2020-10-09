@@ -1,6 +1,9 @@
 <script>
+//Recently made this, still needs a lot of work
+
 //Additions
 //todo show all times on the day instead of having multiple days
+//fix issue with times not showing up on a specific date
 </script>
 <template>
   <v-container>
@@ -8,6 +11,7 @@
       <v-flex xs12 md12>
         <v-row justify="center">
           <v-col cols="3">
+            <!-- Employee search -->
             <v-autocomplete
               v-model.lazy="employee"
               :items="employees"
@@ -21,6 +25,8 @@
               @change="getTimes()"
             ></v-autocomplete>
           </v-col>
+
+          <!-- Range of dates selected -->
           <v-col cols="3">
             <v-combobox
               v-model="dateRange"
@@ -50,6 +56,8 @@
         </v-row>
       </v-flex>
     </v-card>
+
+    <!-- Time Sheet created for range of dates selected -->
     <v-card v-if="events.length > 0" class="mt-4">
       <v-card-title
         v-text="` ${employee.Name} Timesheet From ${lowRange} until ${highRange}`"
@@ -83,12 +91,17 @@
 export default {
   data() {
     return {
+      //Events are time data
       events: "",
       employees: [],
       employee: {},
+
+      //Time ranges that are sent tot he back end
       lowRange: null,
       highRange: null,
       dateRange: { Name: "Bi-weekly", Value: 2 * 7 * 24 * 60 * 60 * 1000 },
+
+      //used in update dates
       dateRanges: [
         { Name: "Day", Value: 24 * 60 * 60 * 1000 },
         { Name: "Weekly", Value: 7 * 24 * 60 * 60 * 1000 },
@@ -110,15 +123,18 @@ export default {
   },
 
   methods: {
+    //Sets the low side of the dates selected
     setLowDate() {
       let startDate = new Date();
       startDate.setDate(startDate.getDate() - 14);
       this.lowRange = startDate.toISOString().substr(0, 10);
     },
-
+    //gets the employees
     async getEmployees() {
       this.employees = await this.$store.dispatch("getEmployees");
     },
+
+    //Gets the filtered time data
     async getTimes() {
       this.updateDates();
       try {
@@ -140,6 +156,7 @@ export default {
               });
             }
           });
+          //Sorts by date
           events.sort(function (a, b) {
             return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
           });
@@ -150,10 +167,12 @@ export default {
         console.log(err);
       }
     },
+    //Updates date
     updateDates() {
       let modifiedDate = new Date(this.lowRange).getTime() + this.dateRange.Value;
       this.highRange = new Date(modifiedDate).toISOString().substr(0, 10);
     },
+    //Displays the time
     timeDisplay(event) {
       return `${Math.round(event.quantity / 60 + Number.EPSILON)} Hrs ${
         event.quantity - 60 * Math.floor(event.quantity / 60 + Number.EPSILON)

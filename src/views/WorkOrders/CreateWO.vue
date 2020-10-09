@@ -1,5 +1,4 @@
 <script>
-//! FIX BROKEN WORK ORDER SYNCING
 //todo rename this to something else
 //todo When completing work orders Add complete to all times associcated with the work order
 //todo Add a method to resync workorders after being completed
@@ -11,6 +10,7 @@
     <v-card class="mt-8">
       <v-card-title>{{ workOrder.Name }}</v-card-title>
       <v-container mt-2>
+        <!-- Form for the creation -->
         <v-form ref="form" class="">
           <v-row>
             <v-col cols="12" md="4">
@@ -104,7 +104,7 @@
               ></v-text-field>
             </v-col>
 
-            <!-- Date Picker (Need to figure out back end storage for dates) -->
+            <!-- Date Picker //! Not used yet -->
 
             <v-col cols="12" md="3">
               <v-menu>
@@ -175,10 +175,10 @@
             prepend-icon="mdi-pencil"
           ></v-textarea>
           <!-- <v-col> -->
-          <v-btn v-if="!editBoolean" text class="success px-3 mt-0" @click="submit"
+          <v-btn v-if="!editBoolean" text class="success px-3 mt-0" @click="createWorkOrder"
             >Create new WO</v-btn
           >
-          <v-btn v-else text class="success px-3 mt-0" @click="editSubmit">Save Changes</v-btn>
+          <v-btn v-else text class="success px-3 mt-0" @click="editWorkOrder">Save Changes</v-btn>
           <v-btn text class="red white--text px-3 mt-0" @click="$router.go(-1)">Cancel</v-btn>
           <v-switch
             v-model="workOrder.Complete"
@@ -233,9 +233,12 @@ export default {
     };
   },
   computed: {
+    //For date picker which is currently disabled
     formattedDate() {
       return this.date ? moment(this.date).format("Do MMMM YYYY") : "";
     },
+
+    //Used for issues with v-model and attaching to nested objects and autofilling information
     getCustomer: function () {
       if (!this.workOrder.Job) {
         this.clearJob();
@@ -275,6 +278,7 @@ export default {
       };
       this.workOrder.BillAddress = "";
     },
+    //Custom filter for Job Site search
     filterObject(item, Text) {
       return (
         item.Name.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1 ||
@@ -284,6 +288,8 @@ export default {
     async getEmployees() {
       this.employees = await this.$store.dispatch("getEmployees");
     },
+
+    //Used for when importing data from other forums through vuex
     importStoreData() {
       if (this.$store.state.item) {
         this.workOrder = this.$store.state.item;
@@ -306,7 +312,9 @@ export default {
     async getJobs() {
       this.jobList = await this.$store.dispatch("getJobs");
     },
-    async submit() {
+
+    //Used when Creating a work order
+    async createWorkOrder() {
       if (this.$refs.form.validate()) {
         let jobFullName = `${this.workOrder.Job.ParentRef.FullName}:${this.workOrder.Job.Name}`;
         const req = await axios
@@ -328,7 +336,8 @@ export default {
           .catch((err) => console.log(err, req));
       }
     },
-    async editSubmit() {
+    //Used to edit a work order
+    async editWorkOrder() {
       if (this.$refs.form.validate()) {
         const req = await axios
           .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/edit", {
@@ -341,12 +350,13 @@ export default {
             Complete: this.workOrder.Complete,
           })
           .then(async () => {
+            //If work order edit is successful run the complete work order method
             if (this.workOrder.Complete === true) {
               await axios
                 .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/complete", {
                   WorkOrderID: this.workOrder._id,
                   Complete: this.workOrder.Complete,
-                  //! look into this its broken ATM
+                  //todo remove this Synced from being sent, make sure API runs this
                   Synced: false,
                 })
                 .catch((err) => console.log(err, req));

@@ -1,3 +1,7 @@
+<script>
+//todo add transistions for the pages
+// Currently had issues with how transistions were working so I put it on the back burner
+</script>
 <template>
   <transition
     :name="transitionName"

@@ -14,6 +14,8 @@ import TimeSheets from "../views/timeSheets/TimeHome.vue";
 import TimeCalendar from "../views/timeSheets/TimeCalendar.vue";
 import TimeList from "../views/timeSheets/TimeList.vue";
 import ErrorPage from "../views/ErrorPage.vue";
+
+//Router for routes
 Vue.use(VueRouter);
 const routes = [
   {
@@ -27,6 +29,8 @@ const routes = [
     name: "Team",
     component: Team,
   },
+  //todo Change this to modifyWO's
+
   {
     path: "/CreateWO",
     name: "CreateWO",
@@ -47,6 +51,7 @@ const routes = [
     name: "Jobs",
     component: Jobs,
   },
+  //! Delete before production, used to quickly test something
   { path: "/Test1", name: "Test1", component: Test1 },
   {
     path: "/WorkOrders/:id",

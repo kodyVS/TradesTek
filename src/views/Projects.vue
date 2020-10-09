@@ -1,3 +1,6 @@
+<script>
+//! Not used This was just a tutorial on expansion panels
+</script>
 <template>
   <div class="projects">
     <h1 class="subheading grey--text">Projects</h1>

@@ -1,4 +1,7 @@
-//todo Line up UTC times to not overlap with other times
+<script>
+//todo Pretty up this page a lot
+//todo add pictures to be displayed
+</script>
 <template>
   <div class="mt-6">
     <v-btn @click="$router.go(-1)">Back to Overview</v-btn>
@@ -195,6 +198,7 @@ export default {
       totalTime = Math.round((totalTime / 60 + Number.EPSILON) * 100) / 100;
       return totalTime;
     },
+    //Creates the address string
     getAddressString: function () {
       return `${this.workOrder.Job.BillAddress.Addr1 ? this.workOrder.Job.BillAddress.Addr1 : ""} ${
         this.workOrder.Job.BillAddress.City ? this.workOrder.Job.BillAddress.City : ""
@@ -220,7 +224,7 @@ export default {
     },
 
     //Shows the breakdown of the times
-    //todo lazyload this data instead of loading on button push
+
     showTimeBreakdown() {
       this.showComments = !this.showComments;
       if (this.dailyComments.length < 1) {

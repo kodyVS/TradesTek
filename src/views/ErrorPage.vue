@@ -1,3 +1,6 @@
+<script>
+//! Currently not used
+</script>
 <template>
   <div>
     <v-container class="pt-12">
