@@ -365,18 +365,22 @@ export default {
       if (this.$refs.form.validate()) {
         this.isLoading = true;
         await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/job/edit", {
-            ListID: item.ListID,
-            FullName: item.FullName,
-            EditSequence: item.EditSequence,
-            Name: item.Name,
-            ParentRef: item.ParentRef,
-            FirstName: item.FirstName,
-            LastName: item.LastName,
-            BillAddress: item.BillAddress,
-            Phone: item.Phone,
-            Email: item.Email,
-          })
+          .post(
+            process.env.VUE_APP_API_URL + "/api/v1/job/edit",
+            {
+              ListID: item.ListID,
+              FullName: item.FullName,
+              EditSequence: item.EditSequence,
+              Name: item.Name,
+              ParentRef: item.ParentRef,
+              FirstName: item.FirstName,
+              LastName: item.LastName,
+              BillAddress: item.BillAddress,
+              Phone: item.Phone,
+              Email: item.Email,
+            },
+            { withCredentials: true }
+          )
           .then(async () => {
             this.readOnly = !this.readOnly;
             await this.getJobs();
@@ -412,24 +416,31 @@ export default {
           FullName: item.Customer,
         };
         await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/job/add", {
-            Name: item.Name,
-            FullName: item.FullName,
-            ParentRef: item.ParentRef,
-            CompanyName: item.CompanyName,
-            FirstName: item.FirstName,
-            LastName: item.LastName,
-            BillAddress: item.BillAddress,
-            Phone: item.Phone,
-            Email: item.Email,
-          })
-          .then(async () => {
-            await this.getJobs();
-            this.createdAlert = true;
-            this.readOnly = !this.readOnly;
-            this.newJobBoolean = false;
-            this.isLoading = false;
-          })
+          .post(
+            process.env.VUE_APP_API_URL + "/api/v1/job/add",
+            {
+              Name: item.Name,
+              FullName: item.FullName,
+              ParentRef: item.ParentRef,
+              CompanyName: item.CompanyName,
+              FirstName: item.FirstName,
+              LastName: item.LastName,
+              BillAddress: item.BillAddress,
+              Phone: item.Phone,
+              Email: item.Email,
+            },
+            { withCredentials: true }
+          )
+          .then(
+            async () => {
+              await this.getJobs();
+              this.createdAlert = true;
+              this.readOnly = !this.readOnly;
+              this.newJobBoolean = false;
+              this.isLoading = false;
+            },
+            { withCredentials: true }
+          )
           .catch((error) => {
             if (error.response) {
               alert(error.response.data.message);

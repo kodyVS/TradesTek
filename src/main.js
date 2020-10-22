@@ -5,6 +5,9 @@ import store from "./store";
 import vuetify from "./plugins/vuetify";
 import dotenv from "dotenv";
 import axios from "axios";
+import VueCookie from "vue-cookie";
+
+Vue.use(VueCookie);
 dotenv.config();
 Vue.prototype.$http = axios;
 Vue.config.productionTip = false;

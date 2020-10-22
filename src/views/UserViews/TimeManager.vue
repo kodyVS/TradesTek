@@ -74,22 +74,6 @@
           </v-card>
         </v-flex>
         <v-spacer></v-spacer>
-        <v-flex xs3 sm3 md3 lg3 xl3>
-          <v-card>
-            <v-col v-for="(singleEmployee, index) in employees" :key="index">
-              <h3>
-                {{ singleEmployee.Name }}
-              </h3>
-              <p>
-                {{
-                  singleEmployee.TimedIn === true
-                    ? `Timed into ${singleEmployee.WOReference.Name}`
-                    : "Not timed in"
-                }}
-              </p>
-            </v-col>
-          </v-card>
-        </v-flex>
       </v-row>
     </v-container>
   </div>

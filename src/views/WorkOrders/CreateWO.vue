@@ -318,18 +318,22 @@ export default {
       if (this.$refs.form.validate()) {
         let jobFullName = `${this.workOrder.Job.ParentRef.FullName}:${this.workOrder.Job.Name}`;
         const req = await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/add", {
-            Name: this.workOrder.Name,
-            Job: this.workOrder.Job._id,
-            JobName: this.workOrder.Job.FullName,
-            JobType: this.workOrder.JobType,
-            Employees: this.workOrder.Employees,
-            Description: this.workOrder.Description,
-            Complete: this.workOrder.Complete,
-            CustomerRef: {
-              FullName: jobFullName,
+          .post(
+            process.env.VUE_APP_API_URL + "/api/v1/workOrder/add",
+            {
+              Name: this.workOrder.Name,
+              Job: this.workOrder.Job._id,
+              JobName: this.workOrder.Job.FullName,
+              JobType: this.workOrder.JobType,
+              Employees: this.workOrder.Employees,
+              Description: this.workOrder.Description,
+              Complete: this.workOrder.Complete,
+              CustomerRef: {
+                FullName: jobFullName,
+              },
             },
-          })
+            { withCredentials: true }
+          )
           .then(async () => {
             this.$router.replace(`WorkOrders`);
           })
@@ -340,25 +344,33 @@ export default {
     async editWorkOrder() {
       if (this.$refs.form.validate()) {
         const req = await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/edit", {
-            WorkOrderId: this.workOrder._id,
-            Name: this.workOrder.Name,
-            Job: this.workOrder.Job._id,
-            JobType: this.workOrder.JobType,
-            Employees: this.workOrder.Employees,
-            Description: this.workOrder.Description,
-            Complete: this.workOrder.Complete,
-          })
+          .post(
+            process.env.VUE_APP_API_URL + "/api/v1/workOrder/edit",
+            {
+              WorkOrderId: this.workOrder._id,
+              Name: this.workOrder.Name,
+              Job: this.workOrder.Job._id,
+              JobType: this.workOrder.JobType,
+              Employees: this.workOrder.Employees,
+              Description: this.workOrder.Description,
+              Complete: this.workOrder.Complete,
+            },
+            { withCredentials: true }
+          )
           .then(async () => {
             //If work order edit is successful run the complete work order method
             if (this.workOrder.Complete === true) {
               await axios
-                .post(process.env.VUE_APP_API_URL + "/api/v1/workOrder/complete", {
-                  WorkOrderID: this.workOrder._id,
-                  Complete: this.workOrder.Complete,
-                  //todo remove this Synced from being sent, make sure API runs this
-                  Synced: false,
-                })
+                .post(
+                  process.env.VUE_APP_API_URL + "/api/v1/workOrder/complete",
+                  {
+                    WorkOrderID: this.workOrder._id,
+                    Complete: this.workOrder.Complete,
+                    //todo remove this Synced from being sent, make sure API runs this
+                    Synced: false,
+                  },
+                  { withCredentials: true }
+                )
                 .catch((err) => console.log(err, req));
             }
             this.$router.replace(`WorkOrders`);

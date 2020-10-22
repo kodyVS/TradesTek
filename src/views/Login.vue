@@ -35,7 +35,6 @@
                           :append-icon="show1 ? 'eye' : 'eye-off'"
                           :rules="[rules.required, rules.min]"
                           :type="show1 ? 'text' : 'password'"
-                          name="input-10-1"
                           label="Password"
                           hint="At least 8 characters"
                           counter
@@ -59,20 +58,11 @@
                 <v-card-text>
                   <v-form ref="registerForm" v-model="valid" lazy-validation>
                     <v-row>
-                      <v-col cols="12" sm="6" md="6">
+                      <v-col cols="12" sm="12" md="12">
                         <v-text-field
-                          v-model="firstName"
+                          v-model="fullName"
                           :rules="[rules.required]"
-                          label="First Name"
-                          maxlength="20"
-                          required
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="6">
-                        <v-text-field
-                          v-model="lastName"
-                          :rules="[rules.required]"
-                          label="Last Name"
+                          label="First and Last Name"
                           maxlength="20"
                           required
                         ></v-text-field>
@@ -91,7 +81,6 @@
                           :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
                           :rules="[rules.required, rules.min]"
                           :type="show1 ? 'text' : 'password'"
-                          name="input-10-1"
                           label="Password"
                           hint="At least 8 characters"
                           counter
@@ -101,23 +90,43 @@
                       <v-col cols="12">
                         <v-text-field
                           block
-                          v-model="verify"
+                          v-model="passwordConfirm"
                           :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
                           :rules="[rules.required, passwordMatch]"
                           :type="show1 ? 'text' : 'password'"
-                          name="input-10-1"
                           label="Confirm Password"
                           counter
                           @click:append="show1 = !show1"
                         ></v-text-field>
                       </v-col>
-                      <v-spacer></v-spacer>
-                      <v-col class="d-flex ml-auto" cols="12" sm="3" xsm="12">
-                        <v-btn x-large block :disabled="!valid" color="success" @click="signUp"
-                          >Register</v-btn
-                        >
-                      </v-col>
                     </v-row>
+                    <v-row>
+                      <v-flex xs12 md5>
+                        <v-combobox
+                          v-model="userRole"
+                          :items="['user', 'foreman', 'admin']"
+                          label="Role"
+                          outlined
+                        ></v-combobox>
+                      </v-flex>
+                      <v-spacer></v-spacer>
+                      <v-flex xs12 md6>
+                        <v-autocomplete
+                          v-model="employee"
+                          :items="employees"
+                          filled
+                          clearable
+                          label="Assign Employee"
+                          item-text="Name"
+                          item-value="_id"
+                        ></v-autocomplete>
+                      </v-flex>
+                    </v-row>
+                    <v-col cols="12" sm="3" xsm="12">
+                      <v-btn x-large block :disabled="!valid" color="success" @click="signUp"
+                        >Register</v-btn
+                      >
+                    </v-col>
                   </v-form>
                 </v-card-text>
               </v-card>
@@ -140,12 +149,13 @@ export default {
       { name: "Register", icon: "mdi-account-outline" },
     ],
     valid: true,
-
-    firstName: "",
-    lastName: "",
+    employee: {},
+    employees: [],
+    userRole: "user",
+    fullName: "",
     email: "",
     password: "",
-    verify: "",
+    passwordConfirm: "",
     loginPassword: "",
     loginEmail: "",
     loginEmailRules: [
@@ -162,34 +172,60 @@ export default {
   }),
   computed: {
     passwordMatch() {
-      return () => this.password === this.verify || "Password must match";
+      return () => this.password === this.passwordConfirm || "Password must match";
     },
   },
+  created() {
+    this.getEmployees();
+  },
   methods: {
-    signUp() {
+    async getEmployees() {
+      this.employees = await this.$store.dispatch("getEmployees");
+    },
+    async signUp() {
       if (this.$refs.registerForm.validate()) {
-        alert("user created");
+        await axios
+          .post(process.env.VUE_APP_API_URL + "/api/v1/users/signup", {
+            Name: this.fullName,
+            Email: this.email,
+            //Photo: "",
+
+            Password: this.password,
+            PasswordConfirm: this.passwordConfirm,
+            UserRole: this.userRole,
+            EmployeeReference: this.employee,
+          })
+          .then(() => {
+            this.$router.go("Dashboard");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
       }
     },
     async login() {
       if (this.$refs.loginForm.validate()) {
-        let data = await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/users/login", {
-            Email: this.loginEmail,
-            Password: this.loginPassword,
-          })
+        await axios
+          .post(
+            process.env.VUE_APP_API_URL + "/api/v1/users/login",
+            {
+              Email: this.loginEmail,
+              Password: this.loginPassword,
+            },
+            {
+              withCredentials: true,
+            }
+          )
           .then((response) => {
-            this.$cookie.set("jwt", response.data.token);
-            return response.data.data;
+            console.log(response);
+            //this.$cookie.set("jwt", response.data.token);
+            this.$router.go("workOrders");
           })
           .catch((error) => {
-            if (error.response) {
-              alert(error.response.data.message);
-            } else {
+            if (error.response !== 401) {
               alert("Something went wrong! Check Network Connection");
             }
           });
-        console.log(data);
       }
     },
     reset() {

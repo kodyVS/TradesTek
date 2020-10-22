@@ -13,6 +13,7 @@ import TimeManager from "../views/TimeManager.vue";
 import TimeSheets from "../views/timeSheets/TimeHome.vue";
 import TimeCalendar from "../views/timeSheets/TimeCalendar.vue";
 import TimeList from "../views/timeSheets/TimeList.vue";
+import Login from "../views/Login.vue";
 import ErrorPage from "../views/ErrorPage.vue";
 
 //Router for routes
@@ -90,6 +91,7 @@ const routes = [
     name: "ErrorPage",
     component: ErrorPage,
   },
+  { path: "/Login", name: "Login", component: Login },
 ];
 // route level code-splitting // this generates a separate chunk (about.[hash].js) for this route // which is lazy-loaded when the route is visited.
 const router = new VueRouter({

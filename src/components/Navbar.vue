@@ -20,21 +20,30 @@
             <span>Menu</span>
           </v-btn>
         </template>
-        <v-list>
+        <v-list v-if="$store.state.loggedIn && $store.state.userRole === 'admin'">
           <v-list-item v-for="link in links" :key="link.text" router :to="link.route">
             <v-list-item-title>{{ link.text }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-btn color="grey lighten-4 black--text">
+      <v-btn v-if="$store.state.loggedIn" color="grey lighten-4 black--text" @click="logOut()">
         <span>Sign Out</span>
+        <v-icon right>mdi-exit-to-app</v-icon>
+      </v-btn>
+      <v-btn v-if="!$store.state.loggedIn" color="grey lighten-4 black--text">
+        <span>Sign In</span>
         <v-icon right>mdi-exit-to-app</v-icon>
       </v-btn>
     </v-app-bar>
 
     <!-- Drawer side navigation -->
-
-    <v-navigation-drawer v-model="drawer" app class="secondary" temporary>
+    <v-navigation-drawer
+      v-model="drawer"
+      app
+      class="secondary"
+      temporary
+      v-if="$store.state.loggedIn && $store.state.userRole === 'admin'"
+    >
       <v-layout column align-center>
         <v-flex class="mt-12">
           <v-avatar size="100">
@@ -127,6 +136,11 @@ export default {
       ],
       mini: true,
     };
+  },
+  methods: {
+    async logOut() {
+      await this.$store.dispatch("logOut");
+    },
   },
 };
 </script>

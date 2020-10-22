@@ -309,18 +309,22 @@ export default {
       if (this.$refs.form.validate()) {
         this.isLoading = true;
         await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/customer/edit", {
-            ListID: item.ListID,
-            EditSequence: item.EditSequence,
-            Name: item.Name,
-            FullName: item.FullName,
-            CompanyName: item.CompanyName,
-            FirstName: item.FirstName,
-            LastName: item.LastName,
-            BillAddress: item.BillAddress,
-            Phone: item.Phone,
-            Email: item.Email,
-          })
+          .post(
+            process.env.VUE_APP_API_URL + "/api/v1/customer/edit",
+            {
+              ListID: item.ListID,
+              EditSequence: item.EditSequence,
+              Name: item.Name,
+              FullName: item.FullName,
+              CompanyName: item.CompanyName,
+              FirstName: item.FirstName,
+              LastName: item.LastName,
+              BillAddress: item.BillAddress,
+              Phone: item.Phone,
+              Email: item.Email,
+            },
+            { withCredentials: true }
+          )
           .then(async () => {
             await this.getCustomers();
             this.isLoading = false;
@@ -353,16 +357,20 @@ export default {
         this.isLoading = true;
         //due to quickbooks formatting Name and FullName have to be the same
         await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/customer/add", {
-            Name: item.FullName,
-            FullName: item.FullName,
-            CompanyName: item.CompanyName,
-            FirstName: item.FirstName,
-            LastName: item.LastName,
-            BillAddress: item.BillAddress,
-            Phone: item.Phone,
-            Email: item.Email,
-          })
+          .post(
+            process.env.VUE_APP_API_URL + "/api/v1/customer/add",
+            {
+              Name: item.FullName,
+              FullName: item.FullName,
+              CompanyName: item.CompanyName,
+              FirstName: item.FirstName,
+              LastName: item.LastName,
+              BillAddress: item.BillAddress,
+              Phone: item.Phone,
+              Email: item.Email,
+            },
+            { withCredentials: true }
+          )
           .then(async () => {
             await this.getCustomers();
             this.readOnly = !this.readOnly;

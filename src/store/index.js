@@ -13,6 +13,8 @@ export default new Vuex.Store({
     item: null,
     employeeInfo: "",
     error: null,
+    loggedIn: "false",
+    user: "",
   },
   getters: {
     // getCustomerNames: (state) => {
@@ -25,7 +27,7 @@ export default new Vuex.Store({
   actions: {
     getEmployees: async (state) => {
       let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all")
+        .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all", { withCredentials: true })
         .then((response) => {
           return response.data.data;
         })
@@ -40,7 +42,7 @@ export default new Vuex.Store({
     },
     async getCustomers() {
       let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all")
+        .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all", { withCredentials: true })
         .then((response) => {
           return response.data.data;
         })
@@ -55,7 +57,7 @@ export default new Vuex.Store({
     },
     async getJobs() {
       let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/job/all")
+        .get(process.env.VUE_APP_API_URL + "/api/v1/job/all", { withCredentials: true })
         .then((response) => {
           return response.data.data;
         })
@@ -71,12 +73,15 @@ export default new Vuex.Store({
     async getAllActiveWorkOrders() {
       try {
         let data = await axios
-          .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/allActive")
+          .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/allActive", {
+            withCredentials: true,
+          })
           .then((response) => {
             return response.data.data;
           })
           .catch((error) => {
             if (error.response) {
+              console.log(error.response);
               alert(error.response.data.message);
             } else {
               alert("Something went wrong! Check Network Connection");
@@ -87,7 +92,7 @@ export default new Vuex.Store({
     },
     async getAllWorkOrders() {
       let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/all")
+        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/all", { withCredentials: true })
         .then((response) => {
           return response.data.data;
         })
@@ -102,7 +107,7 @@ export default new Vuex.Store({
     },
     async getWorkOrder(context, param) {
       let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/" + param)
+        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/" + param, { withCredentials: true })
         .then((response) => {
           return response.data.data.data;
         })
@@ -120,7 +125,7 @@ export default new Vuex.Store({
     },
     async getAllTimes(context, param) {
       let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/time/all" + param)
+        .get(process.env.VUE_APP_API_URL + "/api/v1/time/all" + param, { withCredentials: true })
         .then((response) => {
           return response.data.data;
         })
@@ -135,7 +140,9 @@ export default new Vuex.Store({
     },
     async editTime(context, editedTime) {
       let data = await axios
-        .patch(process.env.VUE_APP_API_URL + "/api/v1/time/edit", editedTime)
+        .patch(process.env.VUE_APP_API_URL + "/api/v1/time/edit", editedTime, {
+          withCredentials: true,
+        })
         .then((response) => {
           return response;
         })
@@ -150,7 +157,9 @@ export default new Vuex.Store({
     },
     async deleteTime(context, timeStamp) {
       let data = await axios
-        .delete(process.env.VUE_APP_API_URL + "/api/v1/time/delete/" + timeStamp._id)
+        .delete(process.env.VUE_APP_API_URL + "/api/v1/time/delete/" + timeStamp._id, {
+          withCredentials: true,
+        })
         .then((response) => {
           return response;
         })
@@ -165,7 +174,9 @@ export default new Vuex.Store({
     },
     async addTime(context, timeStamp) {
       let data = await axios
-        .post(process.env.VUE_APP_API_URL + "/api/v1/time/add/", timeStamp)
+        .post(process.env.VUE_APP_API_URL + "/api/v1/time/add/", timeStamp, {
+          withCredentials: true,
+        })
         .then((res) => res)
         .catch((error) => {
           if (error.response) {
@@ -175,6 +186,15 @@ export default new Vuex.Store({
           }
         });
       return data;
+    },
+    async logOut() {
+      await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/users/logout", {
+          withCredentials: true,
+        })
+        .then(() => {
+          this.state.loggedIn = false;
+        });
     },
   },
   modules: {},
