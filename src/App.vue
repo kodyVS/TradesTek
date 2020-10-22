@@ -39,6 +39,9 @@ export default {
           if (res.data.status === "success") {
             this.$store.state.loggedIn = true;
             this.$store.state.userRole = res.data.data.UserRole;
+            this.$store.state.userEmployeeReference = res.data.data.EmployeeReference;
+            console.log("hello");
+            console.log(this.$store.state.userEmployeeReference);
           }
         })
         .catch((error) => {

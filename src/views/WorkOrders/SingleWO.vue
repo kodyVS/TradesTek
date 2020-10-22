@@ -228,6 +228,10 @@ export default {
     showTimeBreakdown() {
       this.showComments = !this.showComments;
       if (this.dailyComments.length < 1) {
+        this.workOrder.TimeReference.sort(function (a, b) {
+          return a.TimeData[0] > b.TimeData[1] ? -1 : a.date > b.date ? 1 : 0;
+        });
+        //Sorted Time Data to show new times first
         this.workOrder.TimeReference.map((timeStamp) => {
           let structuredDate = new Date(timeStamp.TimeData[0]).toString().substr(0, 15);
           let structuredTimeIn = timeStamp.TimeData[0].substr(11, 8);

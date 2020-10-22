@@ -15,6 +15,7 @@ export default new Vuex.Store({
     error: null,
     loggedIn: "false",
     user: "",
+    userEmployeeReference: ""
   },
   getters: {
     // getCustomerNames: (state) => {
@@ -30,6 +31,21 @@ export default new Vuex.Store({
         .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all", { withCredentials: true })
         .then((response) => {
           return response.data.data;
+        })
+        .catch((error) => {
+          if (error.response) {
+            alert(error.response.data.message);
+          } else {
+            alert("Something went wrong! Check Network Connection");
+          }
+        });
+      return data;
+    },
+    getEmployee: async (context, Id) => {
+      let data = await axios
+        .get(process.env.VUE_APP_API_URL + `/api/v1/employee/${Id}`,  { withCredentials: true })
+        .then((response) => {
+          return response.data.employee;
         })
         .catch((error) => {
           if (error.response) {

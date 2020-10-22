@@ -6,10 +6,10 @@
   <div>
     <v-container>
       <v-row>
-        <v-flex md8>
-          <v-card class="mt-4 ml-12">
+        <v-flex md12>
+          <v-card class="mt-4">
             <v-card-title class="secondary white--text mb-5 justify-center"
-              >Pick a Work Order and an Employee</v-card-title
+              >Pick a Work Order {{ employee.Name }}</v-card-title
             >
             <v-autocomplete
               v-model="workOrder"
@@ -36,18 +36,6 @@
                   }}</v-list-item-subtitle>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
-            <v-autocomplete
-              v-model="employee"
-              :items="filteredEmployees"
-              dense
-              outlined
-              hide-no-data
-              filled
-              label="Employees"
-              return-object
-              item-text="Name"
-            >
             </v-autocomplete>
             <v-container>
               <v-row :class="headingColor">
@@ -98,7 +86,7 @@ export default {
 
   //When created Fetch all employees and work orders
   created() {
-    this.getAllActiveWorkOrders(), this.getEmployees();
+    this.getAllActiveWorkOrders(), this.getEmployee();
   },
   methods: {
     filterObject(item, Text) {
@@ -107,22 +95,15 @@ export default {
         item.CustomerRef.FullName.toLocaleLowerCase().indexOf(Text.toLocaleLowerCase()) > -1
       );
     },
-    //filter for only showing employees that are assigned to that work order
-    filterEmployees() {
-      this.employee = {};
-      this.filteredEmployees = [];
-      this.employees.map((employee) => {
-        if (this.workOrder.Employees.indexOf(employee.Name) > -1) {
-          this.filteredEmployees.push(employee);
-        }
-      });
-    },
     //Methods for fetching employees and work orders
     async getAllActiveWorkOrders() {
       this.workOrders = await this.$store.dispatch("getAllActiveWorkOrders");
     },
-    async getEmployees() {
-      this.employees = await this.$store.dispatch("getEmployees");
+    async getEmployee() {
+      this.employee = await this.$store.dispatch(
+        "getEmployee",
+        this.$store.state.userEmployeeReference
+      );
     },
 
     //Time in Function
