@@ -144,9 +144,8 @@ export default {
     //Time in Function
     async timeIn() {
       //Check for if there is a work order and employee selected
-      try {
-        if (this.workOrder._id && this.employee._id) {
-          //create timeStamp of current time
+      if (this.workOrder._id && this.employee._id) {
+        try {
           let timeData = new Date();
           timeData.setHours(timeData.getHours() - 6);
           this.status.push(
@@ -156,53 +155,46 @@ export default {
               this.workOrder.Name
             }`
           );
-          const req = await axios
-            .post(
-              process.env.VUE_APP_API_URL + "/api/v1/time/timeIn",
-              {
-                WorkOrder: this.workOrder.Name,
-                WOReference: this.workOrder._id,
-                Employee: this.employee.Name,
-                EmployeeReference: this.employee._id,
-                TimeData: timeData,
-                TimedIn: true,
-                PONumber: this.workOrder.PONumber,
-              },
-              { withCredentials: true }
-            )
-            .then(async () => {
-              //if the request comes back successful, reload employees and set the employee's timedIn value to true because the employee data isn't reloaded until selected again
-              await this.getEmployees().then(() => {
-                this.employee.TimedIn = true;
-              });
-            })
-            .catch((err) => alert(err));
-        } else {
-          //create an alert that tells the user to pick a work order and employee
-          alert("pick a work order and employee");
+          await axios.post(
+            process.env.VUE_APP_API_URL + "/api/v1/time/timeIn",
+            {
+              WorkOrder: this.workOrder.Name,
+              WOReference: this.workOrder._id,
+              Employee: this.employee.Name,
+              EmployeeReference: this.employee._id,
+              TimeData: timeData,
+              TimedIn: true,
+              PONumber: this.workOrder.PONumber,
+            },
+            { withCredentials: true }
+          );
+          //if the request comes back successful, reload employees and set the employee's timedIn value to true because the employee data isn't reloaded until selected again
+          await this.getEmployees();
+          this.employee.TimedIn = true;
+        } catch (err) {
+          alert(err);
         }
-      } catch (err) {
-        //alert("pick a work order and employee");
-        console.log(err);
+      } else {
+        //create an alert that tells the user to pick a work order and employee
+        alert("pick a work order and employee");
       }
     },
 
     //Time out function
     async timeOut() {
-      let timeData = new Date();
-      timeData.setHours(timeData.getHours() - 6);
+      try {
+        let timeData = new Date();
+        timeData.setHours(timeData.getHours() - 6);
+        //Pushes time out data into the log
+        this.status.push(
+          `${this.employee.Name} Timed Out at ${timeData
+            .toISOString()
+            .substr(11, 8)} on ${timeData.toISOString().substr(0, 10)} from ${this.workOrder.Name}`
+        );
+        //Creates timestamp of when the time request finishes
 
-      //Pushes time out data into the log
-      this.status.push(
-        `${this.employee.Name} Timed Out at ${timeData
-          .toISOString()
-          .substr(11, 8)} on ${timeData.toISOString().substr(0, 10)} from ${this.workOrder.Name}`
-      );
-      //Creates timestamp of when the time request finishes
-
-      //sends data to the back end
-      const req = await axios
-        .post(
+        //sends data to the back end
+        await axios.post(
           process.env.VUE_APP_API_URL + "/api/v1/time/timeOut",
           {
             WOReference: this.workOrder._id,
@@ -211,15 +203,15 @@ export default {
             Desc: this.description,
           },
           { withCredentials: true }
-        )
-        .then(async () => {
-          //When data is successful, set employee's TimedIn to false and reload employees
-          this.requestStatus = "success";
-          this.employee.TimedIn = false;
-          this.description = "";
-          this.getEmployees();
-        })
-        .catch((err) => console.log(err, req));
+        );
+        //When data is successful, set employee's TimedIn to false and reload employees
+        this.requestStatus = "success";
+        this.employee.TimedIn = false;
+        this.description = "";
+        this.getEmployees();
+      } catch (err) {
+        alert(err.message);
+      }
     },
     //Time pause has not been developed
     timePause() {

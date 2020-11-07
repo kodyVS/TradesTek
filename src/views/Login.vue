@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-layout justify-center align-center>
+    <v-layout justify-center align-center v-if="!$store.state.userRole">
       <v-card v-model="dialog" class="mt-12">
         <div>
           <v-tabs
@@ -10,13 +10,21 @@
             icons-and-text
             dark
             grow
+            class="elevation-7"
           >
-            <v-tabs-slider color="primary darken-4"></v-tabs-slider>
-            <v-tab v-for="(tab, index) in tabs" :key="index">
+            <v-tabs-slider></v-tabs-slider>
+            <v-tab v-for="(tab, index) in tabs" :key="index" class="elevation-7">
               <v-icon large>{{ tab.icon }}</v-icon>
               <div class="caption py-1">{{ tab.name }}</div>
             </v-tab>
             <v-tab-item>
+              <v-progress-linear
+                color="blue"
+                indeterminate
+                rounded
+                height="6"
+                v-if="isLoading"
+              ></v-progress-linear>
               <v-card class="px-4">
                 <v-card-text>
                   <v-form ref="loginForm" v-model="valid" lazy-validation>
@@ -27,17 +35,15 @@
                           :rules="loginEmailRules"
                           label="E-mail"
                           required
+                          validate-on-blur
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12">
                         <v-text-field
                           v-model="loginPassword"
-                          :append-icon="show1 ? 'eye' : 'eye-off'"
-                          :rules="[rules.required, rules.min]"
+                          :rules="[rules.required]"
                           :type="show1 ? 'text' : 'password'"
                           label="Password"
-                          hint="At least 8 characters"
-                          counter
                           @click:append="show1 = !show1"
                         ></v-text-field>
                       </v-col>
@@ -53,86 +59,14 @@
                 </v-card-text>
               </v-card>
             </v-tab-item>
-            <v-tab-item>
-              <v-card class="px-4">
-                <v-card-text>
-                  <v-form ref="registerForm" v-model="valid" lazy-validation>
-                    <v-row>
-                      <v-col cols="12" sm="12" md="12">
-                        <v-text-field
-                          v-model="fullName"
-                          :rules="[rules.required]"
-                          label="First and Last Name"
-                          maxlength="20"
-                          required
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12">
-                        <v-text-field
-                          v-model="email"
-                          :rules="emailRules"
-                          label="E-mail"
-                          required
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12">
-                        <v-text-field
-                          v-model="password"
-                          :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-                          :rules="[rules.required, rules.min]"
-                          :type="show1 ? 'text' : 'password'"
-                          label="Password"
-                          hint="At least 8 characters"
-                          counter
-                          @click:append="show1 = !show1"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12">
-                        <v-text-field
-                          block
-                          v-model="passwordConfirm"
-                          :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-                          :rules="[rules.required, passwordMatch]"
-                          :type="show1 ? 'text' : 'password'"
-                          label="Confirm Password"
-                          counter
-                          @click:append="show1 = !show1"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-flex xs12 md5>
-                        <v-combobox
-                          v-model="userRole"
-                          :items="['user', 'foreman', 'admin']"
-                          label="Role"
-                          outlined
-                        ></v-combobox>
-                      </v-flex>
-                      <v-spacer></v-spacer>
-                      <v-flex xs12 md6>
-                        <v-autocomplete
-                          v-model="employee"
-                          :items="employees"
-                          filled
-                          clearable
-                          label="Assign Employee"
-                          item-text="Name"
-                          item-value="_id"
-                        ></v-autocomplete>
-                      </v-flex>
-                    </v-row>
-                    <v-col cols="12" sm="3" xsm="12">
-                      <v-btn x-large block :disabled="!valid" color="success" @click="signUp"
-                        >Register</v-btn
-                      >
-                    </v-col>
-                  </v-form>
-                </v-card-text>
-              </v-card>
-            </v-tab-item>
           </v-tabs>
         </div>
+      </v-card>
+    </v-layout>
+    <v-layout align-center justify-center v-if="$store.state.userRole">
+      <v-card>
+        <v-card-title> You are already logged in! </v-card-title>
+        <v-btn @click="$router.push('Home')">Click here to redirect</v-btn>
       </v-card>
     </v-layout>
   </div>
@@ -144,18 +78,9 @@ export default {
   data: () => ({
     dialog: true,
     tab: 0,
-    tabs: [
-      { name: "Login", icon: "mdi-account" },
-      { name: "Register", icon: "mdi-account-outline" },
-    ],
+    tabs: [{ name: "Login", icon: "mdi-account" }],
     valid: true,
-    employee: {},
-    employees: [],
-    userRole: "user",
-    fullName: "",
-    email: "",
-    password: "",
-    passwordConfirm: "",
+    isLoading: false,
     loginPassword: "",
     loginEmail: "",
     loginEmailRules: [
@@ -175,38 +100,13 @@ export default {
       return () => this.password === this.passwordConfirm || "Password must match";
     },
   },
-  created() {
-    this.getEmployees();
-  },
+  created() {},
   methods: {
-    async getEmployees() {
-      this.employees = await this.$store.dispatch("getEmployees");
-    },
-    async signUp() {
-      if (this.$refs.registerForm.validate()) {
-        await axios
-          .post(process.env.VUE_APP_API_URL + "/api/v1/users/signup", {
-            Name: this.fullName,
-            Email: this.email,
-            //Photo: "",
-
-            Password: this.password,
-            PasswordConfirm: this.passwordConfirm,
-            UserRole: this.userRole,
-            EmployeeReference: this.employee,
-          })
-          .then(() => {
-            this.$router.go("Dashboard");
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      }
-    },
     async login() {
       if (this.$refs.loginForm.validate()) {
-        await axios
-          .post(
+        try {
+          this.isLoading = true;
+          let res = await axios.post(
             process.env.VUE_APP_API_URL + "/api/v1/users/login",
             {
               Email: this.loginEmail,
@@ -215,17 +115,34 @@ export default {
             {
               withCredentials: true,
             }
-          )
-          .then((response) => {
-            console.log(response);
-            //this.$cookie.set("jwt", response.data.token);
-            this.$router.go("workOrders");
-          })
-          .catch((error) => {
-            if (error.response !== 401) {
-              alert("Something went wrong! Check Network Connection");
+          );
+          this.isLoading = false;
+          if (res.data.status === "success") {
+            this.$store.state.loggedIn = true;
+            this.$store.state.userRole = res.data.data.UserRole;
+            this.$store.state.userEmployeeReference = res.data.data.EmployeeReference;
+            this.$store.state.userName = res.data.data.Name;
+          }
+          if (this.$store.state.userRole === "admin") {
+            this.$router.push("workOrders");
+          } else {
+            this.$router.push("Home");
+          }
+        } catch (error) {
+          this.isLoading = false;
+          if (error.response) {
+            if (error.response.status === 401) {
+              let payload = { type: "error", message: error.response.data.message };
+              this.$store.dispatch("snackBarAlert", payload);
             }
-          });
+          } else {
+            let payload = {
+              type: "error",
+              message: "Something went wrong! Check Network Connection",
+            };
+            this.$store.dispatch("snackBarAlert", payload);
+          }
+        }
       }
     },
     reset() {

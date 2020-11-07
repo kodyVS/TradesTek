@@ -52,7 +52,6 @@ export default {
       if (!item.Company) {
         item.Company = "";
       }
-      console.log(item, queryText, itemText);
       return (
         item.FullName.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1 ||
         item.Phone.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1 ||

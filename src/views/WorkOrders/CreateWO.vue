@@ -104,26 +104,71 @@
               ></v-text-field>
             </v-col>
 
-            <!-- Date Picker //! Not used yet -->
-
-            <v-col cols="12" md="3">
-              <v-menu>
-                <template v-slot:activator="{ on }">
+            <!-- Date Picker -->
+            <v-flex>
+              <v-row>
+                <v-flex xs12 md3 offset-md3>
+                  <v-menu>
+                    <template v-slot:activator="{ on }">
+                      <v-text-field
+                        :value="formattedStartDate"
+                        label="Start Date"
+                        prepend-icon="mdi-calendar-range"
+                        v-on="on"
+                        :rules="requiredRule"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker v-model="startDate"></v-date-picker>
+                  </v-menu>
+                </v-flex>
+                <v-flex xs12 md3 offset-md1>
+                  <v-menu>
+                    <template v-slot:activator="{ on }">
+                      <v-text-field
+                        :value="formattedEndDate"
+                        label="End Date"
+                        prepend-icon="mdi-calendar-range"
+                        v-on="on"
+                        :rules="requiredRule"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker v-model="endDate"></v-date-picker>
+                  </v-menu>
+                </v-flex>
+              </v-row>
+              <v-row>
+                <v-flex xs12 md2 offset-md1>
+                  <v-checkbox
+                    label="Include Time?"
+                    color="indigo darken-3"
+                    v-model="workOrder.IncludesTime"
+                    hide-details
+                  ></v-checkbox>
+                </v-flex>
+                <v-flex xs12 md3>
                   <v-text-field
-                    disabled
-                    :value="formattedDate"
-                    label="Date"
-                    prepend-icon="mdi-calendar-range"
-                    v-on="on"
+                    v-model="startTime"
+                    type="time"
+                    :disabled="!workOrder.IncludesTime"
+                    :rules="workOrder.IncludesTime ? requiredRule : []"
                   ></v-text-field>
-                </template>
-                <v-date-picker v-model="date"></v-date-picker>
-              </v-menu>
-            </v-col>
-            <v-radio-group v-model="workOrder.JobType" :rules="requiredRule">
-              <v-radio label="Service" value="Service"></v-radio>
-              <v-radio label="Construction" value="Construction"></v-radio>
-            </v-radio-group>
+                </v-flex>
+                <v-flex xs12 md3 offset-md1>
+                  <v-text-field
+                    v-model="endTime"
+                    type="time"
+                    :disabled="!workOrder.IncludesTime"
+                    :rules="workOrder.IncludesTime ? requiredRule : []"
+                  ></v-text-field>
+                </v-flex>
+              </v-row>
+            </v-flex>
+            <v-flex xs12>
+              <v-radio-group v-model="workOrder.JobType" :rules="requiredRule">
+                <v-radio label="Service" value="Service"></v-radio>
+                <v-radio label="Construction" value="Construction"></v-radio>
+              </v-radio-group>
+            </v-flex>
           </v-row>
           <v-flex md6>
             <v-autocomplete
@@ -183,6 +228,12 @@
           <v-switch
             v-model="workOrder.Complete"
             label="Do you wish to complete this work order?"
+            v-if="editBoolean"
+          ></v-switch>
+          <v-switch
+            v-model="workOrder.IsPending"
+            label="Add to work order review que?"
+            v-if="editBoolean"
           ></v-switch>
           <!-- </v-col> -->
         </v-form>
@@ -197,9 +248,13 @@ import axios from "axios";
 export default {
   data() {
     return {
+      includeEndDate: false,
       title: "",
       content: "",
-      date: null,
+      startDate: null,
+      endDate: null,
+      startTime: null,
+      endTime: null,
       editBoolean: false,
       requiredRule: [(v) => !!v || "required"],
       lengthRule: [
@@ -229,13 +284,17 @@ export default {
         ListID: "",
         EditSequence: "",
         Complete: false,
+        Pending: null,
       },
     };
   },
   computed: {
     //For date picker which is currently disabled
-    formattedDate() {
-      return this.date ? moment(this.date).format("Do MMMM YYYY") : "";
+    formattedStartDate() {
+      return this.startDate ? moment(this.startDate).format("Do MMMM YYYY") : "";
+    },
+    formattedEndDate() {
+      return this.endDate ? moment(this.endDate).format("Do MMMM YYYY") : "";
     },
 
     //Used for issues with v-model and attaching to nested objects and autofilling information
@@ -293,6 +352,15 @@ export default {
     importStoreData() {
       if (this.$store.state.item) {
         this.workOrder = this.$store.state.item;
+        if (this.workOrder.StartDate) {
+          this.includeEndDate = true;
+          this.startDate = this.workOrder.StartDate.substr(0, 10);
+          this.startTime = this.workOrder.StartDate.substr(11, 5);
+          if (this.workOrder.EndDate) {
+            this.endDate = this.workOrder.EndDate.substr(0, 10);
+            this.endTime = this.workOrder.EndDate.substr(11, 5);
+          }
+        }
         this.$store.state.item = null;
         this.editBoolean = true;
       }
@@ -303,7 +371,6 @@ export default {
         this.editBoolean = false;
       }
       if (this.$store.state.employeeInfo) {
-        console.log(this.workOrder);
         this.workOrder.Employees.push(this.$store.state.employeeInfo);
         this.$store.state.employeeInfo = "";
         this.editBoolean = false;
@@ -315,10 +382,20 @@ export default {
 
     //Used when Creating a work order
     async createWorkOrder() {
-      if (this.$refs.form.validate()) {
-        let jobFullName = `${this.workOrder.Job.ParentRef.FullName}:${this.workOrder.Job.Name}`;
-        const req = await axios
-          .post(
+      let startDate;
+      let endDate;
+      if (this.workOrder.IncludesTime) {
+        startDate = `${this.startDate}T${this.startTime}:00.000z`;
+        endDate = `${this.endDate}T${this.endTime}:00.000z`;
+      } else {
+        startDate = `${this.startDate}T00:00:00.000z`;
+        endDate = `${this.endDate}T23:59:00.000z`;
+      }
+
+      if (this.$refs.form.validate() && !this.editBoolean) {
+        try {
+          let jobFullName = `${this.workOrder.Job.ParentRef.FullName}:${this.workOrder.Job.Name}`;
+          const req = await axios.post(
             process.env.VUE_APP_API_URL + "/api/v1/workOrder/add",
             {
               Name: this.workOrder.Name,
@@ -328,23 +405,37 @@ export default {
               Employees: this.workOrder.Employees,
               Description: this.workOrder.Description,
               Complete: this.workOrder.Complete,
+              StartDate: startDate,
+              EndDate: endDate,
+              IncludesTime: this.workOrder.IncludesTime,
               CustomerRef: {
                 FullName: jobFullName,
               },
             },
             { withCredentials: true }
-          )
-          .then(async () => {
-            this.$router.replace(`WorkOrders`);
-          })
-          .catch((err) => console.log(err, req));
+          );
+          this.$router.replace(`WorkOrders`);
+          let payload = { type: "success", message: "Successfully Created Work Order" };
+          this.$store.dispatch("snackBarAlert", payload);
+        } catch (err) {
+          alert(err.message);
+        }
       }
     },
     //Used to edit a work order
     async editWorkOrder() {
       if (this.$refs.form.validate()) {
-        const req = await axios
-          .post(
+        try {
+          let startDate;
+          let endDate;
+          if (this.workOrder.IncludesTime) {
+            startDate = `${this.startDate}T${this.startTime}:00.000z`;
+            endDate = `${this.endDate}T${this.endTime}:00.000z`;
+          } else {
+            startDate = `${this.startDate}T00:00:00.000z`;
+            endDate = `${this.endDate}T23:59:00.000z`;
+          }
+          const req = await axios.post(
             process.env.VUE_APP_API_URL + "/api/v1/workOrder/edit",
             {
               WorkOrderId: this.workOrder._id,
@@ -354,28 +445,32 @@ export default {
               Employees: this.workOrder.Employees,
               Description: this.workOrder.Description,
               Complete: this.workOrder.Complete,
+              StartDate: startDate,
+              EndDate: endDate,
+              IncludesTime: this.workOrder.IncludesTime,
+              IsPending: this.workOrder.IsPending,
             },
             { withCredentials: true }
-          )
-          .then(async () => {
-            //If work order edit is successful run the complete work order method
-            if (this.workOrder.Complete === true) {
-              await axios
-                .post(
-                  process.env.VUE_APP_API_URL + "/api/v1/workOrder/complete",
-                  {
-                    WorkOrderID: this.workOrder._id,
-                    Complete: this.workOrder.Complete,
-                    //todo remove this Synced from being sent, make sure API runs this
-                    Synced: false,
-                  },
-                  { withCredentials: true }
-                )
-                .catch((err) => console.log(err, req));
-            }
-            this.$router.replace(`WorkOrders`);
-          })
-          .catch((err) => console.log(err, req));
+          );
+          //If work order edit is successful run the complete work order method
+          if (this.workOrder.Complete === true) {
+            await axios.post(
+              process.env.VUE_APP_API_URL + "/api/v1/workOrder/complete",
+              {
+                WorkOrderID: this.workOrder._id,
+                Complete: this.workOrder.Complete,
+                //todo remove this Synced from being sent, make sure API runs this
+                Synced: false,
+              },
+              { withCredentials: true }
+            );
+          }
+          this.$router.replace(`WorkOrders`);
+          let payload = { type: "success", message: "Successfully Edited Work Order" };
+          this.$store.dispatch("snackBarAlert", payload);
+        } catch (err) {
+          alert(err.message);
+        }
       }
     },
     remove(item) {
@@ -385,3 +480,8 @@ export default {
   },
 };
 </script>
+<style scoped>
+::v-deep .v-select__selections {
+  margin-top: 10px;
+}
+</style>

@@ -472,11 +472,8 @@ export default {
     // deletes event from the database
     async deleteEvent(selectedEvent) {
       this.selectedOpen = false;
-      console.log("hello");
       await this.$store.dispatch("deleteTime", selectedEvent).then(() => {
         this.getEvents(this.storedLowRange, this.storedHighRange, true);
-        console.log(this.selectedEvent);
-        console.log("hello");
       });
     },
 

@@ -49,10 +49,11 @@
       </template>
 
       <template v-slot:item.Complete="{ item }">
+        <v-chip v-if="item.IsPending && !item.Complete" color="purple white--text">Pending</v-chip>
         <v-chip v-if="item.Complete" class="success">
           {{ "Completed" }}
         </v-chip>
-        <v-chip v-else color="warning"> Active </v-chip>
+        <v-chip v-if="!item.IsPending && !item.Complete" color="warning"> Active </v-chip>
       </template>
 
       <template v-slot:item.Employees="{ item }">

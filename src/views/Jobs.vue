@@ -4,13 +4,6 @@
 
 <template>
   <div>
-    <v-snackbar v-model="createdAlert" color="" class="success--text" top
-      ><template v-slot:action="{ attrs }">
-        <v-btn color="success" text v-bind="attrs" @click="createdAlert = false"> Close </v-btn>
-      </template>
-      <v-icon color="green">mdi-check</v-icon>
-      <span> Customer has been successfully created </span>
-    </v-snackbar>
     <!-- Search function for the table -->
     <v-container mb-4>
       <v-row justify="center">
@@ -225,7 +218,6 @@ export default {
     //Truth for if the dialog is open
     newJobBoolean: true,
     dialog: false,
-    createdAlert: false,
 
     //rules
     fullNameRules: [(v) => !!v || "required"],
@@ -357,15 +349,14 @@ export default {
       this.customerList = this.customerList.map((customer) => {
         return customer.FullName;
       });
-      console.log(this.customerList);
     },
 
     //save changes to a job to the database
     async editJob(item) {
       if (this.$refs.form.validate()) {
         this.isLoading = true;
-        await axios
-          .post(
+        try {
+          await axios.post(
             process.env.VUE_APP_API_URL + "/api/v1/job/edit",
             {
               ListID: item.ListID,
@@ -380,20 +371,20 @@ export default {
               Email: item.Email,
             },
             { withCredentials: true }
-          )
-          .then(async () => {
-            this.readOnly = !this.readOnly;
-            await this.getJobs();
-            this.isLoading = false;
-          })
-          .catch((error) => {
-            if (error.response) {
-              alert(error.response.data.message);
-            } else {
-              alert("Something went wrong! Check Network Connection");
-            }
-            this.isLoading = false;
-          });
+          );
+          this.readOnly = !this.readOnly;
+          await this.getJobs();
+          let payload = { type: "success", message: "Successfully edited Job" };
+          this.$store.dispatch("snackBarAlert", payload);
+          this.isLoading = false;
+        } catch (error) {
+          if (error.response) {
+            alert(error.response.data.message);
+          } else {
+            alert("Something went wrong! Check Network Connection");
+          }
+          this.isLoading = false;
+        }
       }
     },
 
@@ -401,7 +392,6 @@ export default {
     createWO(item) {
       this.$store.state.itemInfo = item;
       this.$router.push("CreateWO");
-      console.log(this.$store.state.itemInfo);
     },
     newJob() {
       this.readOnly = !this.readOnly;
@@ -410,13 +400,13 @@ export default {
     },
     async createJob(item) {
       if (this.$refs.form.validate()) {
-        this.isLoading = true;
-        item.FullName = `${item.Customer}:${item.Name}`;
-        item.ParentRef = {
-          FullName: item.Customer,
-        };
-        await axios
-          .post(
+        try {
+          this.isLoading = true;
+          item.FullName = `${item.Customer}:${item.Name}`;
+          item.ParentRef = {
+            FullName: item.Customer,
+          };
+          await axios.post(
             process.env.VUE_APP_API_URL + "/api/v1/job/add",
             {
               Name: item.Name,
@@ -430,25 +420,21 @@ export default {
               Email: item.Email,
             },
             { withCredentials: true }
-          )
-          .then(
-            async () => {
-              await this.getJobs();
-              this.createdAlert = true;
-              this.readOnly = !this.readOnly;
-              this.newJobBoolean = false;
-              this.isLoading = false;
-            },
-            { withCredentials: true }
-          )
-          .catch((error) => {
-            if (error.response) {
-              alert(error.response.data.message);
-            } else {
-              alert("Something went wrong! Check Network Connection");
-            }
-            this.isLoading = false;
-          });
+          );
+          await this.getJobs();
+          let payload = { type: "success", message: "Successfully created Job" };
+          this.$store.dispatch("snackBarAlert", payload);
+          this.readOnly = !this.readOnly;
+          this.newJobBoolean = false;
+          this.isLoading = false;
+        } catch (error) {
+          if (error.response) {
+            alert(error.response.data.message);
+          } else {
+            alert("Something went wrong! Check Network Connection");
+          }
+          this.isLoading = false;
+        }
       }
     },
   },

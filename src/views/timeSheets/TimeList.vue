@@ -8,9 +8,9 @@
 <template>
   <v-container>
     <v-card>
-      <v-flex xs12 md12>
-        <v-row justify="center">
-          <v-col cols="3">
+      <v-card-text>
+        <v-row justify="center" class="mt-5">
+          <v-flex xs10 md3 justify-center pa-1>
             <!-- Employee search -->
             <v-autocomplete
               v-model.lazy="employee"
@@ -24,10 +24,10 @@
               item-text="Name"
               @change="getTimes()"
             ></v-autocomplete>
-          </v-col>
+          </v-flex>
 
           <!-- Range of dates selected -->
-          <v-col cols="3">
+          <v-flex xs10 md3 pa-1>
             <v-combobox
               v-model="dateRange"
               dense
@@ -38,29 +38,51 @@
               return-object
               @change="getTimes()"
             ></v-combobox>
-          </v-col>
+          </v-flex>
         </v-row>
         <v-row justify="center">
-          <v-col cols="2">
-            <v-text-field v-model="lowRange" dense type="date" @change="getTimes()"></v-text-field>
-          </v-col>
-
-          <v-col cols="2">
-            <v-text-field v-model="highRange" dense type="date" readonly></v-text-field>
-          </v-col>
+          <v-flex xs10 md2>
+            <v-menu>
+              <template v-slot:activator="{ on }">
+                <v-text-field
+                  :value="formattedStartDate"
+                  label="Start Date"
+                  prepend-icon="mdi-calendar-range"
+                  v-on="on"
+                ></v-text-field>
+              </template>
+              <v-date-picker v-model="lowRange"></v-date-picker>
+            </v-menu>
+          </v-flex>
         </v-row>
+        <v-row justify="center">
+          <v-flex xs10 md2>
+            <v-menu>
+              <template v-slot:activator="{ on }">
+                <v-text-field
+                  :value="formattedEndDate"
+                  label="End Date"
+                  prepend-icon="mdi-calendar-range"
+                  v-on="on"
+                  disabled
+                ></v-text-field>
+              </template>
+            </v-menu>
+          </v-flex>
+        </v-row>
+
         <v-row justify="center">
           <v-card-actions>
             <v-btn justify="center" color="success" @click="getTimes()">Create Timesheet</v-btn>
           </v-card-actions>
         </v-row>
-      </v-flex>
+      </v-card-text>
     </v-card>
 
     <!-- Time Sheet created for range of dates selected -->
     <v-card v-if="events.length > 0" class="mt-4">
       <v-card-title
-        v-text="` ${employee.Name} Timesheet From ${lowRange} until ${highRange}`"
+        v-text="` ${employee.Name} Timesheet From ${formattedStartDate} until ${formattedEndDate}`"
       ></v-card-title>
       <v-list v-for="(event, index) in events" :key="index">
         <v-list-item-content>
@@ -88,6 +110,7 @@
 </template>
 
 <script>
+import moment from "moment";
 export default {
   data() {
     return {
@@ -116,6 +139,14 @@ export default {
     this.getEmployees();
     this.setLowDate();
   },
+  computed: {
+    formattedStartDate() {
+      return this.lowRange ? moment(this.lowRange).format("Do MMMM YYYY") : "";
+    },
+    formattedEndDate() {
+      return this.highRange ? moment(this.highRange).format("Do MMMM YYYY") : "";
+    },
+  },
   watch: {
     lowRange: function () {
       this.getTimes();
@@ -131,7 +162,16 @@ export default {
     },
     //gets the employees
     async getEmployees() {
-      this.employees = await this.$store.dispatch("getEmployees");
+      if (this.$store.state.userRole === "admin") {
+        this.employees = await this.$store.dispatch("getEmployees");
+      } else if (this.$store.state.userRole === "user") {
+        let employee = await this.$store.dispatch(
+          "getEmployee",
+          this.$store.state.userEmployeeReference
+        );
+        this.employees.push(employee);
+        this.employee = employee;
+      }
     },
 
     //Gets the filtered time data
@@ -139,7 +179,7 @@ export default {
       this.updateDates();
       try {
         let events = [];
-        let param = `?filter=${this.employee.Name}&lowRange=${this.lowRange}&highRange=${this.highRange}`; //send parameters for ranges
+        let param = `?filter=${this.employee.Name}&lowRange=${this.lowRange}T00:00:00.000z&highRange=${this.highRange}T23:59:59.000z`; //send parameters for ranges
         await this.$store.dispatch("getAllTimes", param).then((times) => {
           times.map((time) => {
             if (time.TimeData[1]) {
@@ -161,7 +201,6 @@ export default {
             return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
           });
           this.events = events;
-          console.log(events);
         });
       } catch (err) {
         console.log(err);

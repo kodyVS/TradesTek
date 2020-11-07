@@ -3,16 +3,15 @@
 </script>
 <template>
   <div>
-    <v-flex xs12 md12>
-      <v-row justify="center">
-        <v-col cols="6" justify="center">
-          <v-tabs fixed-tabs background-color="primary darken-2" dark hide-slider>
-            <v-tab to="/TimeSheets/Calendar"> Calendar </v-tab>
-            <v-tab to="/TimeSheets/List"> List </v-tab>
-          </v-tabs>
-        </v-col>
-      </v-row>
-    </v-flex>
+    <v-row justify="center">
+      <v-flex xs12 md6>
+        <v-tabs fixed-tabs background-color="primary darken-2" dark hide-slider>
+          <v-tab to="/TimeSheets/Calendar"> Calendar </v-tab>
+          <v-tab to="/TimeSheets/List"> List </v-tab>
+        </v-tabs>
+      </v-flex>
+    </v-row>
+
     <router-view></router-view>
   </div>
 </template>

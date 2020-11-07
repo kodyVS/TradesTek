@@ -1,12 +1,5 @@
 <template>
   <div>
-    <v-snackbar v-model="createdAlert" color="" class="success--text" top
-      ><template v-slot:action="{ attrs }">
-        <v-btn color="success" text v-bind="attrs" @click="createdAlert = false"> Close </v-btn>
-      </template>
-      <v-icon color="green">mdi-check</v-icon>
-      <span> Customer has been successfully created </span>
-    </v-snackbar>
     <!-- Search function for the table -->
     <v-container mb-4>
       <v-row justify="center">
@@ -239,7 +232,6 @@ export default {
     items: [],
 
     //Values for items that are open on the menu's
-    createdAlert: false,
     editedIndex: -1,
     editedItem: {
       ListID: "",
@@ -307,9 +299,9 @@ export default {
     //todo Move Into Store
     async editCustomer(item) {
       if (this.$refs.form.validate()) {
-        this.isLoading = true;
-        await axios
-          .post(
+        try {
+          this.isLoading = true;
+          await axios.post(
             process.env.VUE_APP_API_URL + "/api/v1/customer/edit",
             {
               ListID: item.ListID,
@@ -324,20 +316,20 @@ export default {
               Email: item.Email,
             },
             { withCredentials: true }
-          )
-          .then(async () => {
-            await this.getCustomers();
-            this.isLoading = false;
-            this.readOnly = !this.readOnly;
-          })
-          .catch((error) => {
-            if (error.response) {
-              alert(error.response.data.message);
-            } else {
-              alert("Something went wrong! Check Network Connection");
-            }
-            this.isLoading = false;
-          });
+          );
+          await this.getCustomers();
+          this.isLoading = false;
+          this.readOnly = !this.readOnly;
+          let payload = { type: "success", message: "Successfully edited Customer" };
+          this.$store.dispatch("snackBarAlert", payload);
+        } catch (error) {
+          if (error.response) {
+            alert(error.response.data.message);
+          } else {
+            alert("Something went wrong! Check Network Connection");
+          }
+          this.isLoading = false;
+        }
       }
     },
 
@@ -356,8 +348,8 @@ export default {
       if (this.$refs.form.validate()) {
         this.isLoading = true;
         //due to quickbooks formatting Name and FullName have to be the same
-        await axios
-          .post(
+        try {
+          await axios.post(
             process.env.VUE_APP_API_URL + "/api/v1/customer/add",
             {
               Name: item.FullName,
@@ -370,22 +362,21 @@ export default {
               Email: item.Email,
             },
             { withCredentials: true }
-          )
-          .then(async () => {
-            await this.getCustomers();
-            this.readOnly = !this.readOnly;
-            this.createdAlert = true;
-            this.newCustomerBoolean = true;
-            this.isLoading = false;
-          })
-          .catch((error) => {
-            if (error.response) {
-              alert(error.response.data.message);
-            } else {
-              alert("Something went wrong! Check Network Connection");
-            }
-            this.isLoading = false;
-          });
+          );
+          await this.getCustomers();
+          this.readOnly = !this.readOnly;
+          let payload = { type: "success", message: "Successfully created Customer" };
+          this.$store.dispatch("snackBarAlert", payload);
+          this.newCustomerBoolean = true;
+          this.isLoading = false;
+        } catch (error) {
+          if (error.response) {
+            alert(error.response.data.message);
+          } else {
+            alert("Something went wrong! Check Network Connection");
+          }
+          this.isLoading = false;
+        }
       }
     },
   },

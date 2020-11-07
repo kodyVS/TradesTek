@@ -14,7 +14,7 @@
 </script>
 <template>
   <v-row justify="center">
-    <v-col cols="4">
+    <v-flex xs12 md4>
       <!-- Employee search that returns the entire employee object -->
       <v-autocomplete
         v-model.lazy="employee"
@@ -29,26 +29,40 @@
         class="pt-5 pl-4"
         @change="getEvents(storedLowRange, storedHighRange, true)"
       ></v-autocomplete>
-    </v-col>
+    </v-flex>
+    <h4 v-if="!$vuetify.breakpoint.mdAndUp">{{ title }}</h4>
     <v-col cols="12">
       <v-sheet>
         <!-- Top Bar of calendar -->
         <v-toolbar flat color="white">
-          <v-btn color="primary" dark @click="showNewTimeDialog()"> New Time </v-btn>
-          <v-btn outlined class="mr-4" @click="focus = today"> Today </v-btn>
+          <v-btn color="primary" dark @click="showNewTimeDialog()" v-bind="size"> New Time </v-btn>
+          <v-btn outlined class="mr-4" @click="focus = today" v-bind="size"> Today </v-btn>
           <v-btn fab text small @click="prev">
             <v-icon small>mdi-chevron-left</v-icon>
           </v-btn>
           <v-btn fab text small @click="next">
             <v-icon small>mdi-chevron-right</v-icon>
           </v-btn>
-          <v-toolbar-title>{{ title }}</v-toolbar-title>
-          <div class="flex-grow-1"></div>
-          <v-btn-toggle v-model="calendarView" mandatory>
+          <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">{{ title }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn-toggle v-model="calendarView" mandatory v-if="$vuetify.breakpoint.mdAndUp">
             <v-btn outlined class="mr-4" @click="type = 'day'"> Day </v-btn>
             <v-btn outlined class="mr-4" @click="type = 'week'"> Week </v-btn>
             <v-btn outlined class="mr-4" @click="type = 'month'"> Month </v-btn>
           </v-btn-toggle>
+          <v-menu offset-y v-else>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn small color="primary" dark v-bind="attrs" v-on="on"> Range </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="type = 'day'">
+                <v-list-item-title> Day </v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-title @click="type = 'month'"> month </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
 
           <v-menu bottom right> </v-menu>
         </v-toolbar>
@@ -293,8 +307,15 @@ export default {
   },
 
   computed: {
+    size() {
+      const size = { xs: "small", sm: "medium", lg: "large", xl: "large" }[
+        this.$vuetify.breakpoint.name
+      ];
+      return size ? { [size]: true } : {};
+    },
     //Compute title for the calendar to show current change
     title() {
+      console.log(this);
       const { start, end } = this;
       if (!start || !end) {
         return "";
@@ -329,7 +350,21 @@ export default {
   methods: {
     //pulls the list of employees from the database
     async getEmployees() {
-      this.employees = await this.$store.dispatch("getEmployees");
+      console.log(this.$store.state.userEmployeeReference);
+      if (this.$store.state.userRole === "admin") {
+        this.employees = await this.$store.dispatch("getEmployees");
+      } else if (this.$store.state.userRole === "user") {
+        let employee = await this.$store.dispatch(
+          "getEmployee",
+          this.$store.state.userEmployeeReference
+        );
+        this.employees.push(employee);
+        this.employee = employee;
+        this.getEvents(this.storedLowRange, this.storedHighRange, true);
+        // .then((res) => {
+        //   this.employee = res.data;
+        // });
+      }
     },
 
     //gets events when then employee is selected. Sends a request to the database that will filter the times
@@ -366,6 +401,7 @@ export default {
                     end: `${time.TimeData[1].substr(0, 10)} ${time.TimeData[1].substr(11, 8)}`,
                     description: time.Desc,
                     completed: time.Completed,
+                    PONumber: time.PONumber,
                     color: `${time.Completed ? "#3EAB2A" : "#1948f7"}`,
                   });
                 }
@@ -420,6 +456,7 @@ export default {
           Desc: this.newTime.description,
           Employee: this.newTime.employee.Name,
           EmployeeReference: this.newTime.employee._id,
+          PONumber: this.newTime.workOrder.PONumber,
         };
         await this.$store.dispatch("addTime", timeEntry).then(() => {
           this.getEvents(this.storedLowRange, this.storedHighRange, true);
@@ -473,7 +510,6 @@ export default {
       this.selectedOpen = false;
       await this.$store.dispatch("deleteTime", selectedEvent).then(() => {
         this.getEvents(this.storedLowRange, this.storedHighRange, true);
-        console.log(this.selectedElement);
       });
     },
 

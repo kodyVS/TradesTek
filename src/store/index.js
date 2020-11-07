@@ -13,9 +13,14 @@ export default new Vuex.Store({
     item: null,
     employeeInfo: "",
     error: null,
-    loggedIn: "false",
-    user: "",
-    userEmployeeReference: ""
+    loggedIn: false,
+    isError: false,
+    errorMessage: "Error",
+    isSuccess: false,
+    successMessage: "Success",
+    userRole: "",
+    userEmployeeReference: "",
+    userName: "",
   },
   getters: {
     // getCustomerNames: (state) => {
@@ -26,27 +31,31 @@ export default new Vuex.Store({
   },
   mutations: {},
   actions: {
-    getEmployees: async (state) => {
-      let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all", { withCredentials: true })
-        .then((response) => {
-          return response.data.data;
-        })
-        .catch((error) => {
-          if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
-          }
-        });
-      return data;
+    snackBarAlert(context, payload) {
+      if (payload.type === "error") {
+        this.state.errorMessage = payload.message;
+        this.state.isError = true;
+      } else if (payload.type === "success") {
+        this.state.isSuccess = true;
+        this.state.successMessage = payload.message;
+      }
     },
-    getEmployee: async (context, Id) => {
-      let data = await axios
-        .get(process.env.VUE_APP_API_URL + `/api/v1/employee/${Id}`,  { withCredentials: true })
-        .then((response) => {
-          return response.data.employee;
-        })
+    getEmployees: async () => {
+      let employees = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all", { withCredentials: true })
+        .catch((error) => {
+          if (error.response) {
+            isError = true;
+            errorMessage = error.response.data.message;
+          } else {
+            alert("Something went wrong! Check Network Connection");
+          }
+        });
+      return employees.data.data;
+    },
+    getEmployee: async (_, Id) => {
+      let employee = await axios
+        .get(process.env.VUE_APP_API_URL + `/api/v1/employee/${Id}`, { withCredentials: true })
         .catch((error) => {
           if (error.response) {
             alert(error.response.data.message);
@@ -54,14 +63,11 @@ export default new Vuex.Store({
             alert("Something went wrong! Check Network Connection");
           }
         });
-      return data;
+      return employee.data.employee;
     },
     async getCustomers() {
-      let data = await axios
+      let customers = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all", { withCredentials: true })
-        .then((response) => {
-          return response.data.data;
-        })
         .catch((error) => {
           if (error.response) {
             alert(error.response.data.message);
@@ -69,13 +75,25 @@ export default new Vuex.Store({
             alert("Something went wrong! Check Network Connection");
           }
         });
-      return data;
+      return customers.data.data;
     },
     async getJobs() {
-      let data = await axios
+      let jobs = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/job/all", { withCredentials: true })
-        .then((response) => {
-          return response.data.data;
+        .catch((error) => {
+          if (error.response) {
+            alert(error.response.data.message);
+          } else {
+            alert("Something went wrong! Check Network Connection");
+          }
+        });
+      return jobs.data.data;
+    },
+    async getAllActiveWorkOrders(_, filterParam) {
+      let activeWorkOrders = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/allActive", {
+          params: filterParam,
+          withCredentials: true,
         })
         .catch((error) => {
           if (error.response) {
@@ -84,33 +102,13 @@ export default new Vuex.Store({
             alert("Something went wrong! Check Network Connection");
           }
         });
-      return data;
+      return activeWorkOrders.data.data;
     },
-    async getAllActiveWorkOrders() {
-      try {
-        let data = await axios
-          .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/allActive", {
-            withCredentials: true,
-          })
-          .then((response) => {
-            return response.data.data;
-          })
-          .catch((error) => {
-            if (error.response) {
-              console.log(error.response);
-              alert(error.response.data.message);
-            } else {
-              alert("Something went wrong! Check Network Connection");
-            }
-          });
-        return data;
-      } catch (err) {}
-    },
-    async getAllWorkOrders() {
-      let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/all", { withCredentials: true })
-        .then((response) => {
-          return response.data.data;
+    async getAllWorkOrders(_, filterParam) {
+      let allWorkOrders = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/all", {
+          params: filterParam,
+          withCredentials: true,
         })
         .catch((error) => {
           if (error.response) {
@@ -119,13 +117,13 @@ export default new Vuex.Store({
             alert("Something went wrong! Check Network Connection");
           }
         });
-      return data;
+      return allWorkOrders.data.data;
     },
-    async getWorkOrder(context, param) {
-      let data = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/" + param, { withCredentials: true })
-        .then((response) => {
-          return response.data.data.data;
+    async getWorkOrder(_, params) {
+      let workOrder = await axios
+        .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/" + params[0], {
+          params: { TimePopulation: params[1] },
+          withCredentials: true,
         })
         .catch((error) => {
           if (error.response) {
@@ -137,14 +135,11 @@ export default new Vuex.Store({
             router.go(-1);
           }
         });
-      return data;
+      return workOrder.data.data;
     },
-    async getAllTimes(context, param) {
-      let data = await axios
+    async getAllTimes(_, param) {
+      let times = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/time/all" + param, { withCredentials: true })
-        .then((response) => {
-          return response.data.data;
-        })
         .catch((error) => {
           if (error.response) {
             alert(error.response.data.message);
@@ -152,16 +147,13 @@ export default new Vuex.Store({
             alert("Something went wrong! Check Network Connection");
           }
         });
-      return data;
+      return times.data.data;
     },
-    async editTime(context, editedTime) {
-      let data = await axios
+    async editTime(_, editedTime) {
+      let edittedTime = await axios
         .patch(process.env.VUE_APP_API_URL + "/api/v1/time/edit", editedTime, {
           withCredentials: true,
         })
-        .then((response) => {
-          return response;
-        })
         .catch((error) => {
           if (error.response) {
             alert(error.response.data.message);
@@ -169,16 +161,13 @@ export default new Vuex.Store({
             alert("Something went wrong! Check Network Connection");
           }
         });
-      return data;
+      return edittedTime;
     },
-    async deleteTime(context, timeStamp) {
-      let data = await axios
+    async deleteTime(_, timeStamp) {
+      let deletedTime = await axios
         .delete(process.env.VUE_APP_API_URL + "/api/v1/time/delete/" + timeStamp._id, {
           withCredentials: true,
         })
-        .then((response) => {
-          return response;
-        })
         .catch((error) => {
           if (error.response) {
             alert(error.response.data.message);
@@ -186,14 +175,13 @@ export default new Vuex.Store({
             alert("Something went wrong! Check Network Connection");
           }
         });
-      return data;
+      return deletedTime;
     },
-    async addTime(context, timeStamp) {
-      let data = await axios
+    async addTime(_, timeStamp) {
+      let addedTime = await axios
         .post(process.env.VUE_APP_API_URL + "/api/v1/time/add/", timeStamp, {
           withCredentials: true,
         })
-        .then((res) => res)
         .catch((error) => {
           if (error.response) {
             alert(error.response.data.message);
@@ -201,7 +189,7 @@ export default new Vuex.Store({
             alert("Something went wrong! Check Network Connection");
           }
         });
-      return data;
+      return addedTime;
     },
     async logOut() {
       await axios
@@ -211,6 +199,31 @@ export default new Vuex.Store({
         .then(() => {
           this.state.loggedIn = false;
         });
+    },
+    async autoLogin() {
+      if (!this.state.loggedIn) {
+        await axios
+          .get(process.env.VUE_APP_API_URL + "/api/v1/users/autoLogin", {
+            withCredentials: true,
+          })
+          .then((res) => {
+            if (res.data.status === "success") {
+              this.state.loggedIn = true;
+              this.state.userRole = res.data.data.UserRole;
+              this.state.userEmployeeReference = res.data.data.EmployeeReference;
+              this.state.userName = res.data.data.Name;
+            }
+          })
+          .catch((error) => {
+            this.state.loggedIn = false;
+            this.state.userRole = "";
+            if (error.response) {
+              if (error.response.status !== 401) {
+                console.log(error.response.data.message);
+              }
+            }
+          });
+      }
     },
   },
   modules: {},

@@ -4,7 +4,7 @@
 </script>
 <template>
   <div class="team">
-    <h1>Team</h1>
+    <h1>Employees</h1>
     <!-- Search function for the table -->
     <v-container mb-4>
       <v-row justify="center">
@@ -26,7 +26,7 @@
             <v-card class="text-left ma-3 rounded-card" :elevation="hover ? 16 : 4">
               <v-responsive
                 style="text-align: center"
-                class="pt-2 pb-2 primary darken-3 white--text"
+                class="pt-2 pb-2 primary darken-3 white--text elevation-7"
               >
                 <span>{{ person.Name }}</span>
               </v-responsive>
@@ -154,7 +154,6 @@ export default {
     createWO(currentPerson) {
       this.$store.state.employeeInfo = currentPerson.Name;
       this.$router.push("CreateWO");
-      console.log(this.$store.state.employeeInfo);
     },
 
     async workOrdersFilter(person) {
