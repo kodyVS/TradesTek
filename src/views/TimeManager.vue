@@ -1,6 +1,4 @@
-<script>
-//todo change employees to only match the work orders when they are timed into
-</script>
+<script></script>
 
 <template>
   <div>
@@ -52,10 +50,18 @@
             <v-container>
               <v-row :class="headingColor">
                 <v-col cols="12" md="12" align="center">
-                  <v-btn large :disabled="employee.TimedIn" @click="timeIn()">Time In</v-btn>
+                  <v-btn
+                    large
+                    color="success"
+                    :disabled="employee.TimedIn || !employee.Name || isLoading"
+                    @click="timeIn()"
+                    >Time In</v-btn
+                  >
                   <v-btn large :disabled="!employee.TimedIn" @click="timeOut()">Time Out</v-btn>
-                  <v-btn large @click="timePause()">Lunch</v-btn>
-                  <v-btn large @click="timeResume()">Resume</v-btn>
+                  <v-btn large :disabled="!employee.TimedIn || employee.Lunch" @click="timeLunch()"
+                    >Lunch</v-btn
+                  >
+                  <v-btn large :disabled="!employee.Lunch" @click="timeResume()">Resume</v-btn>
                   <v-btn large @click="status = []">Clear Log</v-btn>
                 </v-col>
               </v-row>
@@ -80,13 +86,14 @@
               <h3>
                 {{ singleEmployee.Name }}
               </h3>
-              <p>
+              <p v-if="!singleEmployee.Lunch">
                 {{
                   singleEmployee.TimedIn === true
                     ? `Timed into ${singleEmployee.WOReference.Name}`
                     : "Not timed in"
                 }}
               </p>
+              <p v-if="singleEmployee.Lunch">Timed into Lunch</p>
             </v-col>
           </v-card>
         </v-flex>
@@ -100,6 +107,7 @@ import axios from "axios";
 export default {
   data() {
     return {
+      isLoading: false,
       workOrder: {},
       workOrders: [],
       employee: {},
@@ -107,7 +115,6 @@ export default {
       filteredEmployees: [],
       headingColor: "",
       status: [],
-      requestStatus: "",
       description: "",
     };
   },
@@ -155,28 +162,37 @@ export default {
               this.workOrder.Name
             }`
           );
-          await axios.post(
-            process.env.VUE_APP_API_URL + "/api/v1/time/timeIn",
-            {
-              WorkOrder: this.workOrder.Name,
-              WOReference: this.workOrder._id,
-              Employee: this.employee.Name,
-              EmployeeReference: this.employee._id,
-              TimeData: timeData,
-              TimedIn: true,
-              PONumber: this.workOrder.PONumber,
-            },
-            { withCredentials: true }
-          );
+          let request = {
+            WorkOrder: this.workOrder.Name,
+            WOReference: this.workOrder._id,
+            Employee: this.employee.Name,
+            EmployeeReference: this.employee._id,
+            TimeData: timeData,
+            TimedIn: true,
+            PONumber: this.workOrder.PONumber,
+          };
+
+          if (this.lunch) {
+            request.Lunch = true;
+            request.WorkOrder = "Lunch";
+          }
+          await axios.post(process.env.VUE_APP_API_URL + "/api/v1/time/timeIn", request, {
+            withCredentials: true,
+          });
           //if the request comes back successful, reload employees and set the employee's timedIn value to true because the employee data isn't reloaded until selected again
           await this.getEmployees();
           this.employee.TimedIn = true;
-        } catch (err) {
-          alert(err);
+        } catch (error) {
+          let payload = { type: "error" };
+          if (error.response) {
+            payload.message = error.response.data.message;
+          }
+          this.$store.dispatch("snackBarAlert", payload);
         }
       } else {
         //create an alert that tells the user to pick a work order and employee
-        alert("pick a work order and employee");
+        let payload = { type: "error", message: "pick a work order and an employee" };
+        this.$store.dispatch("snackBarAlert", payload);
       }
     },
 
@@ -205,32 +221,34 @@ export default {
           { withCredentials: true }
         );
         //When data is successful, set employee's TimedIn to false and reload employees
-        this.requestStatus = "success";
         this.employee.TimedIn = false;
         this.description = "";
-        this.getEmployees();
+        await this.getEmployees();
+        if (this.lunch) {
+          this.employee = this.employees.filter(
+            (employee) => this.employee.Name === employee.Name
+          )[0];
+        }
+
+        console.log(this.employee);
       } catch (err) {
         alert(err.message);
       }
     },
-    //Time pause has not been developed
-    timePause() {
-      this.status.push(
-        `Timed paused at ${new Date()
-          .toISOString()
-          .substr(11, 8)} on ${new Date().toISOString().substr(0, 10)}`
-      );
-      this.headingColor = "warning";
+    async timeLunch() {
+      this.isLoading = true;
+      this.lunch = true;
+      if (this.employee.TimedIn) {
+        await this.timeOut();
+        await this.timeIn();
+      }
+      this.lunch = false;
+      this.isLoading = false;
     },
-
     //time Resume has not been developed
-    timeResume() {
-      this.status.push(
-        `Timed resumed at ${new Date()
-          .toISOString()
-          .substr(11, 8)} on ${new Date().toISOString().substr(0, 10)}`
-      );
-      this.headingColor = "success";
+    async timeResume() {
+      await this.timeOut();
+      await this.timeIn();
     },
   },
 };

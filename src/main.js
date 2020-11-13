@@ -6,7 +6,8 @@ import vuetify from "./plugins/vuetify";
 import dotenv from "dotenv";
 import axios from "axios";
 import VueCookie from "vue-cookie";
-
+import VuetifyConfirm from "vuetify-confirm";
+Vue.use(VuetifyConfirm, { vuetify });
 Vue.use(VueCookie);
 dotenv.config();
 Vue.prototype.$http = axios;

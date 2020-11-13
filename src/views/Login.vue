@@ -130,18 +130,13 @@ export default {
           }
         } catch (error) {
           this.isLoading = false;
+          let payload = { type: "error" };
           if (error.response) {
             if (error.response.status === 401) {
-              let payload = { type: "error", message: error.response.data.message };
-              this.$store.dispatch("snackBarAlert", payload);
+              payload.message = error.response.data.message;
             }
-          } else {
-            let payload = {
-              type: "error",
-              message: "Something went wrong! Check Network Connection",
-            };
-            this.$store.dispatch("snackBarAlert", payload);
           }
+          this.$store.dispatch("snackBarAlert", payload);
         }
       }
     },

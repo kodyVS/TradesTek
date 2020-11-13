@@ -103,6 +103,14 @@
                   </v-autocomplete>
                 </v-flex>
                 <v-flex xs12>
+                  <v-checkbox
+                    label="Is this a Lunch?"
+                    color="indigo darken-3"
+                    hide-details
+                    v-model="lunch"
+                  ></v-checkbox
+                ></v-flex>
+                <v-flex xs12>
                   <v-text-field
                     v-model="newTime.description"
                     type="text"
@@ -246,7 +254,7 @@ export default {
     //The stored Low range and high range for sending a filter request
     storedLowRange: null,
     storedHighRange: null,
-
+    lunch: false,
     //The time of a selected event
     selectedEventTime: {
       date: null,
@@ -315,7 +323,6 @@ export default {
     },
     //Compute title for the calendar to show current change
     title() {
-      console.log(this);
       const { start, end } = this;
       if (!start || !end) {
         return "";
@@ -350,7 +357,6 @@ export default {
   methods: {
     //pulls the list of employees from the database
     async getEmployees() {
-      console.log(this.$store.state.userEmployeeReference);
       if (this.$store.state.userRole === "admin") {
         this.employees = await this.$store.dispatch("getEmployees");
       } else if (this.$store.state.userRole === "user") {
@@ -403,6 +409,7 @@ export default {
                     completed: time.Completed,
                     PONumber: time.PONumber,
                     color: `${time.Completed ? "#3EAB2A" : "#1948f7"}`,
+                    WOReference: time.WOReference,
                   });
                 }
               });
@@ -458,7 +465,12 @@ export default {
           EmployeeReference: this.newTime.employee._id,
           PONumber: this.newTime.workOrder.PONumber,
         };
-        await this.$store.dispatch("addTime", timeEntry).then(() => {
+        if (this.lunch) {
+          timeEntry.Lunch = true;
+          timeEntry.WorkOrder = "Lunch";
+        }
+        try {
+          await this.$store.dispatch("addTime", timeEntry);
           this.getEvents(this.storedLowRange, this.storedHighRange, true);
           this.dialog = false;
           this.newTime = {
@@ -468,7 +480,10 @@ export default {
             end: null,
             employee: null,
           };
-        });
+          this.lunch = false;
+        } catch (error) {
+          alert(error.message);
+        }
       } else {
         alert("You must enter work order, start, and end time");
       }
@@ -504,11 +519,11 @@ export default {
       this.getEvents(this.storedLowRange, this.storedHighRange, true);
     },
 
-    //fix error on calendar month when deleting the event. selectedEvent is wrong.
     //deletes event from the database
     async deleteEvent(selectedEvent) {
       this.selectedOpen = false;
       await this.$store.dispatch("deleteTime", selectedEvent).then(() => {
+        this.events = [];
         this.getEvents(this.storedLowRange, this.storedHighRange, true);
       });
     },

@@ -33,161 +33,195 @@ export default new Vuex.Store({
   actions: {
     snackBarAlert(context, payload) {
       if (payload.type === "error") {
-        this.state.errorMessage = payload.message;
+        if (payload.message) {
+          this.state.errorMessage = payload.message;
+        } else {
+          this.state.errorMessage = "Something Went Wrong Check Internet Connection";
+        }
         this.state.isError = true;
       } else if (payload.type === "success") {
         this.state.isSuccess = true;
         this.state.successMessage = payload.message;
       }
     },
-    getEmployees: async () => {
+    getEmployees: async (context) => {
       let employees = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all", { withCredentials: true })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            isError = true;
-            errorMessage = error.response.data.message;
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return employees.data.data;
     },
-    getEmployee: async (_, Id) => {
+    getEmployee: async (context, Id) => {
       let employee = await axios
         .get(process.env.VUE_APP_API_URL + `/api/v1/employee/${Id}`, { withCredentials: true })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return employee.data.employee;
     },
-    async getCustomers() {
+    async getCustomers(context, filter) {
+      let ShowHidden = false;
+      if (filter) {
+        ShowHidden = true;
+      }
       let customers = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all", { withCredentials: true })
+        .get(process.env.VUE_APP_API_URL + "/api/v1/customer/all", {
+          params: { ShowHidden },
+          withCredentials: true,
+        })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return customers.data.data;
     },
-    async getJobs() {
+    async getJobs(context, filter) {
       let jobs = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/job/all", { withCredentials: true })
+        .get(process.env.VUE_APP_API_URL + "/api/v1/job/all", {
+          params: { ShowHidden: filter },
+          withCredentials: true,
+        })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return jobs.data.data;
     },
-    async getAllActiveWorkOrders(_, filterParam) {
+    async getAllActiveWorkOrders(context, filterParam) {
       let activeWorkOrders = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/allActive", {
           params: filterParam,
           withCredentials: true,
         })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return activeWorkOrders.data.data;
     },
-    async getAllWorkOrders(_, filterParam) {
+    async getAllWorkOrders(context, filterParam) {
       let allWorkOrders = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/all", {
           params: filterParam,
           withCredentials: true,
         })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return allWorkOrders.data.data;
     },
-    async getWorkOrder(_, params) {
+    async getWorkOrder(context, params) {
       let workOrder = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/workOrder/" + params[0], {
           params: { TimePopulation: params[1] },
           withCredentials: true,
         })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-            router.go(-1);
-            this.state.error = error.response.data;
-          } else {
-            alert("Something went wrong!");
-            router.go(-1);
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return workOrder.data.data;
     },
-    async getAllTimes(_, param) {
+    async getAllTimes(context, param) {
       let times = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/time/all" + param, { withCredentials: true })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return times.data.data;
     },
-    async editTime(_, editedTime) {
+    async editTime(context, editedTime) {
       let edittedTime = await axios
         .patch(process.env.VUE_APP_API_URL + "/api/v1/time/edit", editedTime, {
           withCredentials: true,
         })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return edittedTime;
     },
-    async deleteTime(_, timeStamp) {
+    async deleteTime(context, timeStamp) {
+      console.log(timeStamp);
       let deletedTime = await axios
-        .delete(process.env.VUE_APP_API_URL + "/api/v1/time/delete/" + timeStamp._id, {
+        .delete(process.env.VUE_APP_API_URL + "/api/v1/time/delete", {
+          params: { id: timeStamp._id, WOReference: timeStamp.WOReference },
           withCredentials: true,
         })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return deletedTime;
     },
-    async addTime(_, timeStamp) {
+    async addTime(context, timeStamp) {
       let addedTime = await axios
         .post(process.env.VUE_APP_API_URL + "/api/v1/time/add/", timeStamp, {
           withCredentials: true,
         })
         .catch((error) => {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          context.dispatch("snackBarAlert", payload);
         });
       return addedTime;
     },
@@ -200,7 +234,7 @@ export default new Vuex.Store({
           this.state.loggedIn = false;
         });
     },
-    async autoLogin() {
+    async autoLogin(context) {
       if (!this.state.loggedIn) {
         await axios
           .get(process.env.VUE_APP_API_URL + "/api/v1/users/autoLogin", {
@@ -216,12 +250,9 @@ export default new Vuex.Store({
           })
           .catch((error) => {
             this.state.loggedIn = false;
+            this.state.userEmployeeReference = "";
+            this.state.userName = "";
             this.state.userRole = "";
-            if (error.response) {
-              if (error.response.status !== 401) {
-                console.log(error.response.data.message);
-              }
-            }
           });
       }
     },

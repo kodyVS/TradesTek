@@ -7,7 +7,7 @@
           append-icon="mdi-magnify"
           label="Search Employees"
           single-line
-          hide-details
+          hide-detailsj
         ></v-text-field>
       </v-col>
     </v-row>
@@ -451,8 +451,13 @@ export default {
           );
           this.getWorkOrders();
           this.selectedOpen = false;
-        } catch (err) {
-          alert(err.message);
+        } catch (error) {
+          let payload = { type: "error" };
+          if (error.response) {
+            payload.message = error.response.data.message;
+          }
+          this.$store.dispatch("snackBarAlert", payload);
+          this.isLoading = false;
         }
       } else {
         alert("Form is invalid, Check dates and Times");

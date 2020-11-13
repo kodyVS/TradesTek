@@ -8,7 +8,12 @@
   <div class="createWO mt-2">
     <h1>{{ editBoolean ? "Edit Work Order" : "Create Work Order" }}</h1>
     <v-card class="mt-8">
-      <v-card-title>{{ workOrder.Name }}</v-card-title>
+      <v-card-title>
+        <span>{{ workOrder.Name }}</span>
+        <v-spacer></v-spacer>
+        <v-icon @click="deleteWorkOrder()" large v-if="editBoolean">mdi-delete</v-icon>
+      </v-card-title>
+      <v-spacer></v-spacer>
       <v-container mt-2>
         <!-- Form for the creation -->
         <v-form ref="form" class="">
@@ -417,8 +422,14 @@ export default {
           this.$router.replace(`WorkOrders`);
           let payload = { type: "success", message: "Successfully Created Work Order" };
           this.$store.dispatch("snackBarAlert", payload);
-        } catch (err) {
-          alert(err.message);
+        } catch (error) {
+          let payload = {
+            type: "error",
+          };
+          if (error.response) {
+            payload.message = error.response.data.message;
+          }
+          this.$store.dispatch("snackBarAlert", payload);
         }
       }
     },
@@ -469,13 +480,52 @@ export default {
           let payload = { type: "success", message: "Successfully Edited Work Order" };
           this.$store.dispatch("snackBarAlert", payload);
         } catch (err) {
-          alert(err.message);
+          let payload = {
+            type: "error",
+          };
+          if (error.response) {
+            payload.message = error.response.data.message;
+          }
+          this.$store.dispatch("snackBarAlert", payload);
         }
       }
     },
     remove(item) {
       const index = this.workOrder.Employees.indexOf(item.Name);
       if (index >= 0) this.workOrder.Employees.splice(index, 1);
+    },
+    async deleteWorkOrder() {
+      let res = await this.$confirm(
+        "Are you sure you would like to delete this work Order? Actions cannot be undone",
+        {
+          color: "warning",
+          title: "Are you sure?",
+        }
+      );
+
+      if (res) {
+        try {
+          await axios.post(
+            process.env.VUE_APP_API_URL + "/api/v1/workOrder/delete",
+            {
+              _id: this.workOrder._id,
+            },
+            { withCredentials: true }
+          );
+          let payload = { type: "success", message: "Successfully deleted WorkOrder" };
+          this.$store.dispatch("snackBarAlert", payload);
+          this.$router.push("WorkOrders");
+        } catch (error) {
+          let payload = {
+            type: "error",
+          };
+          if (error.response) {
+            payload.message = error.response.data.message;
+          }
+          this.$store.dispatch("snackBarAlert", payload);
+          this.isLoading = false;
+        }
+      }
     },
   },
 };

@@ -14,7 +14,6 @@
         </v-col>
       </v-row>
     </v-container>
-
     <!-- Table  -->
     <v-data-table
       dense
@@ -30,6 +29,24 @@
           <v-toolbar-title class="white--text">Customer List</v-toolbar-title>
           <v-spacer></v-spacer>
 
+          <v-menu offset-y :close-on-content-click="false">
+            <template v-slot:activator="{ on }">
+              <v-btn text color="white" v-on="on">
+                <span>Options</span>
+                <v-icon right>mdi-chevron-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item>
+                <v-switch
+                  v-model="showHidden"
+                  @change="showHiddenCustomers()"
+                  label="Show Only Deleted Customers?"
+                ></v-switch>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+
           <!-- Details and edit dialog up menu -->
           <v-dialog v-model="dialog" max-width="90%" :persistent="!readOnly">
             <template v-slot:activator="{ on }">
@@ -40,7 +57,12 @@
                 :class="
                   readOnly ? 'pt-3 pl-3 secondary white--text' : 'pt-3 pl-3 warning white--text'
                 "
-                >{{ editedItem.FullName }}</v-card-title
+              >
+                <span>{{ editedItem.FullName }}</span>
+                <v-spacer></v-spacer>
+                <v-icon v-if="!readOnly" large @click="deleteCustomer(editedItem._id)" color="white"
+                  >mdi-delete</v-icon
+                ></v-card-title
               >
               <v-form ref="form" class="mt-8">
                 <v-container>
@@ -139,10 +161,19 @@
                   </v-row>
                   <!-- Buttons for create WO and edit customer and save changes on dialog-->
                   <v-layout align-end justify-end>
-                    <v-btn v-if="readOnly" color="primary" @click="createJob(editedItem)"
+                    <v-btn
+                      v-if="readOnly && !showHidden"
+                      color="primary"
+                      @click="createJob(editedItem)"
                       >Create Job</v-btn
                     >
-                    <v-btn v-if="readOnly" color="warning" @click="readOnly = !readOnly"
+                    <v-btn v-if="showHidden" @click="editCustomer(editedItem, true)">
+                      Restore Customer
+                    </v-btn>
+                    <v-btn
+                      v-if="readOnly && !showHidden"
+                      color="warning"
+                      @click="readOnly = !readOnly"
                       >Edit Customer</v-btn
                     >
                   </v-layout>
@@ -191,7 +222,9 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success" @click="ViewItem(item)">Details</v-btn>
-        <v-btn small class="primary ml-2" @click="createJob(item)">Create Job</v-btn>
+        <v-btn small class="primary ml-2" v-if="!showHidden" @click="createJob(item)"
+          >Create Job</v-btn
+        >
       </template>
     </v-data-table>
   </div>
@@ -205,6 +238,7 @@ export default {
     newCustomerBoolean: true,
     dialog: false,
     isLoading: false,
+    showHidden: false,
 
     //Truth for if editting is turned on
     readOnly: true,
@@ -286,8 +320,10 @@ export default {
 
     //Will get customer from the Db and console log an error if there is an error
     async getCustomers() {
-      this.items = await this.$store.dispatch("getCustomers");
+      let customers = await this.$store.dispatch("getCustomers", this.showHidden);
+      this.items = customers;
     },
+
     //Used to view a pop up
     ViewItem(item) {
       this.editedIndex = this.items.indexOf(item);
@@ -297,37 +333,42 @@ export default {
 
     //save changes to a customer to the database
     //todo Move Into Store
-    async editCustomer(item) {
+    async editCustomer(item, restore) {
       if (this.$refs.form.validate()) {
         try {
           this.isLoading = true;
-          await axios.post(
-            process.env.VUE_APP_API_URL + "/api/v1/customer/edit",
-            {
-              ListID: item.ListID,
-              EditSequence: item.EditSequence,
-              Name: item.Name,
-              FullName: item.FullName,
-              CompanyName: item.CompanyName,
-              FirstName: item.FirstName,
-              LastName: item.LastName,
-              BillAddress: item.BillAddress,
-              Phone: item.Phone,
-              Email: item.Email,
-            },
-            { withCredentials: true }
-          );
+          let editedCustomer = {
+            _id: item._id,
+            ListID: item.ListID,
+            EditSequence: item.EditSequence,
+            Name: item.Name,
+            FullName: item.FullName,
+            CompanyName: item.CompanyName,
+            FirstName: item.FirstName,
+            LastName: item.LastName,
+            BillAddress: item.BillAddress,
+            Phone: item.Phone,
+            Email: item.Email,
+          };
+
+          if (restore === true) {
+            editedCustomer.Hidden = false;
+          }
+
+          await axios.post(process.env.VUE_APP_API_URL + "/api/v1/customer/edit", editedCustomer, {
+            withCredentials: true,
+          });
           await this.getCustomers();
           this.isLoading = false;
           this.readOnly = !this.readOnly;
           let payload = { type: "success", message: "Successfully edited Customer" };
           this.$store.dispatch("snackBarAlert", payload);
         } catch (error) {
+          let payload = { type: "error" };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          this.$store.dispatch("snackBarAlert", payload);
           this.isLoading = false;
         }
       }
@@ -370,14 +411,37 @@ export default {
           this.newCustomerBoolean = true;
           this.isLoading = false;
         } catch (error) {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          this.$store.dispatch("snackBarAlert", payload);
           this.isLoading = false;
         }
       }
+    },
+    async deleteCustomer(selectedCustomer) {
+      let res = await this.$confirm("Are you sure you would like to delete this customer?", {
+        color: "warning",
+        title: "Are you sure?",
+      });
+      if (res) {
+        await axios.post(
+          process.env.VUE_APP_API_URL + "/api/v1/customer/delete",
+          {
+            _id: selectedCustomer,
+          },
+          { withCredentials: true }
+        );
+        this.readOnly = !this.readOnly;
+        this.dialog = !this.dialog;
+        this.getCustomers();
+      }
+    },
+    showHiddenCustomers() {
+      this.getCustomers();
     },
   },
 };

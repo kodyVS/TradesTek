@@ -32,7 +32,23 @@
         <v-toolbar flat color="secondary">
           <v-toolbar-title class="white--text">Job Site List</v-toolbar-title>
           <v-spacer></v-spacer>
-
+          <v-menu offset-y :close-on-content-click="false">
+            <template v-slot:activator="{ on }">
+              <v-btn text color="white" v-on="on">
+                <span>Options</span>
+                <v-icon right>mdi-chevron-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item>
+                <v-switch
+                  v-model="showHidden"
+                  @change="showHiddenJobs()"
+                  label="Show Only Deleted Customers?"
+                ></v-switch>
+              </v-list-item>
+            </v-list>
+          </v-menu>
           <!-- Details and edit dialog up menu -->
           <v-dialog v-model="dialog" max-width="90%" :persistent="!readOnly">
             <template v-slot:activator="{ on }">
@@ -43,8 +59,14 @@
                 :class="
                   readOnly ? 'pt-3 pl-3 secondary white--text' : 'pt-3 pl-3 warning white--text'
                 "
-                >{{ editedItem.Name }}</v-card-title
               >
+                <span>{{ editedItem.FullName }}</span>
+                <v-spacer></v-spacer>
+                <v-icon v-if="!readOnly" large @click="deleteJob(editedItem._id)" color="white"
+                  >mdi-delete</v-icon
+                ></v-card-title
+              >
+
               <v-form ref="form" class="mt-8">
                 <v-container>
                   <v-row>
@@ -154,10 +176,19 @@
                   </v-row>
                   <!-- Buttons for create WO and edit job and save changes on dialog-->
                   <v-layout align-end justify-end>
-                    <v-btn v-if="readOnly" color="primary" @click="createWO(editedItem)"
+                    <v-btn
+                      v-if="readOnly && !showHidden"
+                      color="primary"
+                      @click="createWO(editedItem)"
                       >Create WO</v-btn
                     >
-                    <v-btn v-if="readOnly" color="warning" @click="readOnly = !readOnly"
+                    <v-btn v-if="showHidden" @click="editJob(editedItem, true)">
+                      Restore Customer
+                    </v-btn>
+                    <v-btn
+                      v-if="readOnly && !showHidden"
+                      color="warning"
+                      @click="readOnly = !readOnly"
                       >Edit Job</v-btn
                     >
                   </v-layout>
@@ -204,7 +235,9 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success" @click="ViewItem(item)">Details</v-btn>
-        <v-btn small class="primary ml-2" @click="createWO(item)">Create WO</v-btn>
+        <v-btn small class="primary ml-2" v-if="!showHidden" @click="createWO(item)"
+          >Create WO</v-btn
+        >
       </template>
     </v-data-table>
   </div>
@@ -218,6 +251,7 @@ export default {
     //Truth for if the dialog is open
     newJobBoolean: true,
     dialog: false,
+    showHidden: false,
 
     //rules
     fullNameRules: [(v) => !!v || "required"],
@@ -323,7 +357,7 @@ export default {
 
     //Will get job from the Db and console log an error if there is an error
     async getJobs() {
-      this.items = await this.$store.dispatch("getJobs");
+      this.items = await this.$store.dispatch("getJobs", this.showHidden);
       this.items.map((item) => {
         if (!item.BillAddress) {
           item.BillAddress = {
@@ -352,37 +386,42 @@ export default {
     },
 
     //save changes to a job to the database
-    async editJob(item) {
+    async editJob(item, restore) {
       if (this.$refs.form.validate()) {
         this.isLoading = true;
         try {
-          await axios.post(
-            process.env.VUE_APP_API_URL + "/api/v1/job/edit",
-            {
-              ListID: item.ListID,
-              FullName: item.FullName,
-              EditSequence: item.EditSequence,
-              Name: item.Name,
-              ParentRef: item.ParentRef,
-              FirstName: item.FirstName,
-              LastName: item.LastName,
-              BillAddress: item.BillAddress,
-              Phone: item.Phone,
-              Email: item.Email,
-            },
-            { withCredentials: true }
-          );
+          let editedJob = {
+            ListID: item.ListID,
+            FullName: item.FullName,
+            EditSequence: item.EditSequence,
+            Name: item.Name,
+            ParentRef: item.ParentRef,
+            FirstName: item.FirstName,
+            LastName: item.LastName,
+            BillAddress: item.BillAddress,
+            Phone: item.Phone,
+            Email: item.Email,
+          };
+          if (restore) {
+            editedJob.Hidden = false;
+          }
+
+          await axios.post(process.env.VUE_APP_API_URL + "/api/v1/job/edit", editedJob, {
+            withCredentials: true,
+          });
           this.readOnly = !this.readOnly;
           await this.getJobs();
           let payload = { type: "success", message: "Successfully edited Job" };
           this.$store.dispatch("snackBarAlert", payload);
           this.isLoading = false;
         } catch (error) {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          this.$store.dispatch("snackBarAlert", payload);
           this.isLoading = false;
         }
       }
@@ -428,14 +467,38 @@ export default {
           this.newJobBoolean = false;
           this.isLoading = false;
         } catch (error) {
+          let payload = {
+            type: "error",
+          };
           if (error.response) {
-            alert(error.response.data.message);
-          } else {
-            alert("Something went wrong! Check Network Connection");
+            payload.message = error.response.data.message;
           }
+          this.$store.dispatch("snackBarAlert", payload);
           this.isLoading = false;
         }
       }
+    },
+    async deleteJob(selectedJob) {
+      let res = await this.$confirm("Are you sure you would like to delete this customer?", {
+        color: "warning",
+        title: "Are you sure?",
+      });
+      if (res) {
+        await axios.post(
+          process.env.VUE_APP_API_URL + "/api/v1/job/delete",
+          {
+            _id: selectedJob,
+          },
+          { withCredentials: true }
+        );
+        this.readOnly = !this.readOnly;
+        this.dialog = !this.dialog;
+        this.getJobs();
+      }
+    },
+    showHiddenJobs() {
+      this.items = [];
+      this.getJobs();
     },
   },
 };

@@ -16,15 +16,29 @@
           </v-card-title>
           <v-card-text class="black--text mt-n5 ml-4">{{ workOrder.Description }}</v-card-text>
           <v-card-text>
+            <h4>Start Date</h4>
+            <h4 class="black--text ml-2">
+              {{ formattedStartDate }}
+            </h4>
+            <h4>End Date</h4>
+            <h4 class="black--text ml-2">
+              {{ formattedEndDate }}
+            </h4>
+
             <h4>PO Number</h4>
             <h4 class="black--text ml-2">
               {{ workOrder.PONumber }}
+            </h4>
+            <h4>Address</h4>
+            <h4>
+              <a :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString}`">{{
+                getAddressString
+              }}</a>
             </h4>
             <h4>Customer</h4>
             <h4 class="black--text ml-2">
               {{ workOrder.Job.ParentRef.FullName }}
             </h4>
-
             <h4>Contact Name</h4>
             <h4 class="black--text ml-2">
               {{ `${workOrder.Job.FirstName + " " + workOrder.Job.LastName}` }}
@@ -34,12 +48,6 @@
 
             <h4>Phone</h4>
             <h4 class="black--text ml-2">{{ workOrder.Job.Phone }}</h4>
-            <h4>Address</h4>
-            <h4>
-              <a :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString}`">{{
-                getAddressString
-              }}</a>
-            </h4>
           </v-card-text>
 
           <v-card-actions>
@@ -121,6 +129,7 @@
   </div>
 </template>
 <script>
+import moment from "moment";
 export default {
   props: ["selectedWO"],
   data() {
@@ -194,6 +203,14 @@ export default {
       } ${
         this.workOrder.Job.BillAddress.PostalCode ? this.workOrder.Job.BillAddress.PostalCode : ""
       }`;
+    },
+    formattedStartDate() {
+      return this.workOrder.StartDate
+        ? moment(this.workOrder.StartDate).format("MMMM Do YYYY")
+        : "";
+    },
+    formattedEndDate() {
+      return this.workOrder.EndDate ? moment(this.workOrder.EndDate).format("MMMM Do YYYY") : "";
     },
   },
   //at create call getWorkOrders
