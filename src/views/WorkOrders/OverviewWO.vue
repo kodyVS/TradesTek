@@ -18,16 +18,19 @@
 
     <!-- Table  -->
     <v-btn-toggle v-model="buttonToggle" color="blue darken-3">
-      <v-btn small text @click="filterItems(false)">Display Active WO's</v-btn>
-      <v-btn small text @click="getAllWorkOrders(true)">Display Complete WO's</v-btn>
-      <v-btn small text @click="getAllWorkOrders(null)">Display All</v-btn>
+      <v-btn small text @click="getActiveWorkOrders()">Display Active WO's</v-btn>
+      <v-btn small text @click="getAllWorkOrders('complete', search)">Display Complete WO's</v-btn>
+      <!--<v-btn small text @click="getAllWorkOrders('all')">Display All</v-btn>-->
     </v-btn-toggle>
 
     <v-data-table
       :headers="headers"
       :items="filteredItems"
       :search="search"
-      :items-per-page="20"
+      :server-items-length="serverItemsLength"
+      :options.sync="options"
+      :items-per-page="2"
+      :page="page"
       :footer-props="{ 'items-per-page-options': [20, 30, 50, 100] }"
     >
       <template v-slot:top>
@@ -38,7 +41,16 @@
 
           <v-btn color="primary" @click="newWorkOrder()">New Work Order</v-btn>
         </v-toolbar>
+        <v-progress-linear
+          color="blue"
+          indeterminate
+          rounded
+          height="4"
+          class="header-area"
+          v-show="isLoading"
+        ></v-progress-linear>
       </template>
+
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success ma-1" @click="ViewItem(item)">View</v-btn>
         <v-btn small class="primary ml-1 ma-1" @click="editWorkOrder(item)">Edit</v-btn>
@@ -94,7 +106,12 @@ export default {
     },
   },
   data: () => ({
+    options: {},
+    page: 0,
+    itemsPerPage: 20,
+    isLoading: false,
     completeWO: false,
+    serverItemsLength: -1,
     buttonToggle: 0,
     //V-model for searching
     search: "",
@@ -118,6 +135,7 @@ export default {
     ],
 
     //Array of objects for table taken from back end
+    activeWorkOrders: [],
     items: [],
     filteredItems: [],
     //Values for items that are open on the menu's
@@ -126,29 +144,72 @@ export default {
   }),
 
   computed: {},
-
-  watch: {
-    //Watching if the dialog is open and when it closes. If it closes set readOnly back to true
-  },
-
   //When the page is created call the getactiveworkorders method
+  watch: {
+    search(val) {
+      this.getWorkOrdersDebounced(val);
+    },
+    options() {
+      console.log(this.search);
+      this.getAllWorkOrders("_", this.search);
+    },
+  },
   created() {
     this.getActiveWorkOrders();
   },
+
   methods: {
     //Will get Work Orders from the Db
+    async getWorkOrdersDebounced(val) {
+      clearTimeout(this._searchTimerId);
+      this._searchTimerId = setTimeout(() => {
+        this.getAllWorkOrders("_", val);
+      }, 1000);
+    },
     async getActiveWorkOrders() {
-      this.items = await this.$store.dispatch("getAllActiveWorkOrders");
+      this.serverItemsLength = -1;
+      if (this.activeWorkOrders.length === 0) {
+        this.activeWorkOrders = await this.$store.dispatch("getAllActiveWorkOrders");
+      }
+      this.items = this.activeWorkOrders;
       this.filteredItems = [...this.items];
+      this.completeWO = false;
     },
 
-    async getAllWorkOrders(boolean) {
-      if (!this.completeWO) {
-        this.items = await this.$store.dispatch("getAllWorkOrders");
+    async getAllWorkOrders(displayVar, val) {
+      const { page, itemsPerPage } = this.options;
+      this.isLoading = true;
+      if (displayVar === "complete" || displayVar === "all") {
         this.completeWO = true;
-        this.filteredItems = [...this.items];
       }
-      this.filterItems(boolean);
+      let searchParam = {
+        Complete: true,
+        Page: page,
+        ItemsPerPage: itemsPerPage,
+      };
+      if (val) {
+        searchParam.SearchText = val;
+        console.log(val);
+      }
+      try {
+        if (this.completeWO) {
+          let response = await this.$store.dispatch("getAllWorkOrders", searchParam);
+          if (response.metadata) {
+            if (response.metadata[0]) {
+              this.serverItemsLength = response.metadata[0].total;
+            }
+          }
+
+          let completedWorkOrderList = response.workOrders;
+
+          this.items = [...completedWorkOrderList];
+          this.filteredItems = [...this.items];
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      //this.filterItems(displayVar);
+      this.isLoading = false;
     },
     //Used to route to the individual work orders
     ViewItem(item) {
@@ -167,19 +228,21 @@ export default {
     },
 
     //Custom filter for which work orders to display
-    filterItems(boolean) {
-      if (boolean) {
-        return (this.filteredItems = this.items.filter((i) => {
-          return i.Complete === true;
-        }));
-      } else if (boolean === false) {
-        return (this.filteredItems = this.items.filter((i) => {
-          return i.Complete === false;
-        }));
-      } else if (boolean === null) {
-        return (this.filteredItems = this.items);
-      }
-    },
+    // filterItems(displayVar) {
+    //   console.log(displayVar);
+    //   if (displayVar === "active") {
+    //     return (this.filteredItems = this.items.filter((i) => {
+    //       return i.Complete === false;
+    //     }));
+    //   } else if (displayVar === "complete") {
+    //     console.log("working");
+    //     return (this.filteredItems = this.items.filter((i) => {
+    //       return i.Complete === true;
+    //     }));
+    //   } else if (displayVar === "all") {
+    //     return (this.filteredItems = this.items);
+    //   }
+    // },
   },
 };
 </script>
