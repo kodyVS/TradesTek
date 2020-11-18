@@ -5,60 +5,73 @@
 <template>
   <div>
     <v-container class="mt-4">
-      <v-flex xs12>
-        <v-card hover shaped>
-          <v-btn v-if="!selectedWO" class="ml-4" @click="$router.go(-1)">Back to Overview</v-btn>
-          <v-card-title>
-            <h3>{{ workOrder.Name }}</h3>
-            <v-card-subtitle class="text-center black--text ml-n3"
-              ><i> - {{ workOrder.Complete ? "Completed" : "Active" }}</i></v-card-subtitle
-            >
-          </v-card-title>
-          <v-card-text class="black--text mt-n5 ml-4">{{ workOrder.Description }}</v-card-text>
-          <v-card-text>
-            <h4>Start Date</h4>
-            <h4 class="black--text ml-2">
-              {{ formattedStartDate }}
-            </h4>
-            <h4>End Date</h4>
-            <h4 class="black--text ml-2">
-              {{ formattedEndDate }}
-            </h4>
+      <v-btn v-if="!selectedWO" class="ml-4 mb-5" @click="$router.go(-1)">Back to Overview</v-btn>
+      <v-card hover shaped>
+        <v-row>
+          <v-flex xs12 md5 class="ml-4">
+            <v-card-title>
+              <h3>{{ workOrder.Name }}</h3>
+              <v-card-subtitle class="text-center black--text ml-n3"
+                ><i> - {{ workOrder.Complete ? "Completed" : "Active" }}</i></v-card-subtitle
+              >
+            </v-card-title>
+            <v-card-text class="black--text mt-n5 ml-4">{{ workOrder.Description }}</v-card-text>
+            <v-card-text>
+              <h4>Start Date</h4>
+              <h4 class="ml-2">
+                {{ formattedStartDate }}
+              </h4>
+              <h4>End Date</h4>
+              <h4 class="ml-2">
+                {{ formattedEndDate }}
+              </h4>
 
-            <h4>PO Number</h4>
-            <h4 class="black--text ml-2">
-              {{ workOrder.PONumber }}
-            </h4>
-            <h4>Address</h4>
-            <h4>
-              <a :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString}`">{{
-                getAddressString
-              }}</a>
-            </h4>
-            <h4>Customer</h4>
-            <h4 class="black--text ml-2">
-              {{ workOrder.Job.ParentRef.FullName }}
-            </h4>
-            <h4>Contact Name</h4>
-            <h4 class="black--text ml-2">
-              {{ `${workOrder.Job.FirstName + " " + workOrder.Job.LastName}` }}
-            </h4>
-            <h4>Email</h4>
-            <h4 class="black--text ml-2">{{ workOrder.Job.Email }}</h4>
+              <h4>PO Number</h4>
+              <h4 class="ml-2">
+                {{ workOrder.PONumber }}
+              </h4>
+              <h4>Address</h4>
+              <h4>
+                <a :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString}`">{{
+                  getAddressString
+                }}</a>
+              </h4>
+              <h4>Customer</h4>
+              <h4 class="ml-2">
+                {{ workOrder.Job.ParentRef.FullName }}
+              </h4>
+              <h4>Contact Name</h4>
+              <h4 class="ml-2">
+                {{ `${workOrder.Job.FirstName + " " + workOrder.Job.LastName}` }}
+              </h4>
+              <h4>Email</h4>
+              <h4 class="ml-2">{{ workOrder.Job.Email }}</h4>
 
-            <h4>Phone</h4>
-            <h4 class="black--text ml-2">{{ workOrder.Job.Phone }}</h4>
-          </v-card-text>
+              <h4>Phone</h4>
+              <h4 class="ml-2">{{ workOrder.Job.Phone }}</h4>
+            </v-card-text>
 
-          <v-card-actions>
-            <v-btn color="primary" v-if="$store.state.userRole === 'admin'" @click="editWorkOrder()"
-              >Edit</v-btn
-            >
-            <v-spacer></v-spacer>
-            <v-btn icon><v-icon>mdi-bookmark</v-icon></v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-flex>
+            <v-card-actions>
+              <v-btn
+                color="primary"
+                v-if="$store.state.userRole === 'admin'"
+                @click="editWorkOrder()"
+                >Edit</v-btn
+              >
+              <v-spacer></v-spacer>
+              <v-btn icon><v-icon>mdi-bookmark</v-icon></v-btn>
+            </v-card-actions>
+          </v-flex>
+          <v-flex xs12 md6>
+            <v-row class="align-center mt-8" justify="center">
+              <v-col v-for="(image, index) in workOrder.Images" :key="index">
+                <v-img :lazy-src="image" max-height="150" max-width="250" :src="image"></v-img>
+              </v-col>
+            </v-row>
+          </v-flex>
+        </v-row>
+      </v-card>
+
       <v-flex xs12 class="mt-4" v-if="$store.state.userRole === 'admin'">
         <v-card hover>
           <v-card-title>
@@ -225,6 +238,7 @@ export default {
       } else {
         this.workOrder = this.selectedWO;
       }
+      console.log(this.workOrder);
     },
 
     //send work order to the edit/create work order function
