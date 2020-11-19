@@ -6,6 +6,23 @@
   <div>
     <v-container class="mt-4">
       <v-btn v-if="!selectedWO" class="ml-4 mb-5" @click="$router.go(-1)">Back to Overview</v-btn>
+      <swiper :options="swiperOptions" ref="mySwiperRef">
+        <swiper-slide v-for="(image, index) in workOrder.Images" :key="index">
+          <img class="img" :src="image" />
+        </swiper-slide>
+        <div class="swiper-pagination" slot="pagination"></div>
+        <div
+          class="swiper-button-prev"
+          slot="button-prev"
+          @click="$refs.mySwiperRef.$swiper.slidePrev()"
+        ></div>
+        <div
+          class="swiper-button-next"
+          slot="button-next"
+          @click="$refs.mySwiperRef.$swiper.slideNext()"
+        ></div>
+      </swiper>
+
       <v-card hover shaped>
         <v-row>
           <v-flex xs12 md5 class="ml-4">
@@ -61,13 +78,6 @@
               <v-spacer></v-spacer>
               <v-btn icon><v-icon>mdi-bookmark</v-icon></v-btn>
             </v-card-actions>
-          </v-flex>
-          <v-flex xs12 md6>
-            <v-row class="align-center mt-8" justify="center">
-              <v-col v-for="(image, index) in workOrder.Images" :key="index">
-                <v-img :lazy-src="image" max-height="150" max-width="250" :src="image"></v-img>
-              </v-col>
-            </v-row>
           </v-flex>
         </v-row>
       </v-card>
@@ -197,6 +207,19 @@ export default {
         { text: "Employee", value: "Employee", width: "160" },
         { text: "Description", value: "Desc" },
       ],
+      swiperOptions: {
+        slidesPerView: 5,
+        spaceBetween: 1,
+        freeMode: false,
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+        },
+      },
     };
   },
   computed: {
@@ -287,3 +310,18 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.swiper-slide {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+.swiper-container {
+  height: 210px;
+  width: 90%;
+}
+.img {
+  max-height: 100%;
+}
+</style>
