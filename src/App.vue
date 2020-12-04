@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <Navbar />
-    <v-main class="grey lighten-2">
+    <v-main class="main">
       <v-main>
         <TransitionPage>
           <router-view />
@@ -36,5 +36,8 @@ export default {
 }
 .v-main__wrap {
   margin-bottom: 30px !important;
+}
+.main {
+  background: #e0e0e0;
 }
 </style>

@@ -175,49 +175,54 @@
               </v-radio-group>
             </v-flex>
           </v-row>
-          <v-flex md6>
-            <v-autocomplete
-              v-model="workOrder.Employees"
-              :items="employees"
-              filled
-              chips
-              clearable
-              color="blue-grey lighten-2"
-              label="Assign Employees"
-              item-text="Name"
-              item-value="Name"
-              multiple
-            >
-              <template v-slot:selection="data">
-                <v-chip
-                  v-bind="data.attrs"
-                  :input-value="data.selected"
-                  close
-                  small
-                  color="blue darken-3 white--text"
-                  @click="data.select"
-                  @click:close="remove(data.item)"
-                >
-                  {{ data.item.Name }}
-                </v-chip>
-              </template>
-              <template v-slot:item="data">
-                <template v-if="typeof data.item !== 'object'">
-                  <v-list-item-content v-text="data.item"></v-list-item-content>
+          <v-row>
+            <v-flex md6>
+              <v-autocomplete
+                v-model="workOrder.Employees"
+                :items="employees"
+                filled
+                chips
+                clearable
+                color="blue-grey lighten-2"
+                label="Assign Employees"
+                item-text="Name"
+                item-value="Name"
+                multiple
+              >
+                <template v-slot:selection="data">
+                  <v-chip
+                    v-bind="data.attrs"
+                    :input-value="data.selected"
+                    close
+                    small
+                    color="blue darken-3 white--text"
+                    @click="data.select"
+                    @click:close="remove(data.item)"
+                  >
+                    {{ data.item.Name }}
+                  </v-chip>
                 </template>
-                <template v-else>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      {{ data.item.Name }}
-                    </v-list-item-title>
-                    <v-list-item-subtitle>
-                      {{ data.item.FieldType }}
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
+                <template v-slot:item="data">
+                  <template v-if="typeof data.item !== 'object'">
+                    <v-list-item-content v-text="data.item"></v-list-item-content>
+                  </template>
+                  <template v-else>
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        {{ data.item.Name }}
+                      </v-list-item-title>
+                      <v-list-item-subtitle>
+                        {{ data.item.FieldType }}
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                  </template>
                 </template>
-              </template>
-            </v-autocomplete>
-          </v-flex>
+              </v-autocomplete>
+            </v-flex>
+            <v-flex md5 class="ml-4" v-if="editBoolean">
+              <upload :workOrderID="workOrder._id"></upload>
+            </v-flex>
+          </v-row>
 
           <v-textarea
             v-model="workOrder.Description"
@@ -250,7 +255,9 @@
 <script>
 import moment from "moment";
 import axios from "axios";
+import upload from "../../components/upload.vue";
 export default {
+  components: { upload: upload },
   data() {
     return {
       includeEndDate: false,

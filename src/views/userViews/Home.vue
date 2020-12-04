@@ -1,99 +1,157 @@
 <template>
   <div class="myStyle" id="myStyle">
-    <v-layout v-if="!selectedWOID">
-      <v-flex>
-        <v-row class="justify-center">
-          <v-btn-toggle dark class="mt-4" v-model="view">
-            <v-btn dark>View All</v-btn>
-            <v-btn dark disabled>View By Date</v-btn>
-          </v-btn-toggle>
-        </v-row>
+    <v-container fluid>
+      <v-layout v-if="!selectedWOID">
+        <v-flex>
+          <v-row class="justify-center">
+            <v-btn-toggle dark class="mt-4" v-model="view">
+              <v-btn dark>View All</v-btn>
+              <v-btn dark disabled>View By Date</v-btn>
+            </v-btn-toggle>
+          </v-row>
 
-        <v-row class="align-center justify-center">
-          <v-flex md6 xs12 lg4 v-for="(workOrder, index) in workOrders" :key="index" class="pl-4">
-            <v-card class="mt-3" @click="viewSingleWO(workOrder)">
-              <v-responsive
-                :class="`justify-center white--text title elevation-7 pa-1 ${jobColor(
-                  workOrder.JobType
-                )}`"
-                style="text-align: center"
-                ><v-icon class="icon" color="yellow darken-2">mdi-star</v-icon>
-                <span>{{ workOrder.Name }}</span>
-                <span class="timedInCss" v-if="employee.WOReference === workOrder._id">
-                  -timed in</span
-                >
-              </v-responsive>
-              <v-card-text class="mt-n2 body">
-                <h4>PO Number</h4>
-                <h4 class="black--text ml-2">
-                  {{ workOrder.PONumber }}
-                </h4>
-                <h4>Customer</h4>
-                <h4 class="black--text ml-2">
-                  {{ workOrder.Job.ParentRef.FullName }}
-                </h4>
-
-                <h4>Contact Name</h4>
-                <h4 class="black--text ml-2">
-                  {{ `${workOrder.Job.FirstName + " " + workOrder.Job.LastName}` }}
-                </h4>
-                <h4>Email</h4>
-                <h4 class="black--text ml-2">{{ workOrder.Job.Email }}</h4>
-
-                <h4>Phone</h4>
-                <h4 class="black--text ml-2">{{ workOrder.Job.Phone }}</h4>
-                <h4>Address</h4>
-                <h4>
-                  <a
-                    :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString(
-                      workOrder
-                    )}`"
-                    >{{ getAddressString(workOrder) }}</a
+          <v-row class="align-center justify-center">
+            <v-flex md6 xs12 lg4 v-for="(workOrder, index) in workOrders" :key="index">
+              <v-card class="mt-3" @click="viewSingleWO(workOrder)">
+                <v-responsive
+                  :class="`justify-center white--text title elevation-7 pa-1 ${jobColor(
+                    workOrder.JobType
+                  )}`"
+                  style="text-align: center"
+                  ><v-icon class="icon" color="yellow darken-2">mdi-star</v-icon>
+                  <span>{{ workOrder.Name }}</span>
+                  <span class="timedInCss" v-if="employee.WOReference === workOrder._id">
+                    -timed in</span
                   >
-                </h4>
-              </v-card-text>
-            </v-card>
-          </v-flex>
-        </v-row>
-      </v-flex>
-    </v-layout>
-    <v-btn v-if="selectedWOID" @click="selectedWOID = null" class="ml-4">Go back</v-btn>
-    <SingleWO v-if="selectedWOID" :selectedWO="selectedWO" />
+                </v-responsive>
+                <v-card-text class="mt-n2 body">
+                  <h4>PO Number</h4>
+                  <h4 class="black--text ml-2">
+                    {{ workOrder.PONumber }}
+                  </h4>
+                  <h4>Customer</h4>
+                  <h4 class="black--text ml-2">
+                    {{ workOrder.Job.ParentRef.FullName }}
+                  </h4>
 
-    <v-bottom-navigation dense fixed height="40px" bottom color="primary" dark class="appBar">
-      <v-row justify="center" class="">
-        <v-btn
-          v-bind="size"
-          :disabled="!selectedWOID || employee.TimedIn"
-          color="success white--text"
-          @click="timeIn()"
-          >Time In</v-btn
-        >
-        <v-btn
-          v-bind="size"
-          color="success"
-          :disabled="!selectedWOID || !employee.TimedIn"
-          @click="timeOut()"
-          >Time Out</v-btn
-        >
-        <v-btn class="btn" v-bind="size" :disabled="!selectedWOID" color="secondary">Lunch</v-btn>
-        <v-btn v-bind="size" :disabled="!selectedWOID" @click="completeWO" color="warning"
-          >Complete WO</v-btn
-        >
-      </v-row>
-    </v-bottom-navigation>
+                  <h4>Contact Name</h4>
+                  <h4 class="black--text ml-2">
+                    {{ `${workOrder.Job.FirstName + " " + workOrder.Job.LastName}` }}
+                  </h4>
+                  <h4>Email</h4>
+                  <h4 class="black--text ml-2">{{ workOrder.Job.Email }}</h4>
+
+                  <h4>Phone</h4>
+                  <h4 class="black--text ml-2">{{ workOrder.Job.Phone }}</h4>
+                  <h4>Address</h4>
+                  <h4>
+                    <a
+                      :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString(
+                        workOrder
+                      )}`"
+                      >{{ getAddressString(workOrder) }}</a
+                    >
+                  </h4>
+                </v-card-text>
+              </v-card>
+            </v-flex>
+          </v-row>
+        </v-flex>
+      </v-layout>
+      <v-btn v-if="selectedWOID" @click="selectedWOID = null">Go back</v-btn>
+      <v-dialog v-model="uploadDialog" max-width="300px">
+        <v-card v-if="uploadDialog">
+          <v-card-title>
+            <span>Choose File type</span>
+            <v-spacer></v-spacer>
+            <v-icon @click="uploadDialog = false">mdi-close</v-icon>
+          </v-card-title>
+          <v-row justify="center">
+            <v-card-text> Upload an image or a document</v-card-text>
+          </v-row>
+
+          <v-row justify="center">
+            <v-card-actions>
+              <v-btn-toggle>
+                <v-btn disabled color="primary" text> File </v-btn>
+                <v-btn color="green darken-1" text @click="imageUpload()"> Image </v-btn>
+              </v-btn-toggle>
+            </v-card-actions></v-row
+          >
+          <v-row justify="center" class="mt-12">
+            <v-flex xs8>
+              <upload :workOrderID="selectedWOID"></upload>
+            </v-flex>
+          </v-row>
+        </v-card>
+      </v-dialog>
+      <SingleWO v-if="selectedWOID" :selectedWO="selectedWO" />
+
+      <v-bottom-navigation dense fixed max-height="40px" bottom dark class="appBar">
+        <v-row justify="center" class="">
+          <v-btn
+            v-bind="size"
+            v-if="!employee.TimedIn"
+            :disabled="!selectedWOID || employee.TimedIn"
+            class="white--text"
+            active-class="white--text"
+            active="white--text"
+            color="success"
+            @click="timeIn()"
+            >Time In</v-btn
+          >
+          <v-btn
+            v-bind="size"
+            active-class="white--text"
+            v-if="employee.TimedIn"
+            color="success darken-2 white--text"
+            :disabled="selectedWOID !== employee.WOReference || !employee.TimedIn"
+            @click="timeOut()"
+            >Time Out</v-btn
+          >
+          <v-btn
+            active-class="white--text"
+            class="white--text"
+            v-bind="size"
+            :disabled="!selectedWOID"
+            color="secondary"
+            >Lunch</v-btn
+          >
+          <v-btn
+            active-class="white--text"
+            v-bind="size"
+            :disabled="!selectedWOID"
+            @click="completeWO"
+            color="warning"
+            >Complete WO</v-btn
+          >
+          <v-btn
+            @click="uploadDialog = true"
+            v-bind="size"
+            :disabled="!selectedWOID"
+            color="primary"
+            active-class="white--text"
+          >
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </v-row>
+      </v-bottom-navigation>
+    </v-container>
   </div>
 </template>
 
 <script>
 import SingleWO from "../WorkOrders/SingleWO.vue";
+import upload from "../../components/upload.vue";
 let axios = require("axios");
 export default {
   components: {
     SingleWO,
+    upload,
   },
   data() {
     return {
+      uploadDialog: false,
       workOrders: [],
       description: "",
       employee: {},
@@ -261,17 +319,12 @@ export default {
         alert(err.message);
       }
     },
+    imageUpload() {},
   },
 };
 </script>
 
 <style scoped>
-.icon {
-  float: left;
-  position: absolute;
-  left: 5px;
-  top: 5px;
-}
 .timedInCss {
   font-size: 13px;
   font-style: italic;

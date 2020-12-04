@@ -71,6 +71,7 @@
 
 <script>
 export default {
+  props: ["workOrder"],
   data() {
     return {
       //other
@@ -78,32 +79,6 @@ export default {
       timePopulated: false,
       dailyComments: [],
       dailyCommentsFiltered: [],
-      singleImage: {},
-      workOrder: {
-        Name: "",
-        Job: {
-          FirstName: "",
-          LastName: "",
-          Phone: "",
-          Email: "",
-          ParentRef: {
-            FullName: "",
-            ListID: "",
-          },
-          BillAddress: {
-            Addr1: " ",
-            City: " ",
-            PostalCode: "",
-          },
-        },
-        JobType: "",
-        Employees: [],
-        Description: "",
-        ListID: "",
-        EditSequence: "",
-        Complete: "",
-        TimeReference: [],
-      },
       search: "",
 
       //Fields for the table
@@ -126,9 +101,6 @@ export default {
       ],
     };
   },
-  created() {
-    this.getWorkOrder();
-  },
   computed: {
     hoursWorked: function () {
       let totalTime = 0;
@@ -140,13 +112,6 @@ export default {
     },
   },
   methods: {
-    async getWorkOrder() {
-      if (!this.selectedWO) {
-        this.workOrder = await this.$store.dispatch("getWorkOrder", ["5fa31d77374e93170443c149"]);
-      } else {
-        this.workOrder = this.selectedWO;
-      }
-    },
     async showTimeBreakdown() {
       if (this.timePopulated === true) {
         this.showComments = !this.showComments;
