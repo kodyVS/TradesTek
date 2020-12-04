@@ -3,7 +3,7 @@ import VueRouter from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import Projects from "../views/Projects.vue";
 import Employees from "../views/Employees.vue";
-import CreateWO from "../views/WorkOrders/CreateWO.vue";
+import WorkOrderForum from "../views/WorkOrders/WorkOrderForum.vue";
 import OverviewWO from "../views/WorkOrders/OverviewWO.vue";
 import Customers from "../views/Customers.vue";
 import Jobs from "../views/Jobs.vue";
@@ -18,6 +18,7 @@ import Login from "../views/Login.vue";
 import Test from "../views/test.vue";
 import ErrorPage from "../views/ErrorPage.vue";
 import store from "../store/index.js";
+import Settings from "../views/adminViews/Settings.vue";
 
 //Router for routes
 Vue.use(VueRouter);
@@ -44,9 +45,9 @@ const routes = [
   //todo Change this to modifyWO's
 
   {
-    path: "/CreateWO",
-    name: "CreateWO",
-    component: CreateWO,
+    path: "/WorkOrderForum",
+    name: "WorkOrderForum",
+    component: WorkOrderForum,
     meta: { requiresAdmin: true },
   },
   {
@@ -122,6 +123,12 @@ const routes = [
     component: ErrorPage,
   },
   { path: "/login", name: "Login", component: Login },
+  {
+    path: "/Settings",
+    name: "Settings",
+    component: Settings,
+    meta: { requiresAdmin: true },
+  },
 ];
 
 // route level code-splitting // this generates a separate chunk (about.[hash].js) for this route // which is lazy-loaded when the route is visited.

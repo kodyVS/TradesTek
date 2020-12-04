@@ -1,15 +1,15 @@
 <script>
-//todo rename this to something else
 //todo When completing work orders Add complete to all times associcated with the work order
 //todo Add a method to resync workorders after being completed
 </script>
 
 <template>
-  <div class="createWO mt-2">
-    <h1>{{ editBoolean ? "Edit Work Order" : "Create Work Order" }}</h1>
-    <v-card class="mt-8">
+  <v-container fluid class="WorkOrderForum mt-2">
+    <v-card class="mt-5">
       <v-card-title>
-        <span>{{ workOrder.Name }}</span>
+        <h2 class="mt-2">
+          <i>{{ editBoolean ? "Edit Work Order" : "Create Work Order" }}</i>
+        </h2>
         <v-spacer></v-spacer>
         <v-icon @click="deleteWorkOrder()" large v-if="editBoolean">mdi-delete</v-icon>
       </v-card-title>
@@ -50,7 +50,6 @@
                 outlined
                 hide-no-data
                 :clearable="!editBoolean"
-                :readonly="editBoolean"
                 filled
                 label="Job Site"
                 :rules="requiredRule"
@@ -71,6 +70,7 @@
                 label="Customer"
                 outlined
                 readonly
+                hint="This just displays the job information. To edit this navigate to job sites"
                 dense
                 :rules="requiredRule"
               ></v-text-field>
@@ -80,6 +80,7 @@
                 :value="getAddress"
                 label="Address"
                 outlined
+                hint="This just displays the job information. To edit this navigate to job sites"
                 dense
                 readonly
               ></v-text-field>
@@ -90,6 +91,7 @@
                 label="First Name"
                 outlined
                 readonly
+                hint="This just displays the job information. To edit this navigate to job sites"
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="2">
@@ -98,6 +100,7 @@
                 label="Last Name"
                 outlined
                 readonly
+                hint="This just displays the job information. To edit this navigate to job sites"
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="3">
@@ -106,6 +109,7 @@
                 label="Contact Phone Number"
                 readonly
                 outlined
+                hint="This just displays the job information. To edit this navigate to job sites"
               ></v-text-field>
             </v-col>
 
@@ -249,7 +253,7 @@
         </v-form>
       </v-container>
     </v-card>
-  </div>
+  </v-container>
 </template>
 
 <script>

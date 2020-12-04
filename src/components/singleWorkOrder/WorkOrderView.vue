@@ -175,7 +175,7 @@ export default {
   },
   editWorkOrder() {
     this.$store.state.item = this.workOrder;
-    this.$router.replace({ name: "CreateWO" });
+    this.$router.replace({ name: "WorkOrderForum" });
   },
   getAddressData() {
     console.log("hello");

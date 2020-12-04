@@ -316,7 +316,7 @@ export default {
       console.log(workOrder);
       this.$store.state.item = workOrder[0];
       this.$store.state.item.Job.Customer = workOrder[0].Job.ParentRef.FullName;
-      this.$router.push("createWO");
+      this.$router.push("WorkOrderForum");
     },
     showEvent({ nativeEvent, event }) {
       const open = () => {

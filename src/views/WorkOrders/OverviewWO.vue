@@ -220,11 +220,11 @@ export default {
     editWorkOrder(item) {
       this.$store.state.item = item;
       this.$store.state.item.Job.Customer = item.Job.ParentRef.FullName;
-      this.$router.push("createWO");
+      this.$router.push("WorkOrderForum");
     },
     //creates a new WO
     newWorkOrder() {
-      this.$router.push("CreateWO");
+      this.$router.push("WorkOrderForum");
     },
 
     //Custom filter for which work orders to display

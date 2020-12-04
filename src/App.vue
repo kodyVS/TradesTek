@@ -2,11 +2,9 @@
   <v-app>
     <Navbar />
     <v-main class="main">
-      <v-main>
-        <TransitionPage>
-          <router-view />
-        </TransitionPage>
-      </v-main>
+      <TransitionPage>
+        <router-view />
+      </TransitionPage>
     </v-main>
   </v-app>
 </template>
@@ -32,12 +30,12 @@ export default {
   }
 }
 .v-main {
-  padding-top: 35px !important;
+  padding-top: 80px !important;
 }
 .v-main__wrap {
   margin-bottom: 30px !important;
 }
 .main {
-  background: #e0e0e0;
+  background: #e4e4e4;
 }
 </style>

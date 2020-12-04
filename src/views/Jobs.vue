@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div>
+  <v-container fluid>
     <!-- Search function for the table -->
     <v-container mb-4>
       <v-row justify="center">
@@ -179,7 +179,7 @@
                     <v-btn
                       v-if="readOnly && !showHidden"
                       color="primary"
-                      @click="createWO(editedItem)"
+                      @click="WorkOrderForum(editedItem)"
                       >Create WO</v-btn
                     >
                     <v-btn v-if="showHidden" @click="editJob(editedItem, true)">
@@ -235,12 +235,12 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success" @click="ViewItem(item)">Details</v-btn>
-        <v-btn small class="primary ml-2" v-if="!showHidden" @click="createWO(item)"
+        <v-btn small class="primary ml-2" v-if="!showHidden" @click="WorkOrderForum(item)"
           >Create WO</v-btn
         >
       </template>
     </v-data-table>
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -428,9 +428,9 @@ export default {
     },
 
     //This will route someone to the create work order page with the job field filled out
-    createWO(item) {
+    WorkOrderForum(item) {
       this.$store.state.itemInfo = item;
-      this.$router.push("CreateWO");
+      this.$router.push("WorkOrderForum");
     },
     newJob() {
       this.readOnly = !this.readOnly;

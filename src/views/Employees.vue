@@ -49,7 +49,13 @@
                 ></v-text-field>
               </v-card-text>
               <v-card-actions class="grey lighten-2">
-                <v-btn small text color="secondary" class="success ml-4" @click="createWO(person)">
+                <v-btn
+                  small
+                  text
+                  color="secondary"
+                  class="success ml-4"
+                  @click="WorkOrderForum(person)"
+                >
                   <v-icon small left color="white">mdi-folder</v-icon>
                   <span class="white--text">Create WO</span>
                 </v-btn>
@@ -147,9 +153,9 @@ export default {
     },
 
     //Need to add functionality to push name when clicked to list of employees on the work order
-    createWO(currentPerson) {
+    WorkOrderForum(currentPerson) {
       this.$store.state.employeeInfo = currentPerson.Name;
-      this.$router.push("CreateWO");
+      this.$router.push("WorkOrderForum");
     },
 
     async workOrdersFilter(person) {

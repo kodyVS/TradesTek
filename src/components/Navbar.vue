@@ -66,7 +66,7 @@
         <p class="white--text subheading mt-2">{{ $store.state.userName }}</p>
 
         <v-flex class="mt-4">
-          <v-btn class="success" @click="$router.push('createWO')">New Work Order</v-btn>
+          <v-btn class="success" @click="$router.push('WorkOrderForum')">New Work Order</v-btn>
         </v-flex>
       </v-layout>
 
@@ -183,6 +183,7 @@ export default {
           { icon: "mdi-account", text: "Employees", route: "/employees" },
           { icon: "mdi-folder", text: "Projects", route: "/projects" },
           { icon: "mdi-account", text: "Register New User", route: "/RegisterUser" },
+          { icon: "mdi-cog", text: "Settings", route: "/Settings" },
         ];
         //Links for the dropdown folder which is set to be open atm
         this.dropDownLinks = [
@@ -194,7 +195,7 @@ export default {
           {
             icon: "mdi-text-box-plus-outline",
             text: "Create New",
-            route: "/CreateWO",
+            route: "/WorkOrderForum",
           },
         ];
       }
