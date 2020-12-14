@@ -59,6 +59,14 @@ export default {
       } else {
         this.workOrder = this.selectedWO;
       }
+      console.log(this.workOrder.Images);
+      this.workOrder.Images.map((image) => {
+        let splitURL = image.url.split("/upload/");
+        let placeholder = splitURL[0] + "/upload/w_250,f_auto/" + splitURL[1];
+        let compressedImageURL = splitURL[0] + "/upload/w_2000,f_auto/" + splitURL[1];
+        image.placeholderURL = placeholder;
+        image.compressedImageURL = compressedImageURL;
+      });
     },
   },
 };

@@ -11,7 +11,7 @@
           <i>{{ editBoolean ? "Edit Work Order" : "Create Work Order" }}</i>
         </h2>
         <v-spacer></v-spacer>
-        <v-icon @click="deleteWorkOrder()" large v-if="editBoolean">mdi-delete</v-icon>
+        <v-icon v-if="editBoolean" large @click="deleteWorkOrder()">mdi-delete</v-icon>
       </v-card-title>
       <v-spacer></v-spacer>
       <v-container mt-2>
@@ -121,10 +121,10 @@
                     <template v-slot:activator="{ on }">
                       <v-text-field
                         :value="formattedStartDate"
-                        label="Start Date"
+                        :label="workOrder.IncludesTime ? 'Date' : 'Start Date'"
                         prepend-icon="mdi-calendar-range"
-                        v-on="on"
                         :rules="requiredRule"
+                        v-on="on"
                       ></v-text-field>
                     </template>
                     <v-date-picker v-model="startDate"></v-date-picker>
@@ -134,11 +134,12 @@
                   <v-menu>
                     <template v-slot:activator="{ on }">
                       <v-text-field
+                        v-show="!workOrder.IncludesTime"
                         :value="formattedEndDate"
                         label="End Date"
                         prepend-icon="mdi-calendar-range"
-                        v-on="on"
                         :rules="requiredRule"
+                        v-on="on"
                       ></v-text-field>
                     </template>
                     <v-date-picker v-model="endDate"></v-date-picker>
@@ -148,9 +149,9 @@
               <v-row>
                 <v-flex xs12 md2 offset-md1>
                   <v-checkbox
+                    v-model="workOrder.IncludesTime"
                     label="Include Time?"
                     color="indigo darken-3"
-                    v-model="workOrder.IncludesTime"
                     hide-details
                   ></v-checkbox>
                 </v-flex>
@@ -173,9 +174,10 @@
               </v-row>
             </v-flex>
             <v-flex xs12>
-              <v-radio-group v-model="workOrder.JobType" :rules="requiredRule">
-                <v-radio label="Service" value="Service"></v-radio>
-                <v-radio label="Construction" value="Construction"></v-radio>
+              <v-radio-group v-model="jobTypeName" :rules="requiredRule">
+                <div v-for="(jobType, index) in jobTypes" :key="index">
+                  <v-radio :label="jobType.Name" :value="jobType.Name"></v-radio>
+                </div>
               </v-radio-group>
             </v-flex>
           </v-row>
@@ -223,7 +225,7 @@
                 </template>
               </v-autocomplete>
             </v-flex>
-            <v-flex md5 class="ml-4" v-if="editBoolean">
+            <v-flex v-if="editBoolean" md5 class="ml-4">
               <upload :workOrderID="workOrder._id"></upload>
             </v-flex>
           </v-row>
@@ -240,14 +242,14 @@
           <v-btn v-else text class="success px-3 mt-0" @click="editWorkOrder">Save Changes</v-btn>
           <v-btn text class="red white--text px-3 mt-0" @click="$router.go(-1)">Cancel</v-btn>
           <v-switch
+            v-if="editBoolean"
             v-model="workOrder.Complete"
             label="Do you wish to complete this work order?"
-            v-if="editBoolean"
           ></v-switch>
           <v-switch
+            v-if="editBoolean"
             v-model="workOrder.IsPending"
             label="Add to work order review que?"
-            v-if="editBoolean"
           ></v-switch>
           <!-- </v-col> -->
         </v-form>
@@ -264,6 +266,8 @@ export default {
   components: { upload: upload },
   data() {
     return {
+      jobTypes: "",
+      jobTypeName: "",
       includeEndDate: false,
       title: "",
       content: "",
@@ -294,7 +298,6 @@ export default {
           },
         },
         BillAddress: "",
-        JobType: "",
         Employees: [],
         Description: "",
         ListID: "",
@@ -366,6 +369,7 @@ export default {
 
     //Used for when importing data from other forums through vuex
     importStoreData() {
+      this.jobTypes = this.$store.state.settings.workOrders.jobTypes;
       if (this.$store.state.item) {
         this.workOrder = this.$store.state.item;
         if (this.workOrder.StartDate) {
@@ -379,6 +383,7 @@ export default {
         }
         this.$store.state.item = null;
         this.editBoolean = true;
+        this.jobTypeName = this.workOrder.JobType.Name;
       }
 
       if (this.$store.state.itemInfo.Name) {
@@ -407,7 +412,11 @@ export default {
         startDate = `${this.startDate}T00:00:00.000z`;
         endDate = `${this.endDate}T23:59:00.000z`;
       }
-
+      this.jobTypes.map((jobType) => {
+        if (jobType.Name === this.jobType) {
+          this.workOrder.JobType = jobType;
+        }
+      });
       if (this.$refs.form.validate() && !this.editBoolean) {
         try {
           let jobFullName = `${this.workOrder.Job.ParentRef.FullName}:${this.workOrder.Job.Name}`;
@@ -457,6 +466,11 @@ export default {
             startDate = `${this.startDate}T00:00:00.000z`;
             endDate = `${this.endDate}T23:59:00.000z`;
           }
+          this.jobTypes.map((jobType) => {
+            if (jobType.Name === this.jobTypeName) {
+              this.workOrder.JobType = jobType;
+            }
+          });
           const req = await axios.post(
             process.env.VUE_APP_API_URL + "/api/v1/workOrder/edit",
             {

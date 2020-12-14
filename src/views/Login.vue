@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-layout justify-center align-center v-if="!$store.state.userRole">
+    <v-layout v-if="!$store.state.userRole" justify-center align-center>
       <v-card v-model="dialog" class="mt-12">
         <div>
           <v-tabs
@@ -19,11 +19,11 @@
             </v-tab>
             <v-tab-item>
               <v-progress-linear
+                v-if="isLoading"
                 color="blue"
                 indeterminate
                 rounded
                 height="6"
-                v-if="isLoading"
               ></v-progress-linear>
               <v-card class="px-4">
                 <v-card-text>
@@ -63,7 +63,7 @@
         </div>
       </v-card>
     </v-layout>
-    <v-layout align-center justify-center v-if="$store.state.userRole">
+    <v-layout v-if="$store.state.userRole" align-center justify-center>
       <v-card>
         <v-card-title> You are already logged in! </v-card-title>
         <v-btn @click="$router.push('Home')">Click here to redirect</v-btn>
@@ -100,8 +100,19 @@ export default {
       return () => this.password === this.passwordConfirm || "Password must match";
     },
   },
-  created() {},
+  created() {
+    this.rerouteChecks();
+  },
   methods: {
+    rerouteChecks() {
+      if (this.$store.state.loggedIn) {
+        if (this.$store.state.userRole === "admin") {
+          this.$router.push("/");
+        } else {
+          this.$router.push("/home");
+        }
+      }
+    },
     async login() {
       if (this.$refs.loginForm.validate()) {
         try {
@@ -122,11 +133,14 @@ export default {
             this.$store.state.userRole = res.data.data.UserRole;
             this.$store.state.userEmployeeReference = res.data.data.EmployeeReference;
             this.$store.state.userName = res.data.data.Name;
+            await this.$store.dispatch("getSettings");
           }
-          if (this.$store.state.userRole === "admin") {
-            this.$router.push("workOrders");
-          } else {
-            this.$router.push("Home");
+          if (this.$store.state.loggedIn) {
+            if (this.$store.state.userRole === "admin") {
+              this.$router.push("workOrders");
+            } else {
+              this.$router.push("Home");
+            }
           }
         } catch (error) {
           this.isLoading = false;

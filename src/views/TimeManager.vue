@@ -229,8 +229,6 @@ export default {
             (employee) => this.employee.Name === employee.Name
           )[0];
         }
-
-        console.log(this.employee);
       } catch (err) {
         alert(err.message);
       }

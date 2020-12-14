@@ -4,10 +4,9 @@
 </script>
 <template>
   <div class="team">
-    <h1>Employees</h1>
     <!-- Search function for the table -->
-    <v-container mb-4>
-      <v-row justify="center">
+    <v-container mb-4 fluid>
+      <v-row justify="center" noGutters>
         <v-col cols="12" sm="6">
           <v-text-field
             v-model="search"
@@ -17,6 +16,28 @@
             hide-details
           ></v-text-field>
         </v-col>
+        <v-col class="pt-5 ml-3" cols="auto">
+          <v-menu offset-y :close-on-content-click="false">
+            <template v-slot:activator="{ on }">
+              <v-btn small class="white--text" color="grey darken-3" v-on="on">
+                <span>Options</span>
+                <v-icon right>mdi-chevron-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item>
+                <v-checkbox
+                  v-model="showHidden"
+                  label="Show hidden employees?"
+                  class="pt-4"
+                ></v-checkbox>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-col>
+      </v-row>
+      <v-row justify="center" noGutters>
+        <v-col cols="auto"> </v-col>
       </v-row>
     </v-container>
     <v-container class="my-5">
@@ -26,10 +47,37 @@
             <v-card class="text-left ma-3 rounded-card" :elevation="hover ? 16 : 4">
               <v-responsive
                 style="text-align: center"
-                class="pt-2 pb-2 primary darken-3 white--text elevation-7"
+                :class="
+                  person.Hidden
+                    ? 'pt-2 pb-2 grey'
+                    : 'pt-2 pb-2 primary darken-3 white--text elevation-7'
+                "
               >
                 <span>{{ person.Name }}</span>
+                <span v-if="person.Hidden"><i>- Hidden</i></span>
+                <v-menu offset-y>
+                  <template v-slot:activator="{ on }">
+                    <v-icon
+                      v-show="hover"
+                      color="grey"
+                      class="mr-2"
+                      style="float: right; position: absolute; right: 0px"
+                      @click="editDialog = true"
+                      v-on="on"
+                      >mdi-account-edit</v-icon
+                    >
+                  </template>
+                  <v-list>
+                    <v-list-item @click="employeeEdit(person)">
+                      <v-list-item-title> Edit </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="employeeHide(person)">
+                      <v-list-item-title>Hide employee</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </v-responsive>
+
               <v-card-text class="secondary--text">
                 <v-text-field
                   v-model="person.Phone"
@@ -49,39 +97,32 @@
                 ></v-text-field>
               </v-card-text>
               <v-card-actions class="grey lighten-2">
-                <v-btn
-                  small
-                  text
-                  color="secondary"
-                  class="success ml-4"
-                  @click="WorkOrderForum(person)"
-                >
-                  <v-icon small left color="white">mdi-folder</v-icon>
-                  <span class="white--text">Create WO</span>
-                </v-btn>
-                <v-btn small @click="activeWOButton(index, person)">
-                  Active Work Orders
-                  <v-icon>{{
-                    selectedIndex === index ? "mdi-chevron-up" : "mdi-chevron-down"
-                  }}</v-icon>
-                </v-btn>
-                <!--<v-btn
-                  v-if="readOnly !== index"
-                  disabled
-                  small
-                  class="ml-2 warning"
-                  @click="readOnly = index"
-                  >Edit</v-btn
-                > -->
-                <v-btn v-if="readOnly === index" small class="ml-2 success" @click="readOnly = true"
-                  >Save</v-btn
-                >
+                <v-row>
+                  <v-btn
+                    v-if="!person.Hidden"
+                    small
+                    text
+                    color="secondary"
+                    class="success ml-4"
+                    @click="WorkOrderForum(person)"
+                  >
+                    <v-icon small left color="white">mdi-folder</v-icon>
+                    <span class="white--text">Create WO</span>
+                  </v-btn>
+                  <v-btn v-if="!person.Hidden" small @click="activeWOButton(index, person)">
+                    Active Work Orders
+                    <v-icon>{{
+                      selectedIndex === index ? "mdi-chevron-up" : "mdi-chevron-down"
+                    }}</v-icon>
+                  </v-btn>
+                  <v-spacer></v-spacer>
+                  <v-btn v-if="person.Hidden" small class="warning mr-4" @click="readOnly = true"
+                    >Restore hidden Employee</v-btn
+                  >
+                </v-row>
               </v-card-actions>
               <v-expand-transition>
                 <div v-if="index === selectedIndex">
-                  <!--<v-card-text v-for="job in workOrdersFiltered" :key="job.FullName">
-                  {{ job.FullName }}
-                </v-card-text>  -->
                   <v-list>
                     <v-subheader>Work Orders</v-subheader>
                     <v-list-item v-for="WO in person.workOrders" :key="WO.FullName" class="ml-4">
@@ -106,10 +147,12 @@
 </template>
 
 <script>
-//import axios from "axios";
+import axios from "axios";
 export default {
   data() {
     return {
+      showHidden: false,
+      editDialog: false,
       team: [],
       search: "",
       selectedIndex: null,
@@ -128,11 +171,23 @@ export default {
   created() {
     this.editData();
   },
+  watch: {
+    showHidden() {
+      this.getData();
+    },
+  },
 
   methods: {
     async getData() {
-      this.team = await this.$store.dispatch("getEmployees");
+      if (!this.showHidden) {
+        console.log("hello");
+        this.team = await this.$store.dispatch("getEmployees");
+      } else {
+        console.log("showing hidden employees");
+        this.team = await this.$store.dispatch("getEmployees", true);
+      }
       this.workOrders = await this.$store.dispatch("getAllActiveWorkOrders");
+      console.log(this.team);
     },
     async editData() {
       await this.getData().then(() => {
@@ -165,6 +220,36 @@ export default {
     },
     addWO() {
       this.$router.push("WorkOrders");
+    },
+    async employeeHide(employee) {
+      //todo add a confirm method
+      try {
+        if (employee.workOrders.length > 0) {
+          throw new Error("Remove employee from all active work orders before deleting");
+        }
+        let data = {
+          _id: employee._id,
+          Hidden: true,
+        };
+        await axios.post(process.env.VUE_APP_API_URL + "/api/v1/employee/edit", data, {
+          params: { id: data._id },
+          withCredentials: true,
+        });
+        let payload = {
+          type: "success",
+          message: "Employee hidden",
+        };
+        this.$store.dispatch("snackBarAlert", payload);
+        this.editData();
+      } catch (error) {
+        if (error.message) {
+          let payload = {
+            type: "error",
+            message: error.message,
+          };
+          this.$store.dispatch("snackBarAlert", payload);
+        }
+      }
     },
   },
 };

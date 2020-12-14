@@ -1,17 +1,17 @@
 <template>
-  <div class="myStyle" id="myStyle">
+  <div id="myStyle" class="myStyle">
     <v-container fluid>
       <v-layout v-if="!selectedWOID">
         <v-flex>
           <v-row class="justify-center">
-            <v-btn-toggle dark class="mt-4" v-model="view">
+            <v-btn-toggle v-model="view" dark class="mt-4">
               <v-btn dark>View All</v-btn>
               <v-btn dark disabled>View By Date</v-btn>
             </v-btn-toggle>
           </v-row>
 
           <v-row class="align-center justify-center">
-            <v-flex md6 xs12 lg4 v-for="(workOrder, index) in workOrders" :key="index">
+            <v-flex v-for="(workOrder, index) in workOrders" :key="index" md6 xs12 lg4>
               <v-card class="mt-3" @click="viewSingleWO(workOrder)">
                 <v-responsive
                   :class="`justify-center white--text title elevation-7 pa-1 ${jobColor(
@@ -20,7 +20,7 @@
                   style="text-align: center"
                   ><v-icon class="icon" color="yellow darken-2">mdi-star</v-icon>
                   <span>{{ workOrder.Name }}</span>
-                  <span class="timedInCss" v-if="employee.WOReference === workOrder._id">
+                  <span v-if="employee.WOReference === workOrder._id" class="timedInCss">
                     -timed in</span
                   >
                 </v-responsive>
@@ -90,8 +90,8 @@
       <v-bottom-navigation dense fixed max-height="40px" bottom dark class="appBar">
         <v-row justify="center" class="">
           <v-btn
-            v-bind="size"
             v-if="!employee.TimedIn"
+            v-bind="size"
             :disabled="!selectedWOID || employee.TimedIn"
             class="white--text"
             active-class="white--text"
@@ -101,9 +101,9 @@
             >Time In</v-btn
           >
           <v-btn
+            v-if="employee.TimedIn"
             v-bind="size"
             active-class="white--text"
-            v-if="employee.TimedIn"
             color="success darken-2 white--text"
             :disabled="selectedWOID !== employee.WOReference || !employee.TimedIn"
             @click="timeOut()"
@@ -121,16 +121,16 @@
             active-class="white--text"
             v-bind="size"
             :disabled="!selectedWOID"
-            @click="completeWO"
             color="warning"
+            @click="completeWO"
             >Complete WO</v-btn
           >
           <v-btn
-            @click="uploadDialog = true"
             v-bind="size"
             :disabled="!selectedWOID"
             color="primary"
             active-class="white--text"
+            @click="uploadDialog = true"
           >
             <v-icon>mdi-plus</v-icon>
           </v-btn>
@@ -161,11 +161,6 @@ export default {
       selectedWO: null,
     };
   },
-  mounted() {
-    this.getEmployee().then(() => {
-      this.getAllActiveWorkOrders();
-    });
-  },
   computed: {
     size() {
       const size = { xs: "small", sm: "medium", lg: "large", xl: "large" }[
@@ -174,6 +169,12 @@ export default {
       return size ? { [size]: true } : {};
     },
   },
+  mounted() {
+    this.getEmployee().then(() => {
+      this.getAllActiveWorkOrders();
+    });
+  },
+
   methods: {
     async getAllActiveWorkOrders() {
       let workOrders = await this.$store.dispatch("getAllActiveWorkOrders", {

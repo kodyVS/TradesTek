@@ -43,8 +43,8 @@
               <v-list-item>
                 <v-switch
                   v-model="showHidden"
-                  @change="showHiddenJobs()"
                   label="Show Only Deleted Customers?"
+                  @change="showHiddenJobs()"
                 ></v-switch>
               </v-list-item>
             </v-list>
@@ -62,7 +62,7 @@
               >
                 <span>{{ editedItem.FullName }}</span>
                 <v-spacer></v-spacer>
-                <v-icon v-if="!readOnly" large @click="deleteJob(editedItem._id)" color="white"
+                <v-icon v-if="!readOnly" large color="white" @click="deleteJob(editedItem._id)"
                   >mdi-delete</v-icon
                 ></v-card-title
               >
@@ -235,7 +235,7 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success" @click="ViewItem(item)">Details</v-btn>
-        <v-btn small class="primary ml-2" v-if="!showHidden" @click="WorkOrderForum(item)"
+        <v-btn v-if="!showHidden" small class="primary ml-2" @click="WorkOrderForum(item)"
           >Create WO</v-btn
         >
       </template>

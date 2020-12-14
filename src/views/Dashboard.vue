@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-container fluid>
     <v-row justify="center">
       <v-col cols="12" sm="6">
         <v-text-field
@@ -11,7 +11,7 @@
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-container>
+    <v-container fluid>
       <v-row>
         <v-col>
           <div class="header-area">
@@ -32,12 +32,12 @@
             </v-sheet>
           </div>
           <v-progress-linear
+            v-show="isLoading"
             color="blue"
             indeterminate
             rounded
             height="4"
             class="header-area"
-            v-show="isLoading"
           ></v-progress-linear>
 
           <vue-custom-scrollbar class="scroll-area" :settings="settings">
@@ -53,18 +53,18 @@
                 :category-days="1"
                 :event-color="getEventColor"
                 :events="events"
-                @click:event="showEvent"
                 :interval-width="50"
                 :interval-height="60"
                 :event-height="60"
+                @click:event="showEvent"
               >
                 <template v-slot:event="{ event }">
                   <v-row class="ml-1 mt-1"> {{ event.name }}</v-row>
                   <v-row class="ml-1">PO {{ event.PONumber }}</v-row>
                   <v-row
+                    v-if="event.timedIn"
                     justify="center"
                     align="center"
-                    v-if="event.timedIn"
                     class="ml-1 white--text"
                     ><b>Currently Timed In</b></v-row
                   >
@@ -101,10 +101,10 @@
                                   :value="formattedStartDate"
                                   label="Start Date"
                                   prepend-icon="mdi-calendar-range"
-                                  v-on="on"
                                   dense
                                   readonly
                                   :rules="requiredRule"
+                                  v-on="on"
                                 ></v-text-field>
                               </template>
                               <v-date-picker v-model="selectedEvent.startDate"></v-date-picker>
@@ -118,9 +118,9 @@
                                   label="End Date"
                                   readonly
                                   prepend-icon="mdi-calendar-range"
-                                  v-on="on"
                                   dense
                                   :rules="!selectedEvent.includesTime ? requiredRule : []"
+                                  v-on="on"
                                 ></v-text-field>
                               </template>
                               <v-date-picker v-model="selectedEvent.endDate"></v-date-picker>
@@ -218,7 +218,7 @@
         </v-col>
       </v-row>
     </v-container>
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -248,18 +248,12 @@ export default {
     employees: [],
     focus: "",
     events: [],
-    colors: ["blue", "indigo", "deep-purple", "cyan", "green", "orange", "grey darken-1"],
     //information on selected event
     currentlyEditing: true,
     selectedEvent: {},
     selectedElement: null,
     selectedOpen: false,
   }),
-  mounted() {
-    this.getEmployees();
-    this.getWorkOrders();
-    //this.$refs.calendar.checkChange();
-  },
   computed: {
     // size() {
     //   const size = { xs: "xs", sm: "sm", md: "md", lg: "lg", xl: "xl" }[
@@ -308,12 +302,17 @@ export default {
       }
     },
   },
+  mounted() {
+    this.getEmployees();
+    this.getWorkOrders();
+    //this.$refs.calendar.checkChange();
+  },
+
   methods: {
     workOrderRoute() {
       let workOrder = this.workOrders.filter((workOrder) => {
         return workOrder._id === this.selectedEvent._id;
       });
-      console.log(workOrder);
       this.$store.state.item = workOrder[0];
       this.$store.state.item.Job.Customer = workOrder[0].Job.ParentRef.FullName;
       this.$router.push("WorkOrderForum");
@@ -355,6 +354,7 @@ export default {
         LowRange: lowRange,
         HighRange: highRange,
       });
+      this.isLoading = false;
       //called events to be cleared a second time so it clears after the async call happens.
       this.events = [];
       this.workOrders.map((workOrder) => {
@@ -366,14 +366,6 @@ export default {
             }
           }
         });
-        if (workOrder.IsPending === true) {
-          workOrder.Color = "purple";
-        } else if (workOrder.JobType === "Service") {
-          workOrder.Color = "success darken-1";
-        } else {
-          workOrder.Color = "#1500b5";
-        }
-
         if (!workOrder.IncludesTime) {
           workOrder.Employees.map((employee) => {
             let timedIn;
@@ -388,7 +380,8 @@ export default {
               startDate: workOrder.StartDate.substr(0, 10),
               endDate: workOrder.EndDate.substr(0, 10),
               description: workOrder.Desc,
-              color: workOrder.Color,
+              jobType: workOrder.JobType,
+              color: workOrder.JobType.Color,
               includesTime: false,
               category: employee,
               PONumber: workOrder.PONumber,
@@ -406,13 +399,14 @@ export default {
               _id: workOrder._id,
               name: workOrder.Name,
               start: `${workOrder.StartDate.substr(0, 10)} ${workOrder.StartDate.substr(11, 8)}`,
-              end: `${workOrder.EndDate.substr(0, 10)} ${workOrder.EndDate.substr(11, 8)}`,
+              end: `${workOrder.StartDate.substr(0, 10)} ${workOrder.EndDate.substr(11, 8)}`,
               startDate: workOrder.StartDate.substr(0, 10),
               endDate: workOrder.EndDate.substr(0, 10),
               startTime: workOrder.StartDate.substr(11, 5),
               endTime: workOrder.EndDate.substr(11, 5),
               description: workOrder.Desc,
-              color: workOrder.Color,
+              jobType: workOrder.JobType,
+              color: workOrder.JobType.Color,
               category: employee,
               includesTime: true,
               PONumber: workOrder.PONumber,
@@ -426,11 +420,14 @@ export default {
     },
 
     async editWorkOrder() {
-      if (this.$refs.form.validate() && this.selectedEvent.endTime > this.selectedEvent.startTime) {
+      if (this.$refs.form.validate()) {
         try {
           let startDate;
           let endDate;
           if (this.selectedEvent.includesTime) {
+            if (this.selectedEvent.endTime < this.selectedEvent.startTime) {
+              throw new Error("Start time is greater than end time");
+            }
             startDate = `${this.selectedEvent.startDate}T${this.selectedEvent.startTime}:00.000z`;
             endDate = `${this.selectedEvent.startDate}T${this.selectedEvent.endTime}:00.000z`;
           } else {
@@ -452,19 +449,30 @@ export default {
           this.getWorkOrders();
           this.selectedOpen = false;
         } catch (error) {
+          console.log(error.message);
           let payload = { type: "error" };
           if (error.response) {
             payload.message = error.response.data.message;
+          }
+          if (error.message) {
+            payload.message = error.message;
           }
           this.$store.dispatch("snackBarAlert", payload);
           this.isLoading = false;
         }
       } else {
+        console.log(this.$refs.form);
         alert("Form is invalid, Check dates and Times");
       }
     },
     getEventColor(event) {
-      return event.color;
+      let color = "#2f2f2f";
+      this.$store.state.settings.workOrders.jobTypes.map((jobType) => {
+        if (jobType.Name === event.jobType.Name) {
+          color = jobType.Color;
+        }
+      });
+      return color;
     },
     setToday() {
       this.focus = "";

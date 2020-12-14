@@ -48,7 +48,7 @@ const routes = [
     path: "/WorkOrderForum",
     name: "WorkOrderForum",
     component: WorkOrderForum,
-    meta: { requiresAdmin: true },
+    meta: { workOrderAuth: true },
   },
   {
     path: "/WorkOrders",
@@ -60,16 +60,15 @@ const routes = [
     path: "/Customers",
     name: "Customers",
     component: Customers,
-    meta: { requiresAdmin: true },
+    meta: { customersAuth: true },
   },
   {
     path: "/Jobs",
     name: "Jobs",
     component: Jobs,
-    meta: { requiresAdmin: true },
+    meta: { jobsAuth: true },
   },
-  //! Delete before production, used to quickly test something
-  { path: "/Home", name: "Home", component: Home, meta: { requiresUser: true } },
+  { path: "/Home", name: "Home", component: Home, meta: { requiresAuth: true } },
   {
     path: "/WorkOrders/:id",
     name: "SingleWorkOrder",
@@ -98,7 +97,7 @@ const routes = [
     path: "/TimeSheets",
     name: "TimeSheets",
     component: TimeSheets,
-    meta: { requiresAuth: true },
+    meta: { timesheetAuth: true },
     children: [
       {
         path: "Calendar",
@@ -138,9 +137,15 @@ const router = new VueRouter({
   routes,
 });
 
-//Admin Only
+//specific page protection calendars
+
 router.beforeEach(async (to, from, next) => {
-  store.dispatch("autoLogin").then(() => {
+  store.dispatch("autoLogin").then(async () => {
+    let settings = await store.dispatch("getSettings");
+    let access = settings.permissions.access;
+    let userRole = store.state.userRole;
+
+    //Admin Only
     if (to.matched.some((route) => route.meta.requiresAdmin)) {
       if (store.state.userRole === "admin") {
         return next();
@@ -150,7 +155,7 @@ router.beforeEach(async (to, from, next) => {
     }
     //User Only
     if (to.matched.some((route) => route.meta.requiresUser)) {
-      if (store.state.userRole === "user") {
+      if (userRole === "User") {
         return next();
       } else {
         return next("/login");
@@ -159,12 +164,57 @@ router.beforeEach(async (to, from, next) => {
 
     //User or admin
     if (to.matched.some((route) => route.meta.requiresAuth)) {
-      if (store.state.userRole === "user" || store.state.userRole === "admin") {
+      if (store.state.userRole) {
         return next();
       } else {
         return next("/login");
       }
     }
+
+    //Timesheet auth
+    if (to.matched.some((route) => route.meta.timesheetAuth)) {
+      if (
+        access.accessTimeSheet.roles.indexOf(store.state.userRole) > -1 ||
+        store.state.userRole === "admin"
+      ) {
+        return next();
+      }
+      return next("/login");
+    }
+
+    // view jobs auth
+    if (to.matched.some((route) => route.meta.jobsAuth)) {
+      if (
+        access.accessJobs.roles.indexOf(store.state.userRole) > -1 ||
+        store.state.userRole === "admin"
+      ) {
+        return next();
+      }
+      return next("/login");
+    }
+
+    // view customers Auth
+    if (to.matched.some((route) => route.meta.customersAuth)) {
+      if (
+        access.accessCustomers.roles.indexOf(store.state.userRole) > -1 ||
+        store.state.userRole === "admin"
+      ) {
+        return next();
+      }
+      return next("/login");
+    }
+
+    // view customers Auth
+    if (to.matched.some((route) => route.meta.workOrderAuth)) {
+      if (
+        access.createWorkOrder.roles.indexOf(store.state.userRole) > -1 ||
+        store.state.userRole === "admin"
+      ) {
+        return next();
+      }
+      return next("/login");
+    }
+
     next();
   });
 });

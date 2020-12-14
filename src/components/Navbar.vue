@@ -143,9 +143,11 @@ export default {
       //Links for the dropdown folder which is set to be open atm
       dropDownLinks: [],
       mini: true,
+      access: [],
     };
   },
   watch: {
+    //todo watch the state of the logged in button to render the links on the dropdown menu **Need Better state management mapstate etc**
     drawer: function () {
       if (this.drawer === true) this.getLinks();
     },
@@ -167,44 +169,63 @@ export default {
     logIn() {
       this.$router.go("/login");
     },
-    getLinks() {
-      if (this.$store.state.userRole === "admin") {
-        this.links = [
-          { icon: "mdi-view-dashboard", text: "Dashboard", route: "/" },
-          { icon: "mdi-account-box", text: "Job Sites", route: "/Jobs" },
-          { icon: "mdi-account-box", text: "Customers", route: "/Customers" },
-          {
-            icon: "mdi-clock-outline",
-            text: "TimeManager",
-            route: "/TimeManager",
-          },
-          { icon: "mdi-calendar", text: "Timesheets", route: "/TimeSheets/Calendar" },
+    async getLinks() {
+      if (this.$store.state.loggedIn) {
+        if (this.$store.state.userRole === "admin") {
+          this.links = [
+            { icon: "mdi-view-dashboard", text: "Dashboard", route: "/" },
+            { icon: "mdi-account-box", text: "Job Sites", route: "/Jobs" },
+            { icon: "mdi-account-box", text: "Customers", route: "/Customers" },
+            {
+              icon: "mdi-clock-outline",
+              text: "TimeManager",
+              route: "/TimeManager",
+            },
+            { icon: "mdi-calendar", text: "Timesheets", route: "/TimeSheets/Calendar" },
 
-          { icon: "mdi-account", text: "Employees", route: "/employees" },
-          { icon: "mdi-folder", text: "Projects", route: "/projects" },
-          { icon: "mdi-account", text: "Register New User", route: "/RegisterUser" },
-          { icon: "mdi-cog", text: "Settings", route: "/Settings" },
-        ];
-        //Links for the dropdown folder which is set to be open atm
-        this.dropDownLinks = [
-          {
-            icon: "mdi-folder-multiple-outline",
-            text: "Overview",
-            route: "/WorkOrders",
-          },
-          {
-            icon: "mdi-text-box-plus-outline",
-            text: "Create New",
-            route: "/WorkOrderForum",
-          },
-        ];
-      }
-      if (this.$store.state.userRole === "user") {
-        this.dropDownLinks = [];
-        this.links = [
-          { icon: "mdi-account", text: "Home", route: "/Home" },
-          { icon: "mdi-calendar", text: "Timesheets", route: "/TimeSheets/Calendar" },
-        ];
+            { icon: "mdi-account", text: "Employees", route: "/employees" },
+            { icon: "mdi-folder", text: "Projects", route: "/projects" },
+            { icon: "mdi-account", text: "Register New User", route: "/RegisterUser" },
+            { icon: "mdi-cog", text: "Settings", route: "/Settings" },
+          ];
+          //Links for the dropdown folder which is set to be open atm
+          this.dropDownLinks = [
+            {
+              icon: "mdi-folder-multiple-outline",
+              text: "Overview",
+              route: "/WorkOrders",
+            },
+            {
+              icon: "mdi-text-box-plus-outline",
+              text: "Create New",
+              route: "/WorkOrderForum",
+            },
+          ];
+        } else {
+          this.access = this.$store.state.settings.permissions.access;
+          this.links = [{ icon: "mdi-account", text: "Home", route: "/Home" }];
+
+          if (this.access.accessTimeSheet.roles.indexOf(this.$store.state.userRole) > -1) {
+            this.links.push({
+              icon: "mdi-calendar",
+              text: "Timesheets",
+              route: "/TimeSheets/Calendar",
+            });
+          }
+          if (this.access.createWorkOrder.roles.indexOf(this.$store.state.userRole) > -1) {
+            this.links.push({
+              icon: "mdi-text-box-plus-outline",
+              text: "Create New",
+              route: "/WorkOrderForum",
+            });
+          }
+          if (this.access.accessJobs.roles.indexOf(this.$store.state.userRole) > -1) {
+            this.links.push({ icon: "mdi-account-box", text: "Job Sites", route: "/Jobs" });
+          }
+          if (this.access.accessCustomers.roles.indexOf(this.$store.state.userRole) > -1) {
+            this.links.push({ icon: "mdi-account-box", text: "Customers", route: "/Customers" });
+          }
+        }
       }
     },
   },

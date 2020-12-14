@@ -120,6 +120,7 @@
         <v-btn color="primary" v-if="$store.state.userRole === 'admin'" @click="editWorkOrder()"
           >Edit</v-btn
         >
+        <v-btn>View all Images</v-btn>
       </v-card-actions>
     </v-card>
   </v-container>
@@ -168,7 +169,6 @@ export default {
           `https://maps.googleapis.com/maps/api/geocode/json?address=${this.getAddressString}&key=AIzaSyCu-ihS_KAjdBhAaPWaWML1rJzq6Adah5c`
         )
         .then((res) => {
-          console.log(res);
           this.mapData = res.data.results[0].geometry.location;
         });
     },

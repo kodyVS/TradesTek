@@ -26,8 +26,8 @@
                       </v-col>
                       <v-col cols="12">
                         <v-text-field
-                          validate-on-blur
                           v-model="email"
+                          validate-on-blur
                           :rules="emailRules"
                           label="E-mail"
                           required
@@ -42,21 +42,21 @@
                           label="Password"
                           hint="At least 8 characters"
                           counter
-                          @click:append="show1 = !show1"
                           validate-on-blur
+                          @click:append="show1 = !show1"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12">
                         <v-text-field
-                          block
                           v-model="passwordConfirm"
+                          block
                           :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
                           :rules="[rules.required, passwordMatch]"
                           :type="show1 ? 'text' : 'password'"
                           label="Confirm Password"
                           counter
-                          @click:append="show1 = !show1"
                           validate-on-blur
+                          @click:append="show1 = !show1"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -64,7 +64,7 @@
                       <v-flex xs12 md5>
                         <v-combobox
                           v-model="userRole"
-                          :items="['user', 'foreman', 'admin']"
+                          :items="['User', 'Foreman', 'Admin']"
                           label="Role"
                           outlined
                         ></v-combobox>
@@ -107,7 +107,7 @@ export default {
     valid: true,
     employee: {},
     employees: [],
-    userRole: "user",
+    userRole: "User",
     fullName: "",
     email: "",
     password: "",

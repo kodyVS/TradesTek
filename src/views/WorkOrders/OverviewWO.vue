@@ -109,7 +109,7 @@ export default {
     options: {},
     page: 0,
     itemsPerPage: 20,
-    isLoading: false,
+    isLoading: true,
     completeWO: false,
     serverItemsLength: -1,
     buttonToggle: 0,
@@ -130,7 +130,7 @@ export default {
       { text: "PO Number", value: "PONumber" },
       { text: "Employees", value: "Employees", sortable: false },
       { text: "Actions", value: "actions", sortable: false },
-      { text: "Job Type", value: "JobType" },
+      { text: "Job Type", value: "JobType.Name" },
       { text: "Status", value: "Complete" },
     ],
 
@@ -150,7 +150,6 @@ export default {
       this.getWorkOrdersDebounced(val);
     },
     options() {
-      console.log(this.search);
       this.getAllWorkOrders("_", this.search);
     },
   },
@@ -167,6 +166,7 @@ export default {
       }, 1000);
     },
     async getActiveWorkOrders() {
+      this.isLoading = true;
       this.serverItemsLength = -1;
       if (this.activeWorkOrders.length === 0) {
         this.activeWorkOrders = await this.$store.dispatch("getAllActiveWorkOrders");
@@ -174,6 +174,9 @@ export default {
       this.items = this.activeWorkOrders;
       this.filteredItems = [...this.items];
       this.completeWO = false;
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 750);
     },
 
     async getAllWorkOrders(displayVar, val) {
@@ -189,7 +192,6 @@ export default {
       };
       if (val) {
         searchParam.SearchText = val;
-        console.log(val);
       }
       try {
         if (this.completeWO) {
@@ -204,12 +206,11 @@ export default {
 
           this.items = [...completedWorkOrderList];
           this.filteredItems = [...this.items];
+          this.isLoading = false;
         }
       } catch (error) {
         console.log(error);
       }
-      //this.filterItems(displayVar);
-      this.isLoading = false;
     },
     //Used to route to the individual work orders
     ViewItem(item) {

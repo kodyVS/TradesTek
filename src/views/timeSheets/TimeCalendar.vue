@@ -35,8 +35,8 @@
       <v-sheet>
         <!-- Top Bar of calendar -->
         <v-toolbar flat color="white">
-          <v-btn color="primary" dark @click="showNewTimeDialog()" v-bind="size"> New Time </v-btn>
-          <v-btn outlined class="mr-4" @click="focus = today" v-bind="size"> Today </v-btn>
+          <v-btn color="primary" dark v-bind="size" @click="showNewTimeDialog()"> New Time </v-btn>
+          <v-btn outlined class="mr-4" v-bind="size" @click="focus = today"> Today </v-btn>
           <v-btn fab text small @click="prev">
             <v-icon small>mdi-chevron-left</v-icon>
           </v-btn>
@@ -45,12 +45,12 @@
           </v-btn>
           <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">{{ title }}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn-toggle v-model="calendarView" mandatory v-if="$vuetify.breakpoint.mdAndUp">
+          <v-btn-toggle v-if="$vuetify.breakpoint.mdAndUp" v-model="calendarView" mandatory>
             <v-btn outlined class="mr-4" @click="type = 'day'"> Day </v-btn>
             <v-btn outlined class="mr-4" @click="type = 'week'"> Week </v-btn>
             <v-btn outlined class="mr-4" @click="type = 'month'"> Month </v-btn>
           </v-btn-toggle>
-          <v-menu offset-y v-else>
+          <v-menu v-else offset-y>
             <template v-slot:activator="{ on, attrs }">
               <v-btn small color="primary" dark v-bind="attrs" v-on="on"> Range </v-btn>
             </template>
@@ -104,10 +104,10 @@
                 </v-flex>
                 <v-flex xs12>
                   <v-checkbox
+                    v-model="lunch"
                     label="Is this a Lunch?"
                     color="indigo darken-3"
                     hide-details
-                    v-model="lunch"
                   ></v-checkbox
                 ></v-flex>
                 <v-flex xs12>
@@ -359,7 +359,7 @@ export default {
     async getEmployees() {
       if (this.$store.state.userRole === "admin") {
         this.employees = await this.$store.dispatch("getEmployees");
-      } else if (this.$store.state.userRole === "user") {
+      } else if (this.$store.state.userRole === "User") {
         let employee = await this.$store.dispatch(
           "getEmployee",
           this.$store.state.userEmployeeReference

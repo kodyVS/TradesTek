@@ -7,20 +7,27 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    //todo Move items out of state and into props
+    //Data for new pages
     customerList: [],
     newJobData: {},
     itemInfo: {},
     item: null,
     employeeInfo: "",
-    error: null,
+
+    //Authenication data
     loggedIn: false,
+    userRole: "",
+    userEmployeeReference: "",
+    userName: "",
+    //Error handling with snackbars
     isError: false,
     errorMessage: "Error",
     isSuccess: false,
     successMessage: "Success",
-    userRole: "",
-    userEmployeeReference: "",
-    userName: "",
+
+    //Global settings
+    settings: {},
   },
   getters: {
     // getCustomerNames: (state) => {
@@ -44,9 +51,17 @@ export default new Vuex.Store({
         this.state.successMessage = payload.message;
       }
     },
-    getEmployees: async (context) => {
+    getEmployees: async (context, param) => {
+      let showHidden = false;
+      if (param) {
+        showHidden = param;
+      }
+      console.log(showHidden);
       let employees = await axios
-        .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all", { withCredentials: true })
+        .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all", {
+          params: { ShowHidden: showHidden },
+          withCredentials: true,
+        })
         .catch((error) => {
           let payload = {
             type: "error",
@@ -142,6 +157,7 @@ export default new Vuex.Store({
           }
           context.dispatch("snackBarAlert", payload);
         });
+
       return allWorkOrders.data.data;
     },
     async getWorkOrder(context, params) {
@@ -192,7 +208,6 @@ export default new Vuex.Store({
       return edittedTime;
     },
     async deleteTime(context, timeStamp) {
-      console.log(timeStamp);
       let deletedTime = await axios
         .delete(process.env.VUE_APP_API_URL + "/api/v1/time/delete", {
           params: { id: timeStamp._id, WOReference: timeStamp.WOReference },
@@ -232,6 +247,10 @@ export default new Vuex.Store({
         })
         .then(() => {
           this.state.loggedIn = false;
+          this.state.userRole = "";
+          this.state.userEmployeeReference = "";
+          this.state.userName = "";
+          this.state.settings = "";
         });
     },
     async autoLogin(context) {
@@ -240,12 +259,13 @@ export default new Vuex.Store({
           .get(process.env.VUE_APP_API_URL + "/api/v1/users/autoLogin", {
             withCredentials: true,
           })
-          .then((res) => {
+          .then(async (res) => {
             if (res.data.status === "success") {
               this.state.loggedIn = true;
               this.state.userRole = res.data.data.UserRole;
               this.state.userEmployeeReference = res.data.data.EmployeeReference;
               this.state.userName = res.data.data.Name;
+              this.state.settings = res.data.data.Settings;
             }
           })
           .catch((error) => {
@@ -255,6 +275,24 @@ export default new Vuex.Store({
             this.state.userRole = "";
           });
       }
+    },
+    async getSettings(context) {
+      let settings = await axios.get(process.env.VUE_APP_API_URL + "/api/v1/settings/all", {
+        withCredentials: true,
+      });
+      context.state.settings = settings.data.data;
+      return settings.data.data;
+    },
+    async editSettings(context, payload) {
+      let settings = await axios.post(
+        process.env.VUE_APP_API_URL + "/api/v1/settings/edit",
+        payload,
+        {
+          params: { id: payload._id },
+          withCredentials: true,
+        }
+      );
+      return settings.data.data;
     },
   },
   modules: {},

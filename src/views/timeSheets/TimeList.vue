@@ -63,8 +63,8 @@
                   :value="formattedEndDate"
                   label="End Date"
                   prepend-icon="mdi-calendar-range"
-                  v-on="on"
                   disabled
+                  v-on="on"
                 ></v-text-field>
               </template>
             </v-menu>
@@ -164,7 +164,7 @@ export default {
     async getEmployees() {
       if (this.$store.state.userRole === "admin") {
         this.employees = await this.$store.dispatch("getEmployees");
-      } else if (this.$store.state.userRole === "user") {
+      } else if (this.$store.state.userRole === "User") {
         let employee = await this.$store.dispatch(
           "getEmployee",
           this.$store.state.userEmployeeReference
