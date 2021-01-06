@@ -38,4 +38,7 @@ export default {
 .main {
   background: #e4e4e4;
 }
+html {
+  overflow-y: auto;
+}
 </style>

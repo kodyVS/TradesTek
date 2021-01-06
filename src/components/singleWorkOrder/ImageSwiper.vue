@@ -132,7 +132,6 @@ export default {
   },
   methods: {
     imgClick(image) {
-      console.log("hello");
       this.singleImage = image;
       this.dialog = true;
     },

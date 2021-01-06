@@ -12,12 +12,10 @@
 
           <v-row class="align-center justify-center">
             <v-flex v-for="(workOrder, index) in workOrders" :key="index" md6 xs12 lg4>
-              <v-card class="mt-3" @click="viewSingleWO(workOrder)">
+              <v-card class="mt-3 mr-4" @click="viewSingleWO(workOrder)">
                 <v-responsive
-                  :class="`justify-center white--text title elevation-7 pa-1 ${jobColor(
-                    workOrder.JobType
-                  )}`"
-                  style="text-align: center"
+                  :class="`justify-center white--text title elevation-7 pa-1`"
+                  :style="`text-align: center;background: ${workOrder.JobType.Color}`"
                   ><v-icon class="icon" color="yellow darken-2">mdi-star</v-icon>
                   <span>{{ workOrder.Name }}</span>
                   <span v-if="employee.WOReference === workOrder._id" class="timedInCss">
@@ -126,6 +124,7 @@
             >Complete WO</v-btn
           >
           <v-btn
+            v-show="$store.state.settings.permissions.access.uploadImages.isAuthenticated"
             v-bind="size"
             :disabled="!selectedWOID"
             color="primary"
@@ -172,6 +171,7 @@ export default {
   mounted() {
     this.getEmployee().then(() => {
       this.getAllActiveWorkOrders();
+      console.log(this.$store.state.settings.permissions.access);
     });
   },
 

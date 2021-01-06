@@ -10,7 +10,7 @@
     <v-card>
       <v-card-text>
         <v-row justify="center" class="mt-5">
-          <v-flex xs10 md3 justify-center pa-1>
+          <v-flex v-show="$store.state.userRole === 'admin'" xs10 md3 justify-center pa-1>
             <!-- Employee search -->
             <v-autocomplete
               v-model.lazy="employee"

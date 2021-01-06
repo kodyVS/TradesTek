@@ -226,7 +226,7 @@
               </v-autocomplete>
             </v-flex>
             <v-flex v-if="editBoolean" md5 class="ml-4">
-              <upload :workOrderID="workOrder._id"></upload>
+              <upload :imageModel="imageModel"></upload>
             </v-flex>
           </v-row>
 
@@ -314,6 +314,12 @@ export default {
     },
     formattedEndDate() {
       return this.endDate ? moment(this.endDate).format("Do MMMM YYYY") : "";
+    },
+    imageModel() {
+      return {
+        id: this.workOrder._id,
+        modelName: "WorkOrder",
+      };
     },
 
     //Used for issues with v-model and attaching to nested objects and autofilling information

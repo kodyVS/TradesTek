@@ -1,5 +1,9 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
+import store from "../store/index.js";
+
+//pages
+import Settings from "../views/adminViews/Settings.vue";
 import Dashboard from "../views/Dashboard.vue";
 import Projects from "../views/Projects.vue";
 import Employees from "../views/Employees.vue";
@@ -17,8 +21,8 @@ import RegisterUser from "../views/RegisterUser.vue";
 import Login from "../views/Login.vue";
 import Test from "../views/test.vue";
 import ErrorPage from "../views/ErrorPage.vue";
-import store from "../store/index.js";
-import Settings from "../views/adminViews/Settings.vue";
+import Profile from "../views/Profile.vue";
+import UserManagement from "../views/adminViews/UserManagement.vue";
 
 //Router for routes
 Vue.use(VueRouter);
@@ -94,6 +98,12 @@ const routes = [
     meta: { requiresAdmin: true },
   },
   {
+    path: "/UserManagement",
+    name: "UserManagement",
+    component: UserManagement,
+    meta: { requiresAdmin: true },
+  },
+  {
     path: "/TimeSheets",
     name: "TimeSheets",
     component: TimeSheets,
@@ -128,6 +138,13 @@ const routes = [
     component: Settings,
     meta: { requiresAdmin: true },
   },
+  {
+    path: "/Profile",
+    name: "Profile",
+    component: Profile,
+    props: true,
+    meta: { requiresAuth: true },
+  },
 ];
 
 // route level code-splitting // this generates a separate chunk (about.[hash].js) for this route // which is lazy-loaded when the route is visited.
@@ -141,8 +158,12 @@ const router = new VueRouter({
 
 router.beforeEach(async (to, from, next) => {
   store.dispatch("autoLogin").then(async () => {
-    let settings = await store.dispatch("getSettings");
-    let access = settings.permissions.access;
+    let access;
+    let settings;
+    if (store.state.settings.permissions) {
+      settings = store.state.settings;
+      access = settings.permissions.access;
+    }
     let userRole = store.state.userRole;
 
     //Admin Only
@@ -173,6 +194,9 @@ router.beforeEach(async (to, from, next) => {
 
     //Timesheet auth
     if (to.matched.some((route) => route.meta.timesheetAuth)) {
+      if (!store.state.settings.permissions) {
+        return next("/login");
+      }
       if (
         access.accessTimeSheet.roles.indexOf(store.state.userRole) > -1 ||
         store.state.userRole === "admin"
@@ -184,17 +208,24 @@ router.beforeEach(async (to, from, next) => {
 
     // view jobs auth
     if (to.matched.some((route) => route.meta.jobsAuth)) {
+      if (!store.state.settings.permissions) {
+        return next("/login");
+      }
       if (
         access.accessJobs.roles.indexOf(store.state.userRole) > -1 ||
         store.state.userRole === "admin"
       ) {
         return next();
       }
+
       return next("/login");
     }
 
     // view customers Auth
     if (to.matched.some((route) => route.meta.customersAuth)) {
+      if (!store.state.settings.permissions) {
+        return next("/login");
+      }
       if (
         access.accessCustomers.roles.indexOf(store.state.userRole) > -1 ||
         store.state.userRole === "admin"
@@ -206,6 +237,9 @@ router.beforeEach(async (to, from, next) => {
 
     // view customers Auth
     if (to.matched.some((route) => route.meta.workOrderAuth)) {
+      if (!store.state.settings.permissions) {
+        return next("/login");
+      }
       if (
         access.createWorkOrder.roles.indexOf(store.state.userRole) > -1 ||
         store.state.userRole === "admin"

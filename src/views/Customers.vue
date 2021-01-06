@@ -31,7 +31,7 @@
 
           <v-menu offset-y :close-on-content-click="false">
             <template v-slot:activator="{ on }">
-              <v-btn text color="white" v-on="on">
+              <v-btn v-if="userRole === 'admin'" text color="white" v-on="on">
                 <span>Options</span>
                 <v-icon right>mdi-chevron-down</v-icon>
               </v-btn>
@@ -50,7 +50,13 @@
           <!-- Details and edit dialog up menu -->
           <v-dialog v-model="dialog" max-width="90%" :persistent="!readOnly">
             <template v-slot:activator="{ on }">
-              <v-btn color="primary" v-on="on" @click.native="newCustomer()">New Customer</v-btn>
+              <v-btn
+                v-if="editAuthentication"
+                color="primary"
+                v-on="on"
+                @click.native="newCustomer()"
+                >New Customer</v-btn
+              >
             </template>
             <v-card class color="grey lighten-3">
               <v-card-title
@@ -60,7 +66,11 @@
               >
                 <span>{{ editedItem.FullName }}</span>
                 <v-spacer></v-spacer>
-                <v-icon v-if="!readOnly" large @click="deleteCustomer(editedItem._id)" color="white"
+                <v-icon
+                  v-if="!readOnly && newCustomerBoolean"
+                  large
+                  @click="deleteCustomer(editedItem._id)"
+                  color="white"
                   >mdi-delete</v-icon
                 ></v-card-title
               >
@@ -162,19 +172,25 @@
                   <!-- Buttons for create WO and edit customer and save changes on dialog-->
                   <v-layout align-end justify-end>
                     <v-btn
-                      v-if="readOnly && !showHidden"
+                      v-if="readOnly && !showHidden && editAuthentication"
                       color="primary"
                       @click="createJob(editedItem)"
                       >Create Job</v-btn
                     >
-                    <v-btn v-if="showHidden" @click="editCustomer(editedItem, true)">
+                    <v-btn
+                      v-if="showHidden && editAuthentication"
+                      @click="editCustomer(editedItem, true)"
+                    >
                       Restore Customer
                     </v-btn>
                     <v-btn
-                      v-if="readOnly && !showHidden"
+                      v-if="readOnly && !showHidden && editAuthentication"
                       color="warning"
                       @click="readOnly = !readOnly"
                       >Edit Customer</v-btn
+                    >
+                    <v-btn v-if="!editAuthentication" color="warning" @click="dialog = !dialog"
+                      >Cancel</v-btn
                     >
                   </v-layout>
 
@@ -222,7 +238,11 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success" @click="ViewItem(item)">Details</v-btn>
-        <v-btn small class="primary ml-2" v-if="!showHidden" @click="createJob(item)"
+        <v-btn
+          small
+          class="primary ml-2"
+          v-if="!showHidden && editAuthentication"
+          @click="createJob(item)"
           >Create Job</v-btn
         >
       </template>
@@ -234,6 +254,8 @@
 import axios from "axios";
 export default {
   data: () => ({
+    editAuthentication: false,
+    userRole: "",
     //Truth for if the dialog is
     newCustomerBoolean: true,
     dialog: false,
@@ -297,6 +319,7 @@ export default {
   //When the page is created call the getCustomer method
   created() {
     this.getCustomers();
+    this.getStoreData();
   },
   methods: {
     //Clear the edit fields when this is called
@@ -322,6 +345,10 @@ export default {
     async getCustomers() {
       let customers = await this.$store.dispatch("getCustomers", this.showHidden);
       this.items = customers;
+    },
+    getStoreData() {
+      this.editAuthentication = this.$store.state.settings.permissions.access.manageCustomerInformation.isAuthenticated;
+      this.userRole = this.$store.state.userRole;
     },
 
     //Used to view a pop up

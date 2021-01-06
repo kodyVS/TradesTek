@@ -2,7 +2,7 @@
 //todo Add Shared data between table and list to send less requests
 </script>
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row justify="center">
       <v-flex xs12 md6>
         <v-tabs fixed-tabs background-color="primary darken-2" dark hide-slider>
@@ -11,7 +11,6 @@
         </v-tabs>
       </v-flex>
     </v-row>
-
     <router-view></router-view>
   </v-container>
 </template>
@@ -23,3 +22,4 @@ export default {
   methods: {},
 };
 </script>
+<style scoped></style>

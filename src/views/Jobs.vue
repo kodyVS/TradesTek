@@ -34,7 +34,7 @@
           <v-spacer></v-spacer>
           <v-menu offset-y :close-on-content-click="false">
             <template v-slot:activator="{ on }">
-              <v-btn text color="white" v-on="on">
+              <v-btn v-if="userRole === 'admin'" text color="white" v-on="on">
                 <span>Options</span>
                 <v-icon right>mdi-chevron-down</v-icon>
               </v-btn>
@@ -52,7 +52,9 @@
           <!-- Details and edit dialog up menu -->
           <v-dialog v-model="dialog" max-width="90%" :persistent="!readOnly">
             <template v-slot:activator="{ on }">
-              <v-btn color="primary" v-on="on" @click.native="newJob()">New Job Site</v-btn>
+              <v-btn v-if="editAuthentication" color="primary" v-on="on" @click.native="newJob()"
+                >New Job Site</v-btn
+              >
             </template>
             <v-card class color="grey lighten-3">
               <v-card-title
@@ -62,7 +64,11 @@
               >
                 <span>{{ editedItem.FullName }}</span>
                 <v-spacer></v-spacer>
-                <v-icon v-if="!readOnly" large color="white" @click="deleteJob(editedItem._id)"
+                <v-icon
+                  v-if="!readOnly && !newJobBoolean"
+                  large
+                  color="white"
+                  @click="deleteJob(editedItem._id)"
                   >mdi-delete</v-icon
                 ></v-card-title
               >
@@ -177,19 +183,28 @@
                   <!-- Buttons for create WO and edit job and save changes on dialog-->
                   <v-layout align-end justify-end>
                     <v-btn
-                      v-if="readOnly && !showHidden"
+                      v-if="readOnly && !showHidden && editAuthentication"
                       color="primary"
                       @click="WorkOrderForum(editedItem)"
                       >Create WO</v-btn
                     >
-                    <v-btn v-if="showHidden" @click="editJob(editedItem, true)">
+                    <v-btn
+                      v-if="showHidden && userRole === 'admin'"
+                      @click="editJob(editedItem, true)"
+                    >
                       Restore Customer
                     </v-btn>
                     <v-btn
-                      v-if="readOnly && !showHidden"
+                      v-if="readOnly && !showHidden && editAuthentication"
                       color="warning"
                       @click="readOnly = !readOnly"
                       >Edit Job</v-btn
+                    >
+                    <v-btn
+                      v-if="!showHidden && !editAuthentication"
+                      color="warning"
+                      @click="dialog = !dialog"
+                      >close</v-btn
                     >
                   </v-layout>
                   <v-btn
@@ -235,7 +250,11 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <template v-slot:item.actions="{ item }">
         <v-btn small class="success" @click="ViewItem(item)">Details</v-btn>
-        <v-btn v-if="!showHidden" small class="primary ml-2" @click="WorkOrderForum(item)"
+        <v-btn
+          v-if="!showHidden && editAuthentication"
+          small
+          class="primary ml-2"
+          @click="WorkOrderForum(item)"
           >Create WO</v-btn
         >
       </template>
@@ -247,7 +266,9 @@
 import axios from "axios";
 export default {
   data: () => ({
+    editAuthentication: false,
     isLoading: false,
+    userRole: "",
     //Truth for if the dialog is open
     newJobBoolean: true,
     dialog: false,
@@ -318,6 +339,7 @@ export default {
     this.getJobs();
     this.populateJob();
     this.getCustomers();
+    this.getStoreData();
   },
   methods: {
     async populateJob() {
@@ -384,7 +406,11 @@ export default {
         return customer.FullName;
       });
     },
-
+    getStoreData() {
+      console.log(this.$store.state.settings.permissions.access.manageJobInformation);
+      this.editAuthentication = this.$store.state.settings.permissions.access.manageJobInformation.isAuthenticated;
+      this.userRole = this.$store.state.userRole;
+    },
     //save changes to a job to the database
     async editJob(item, restore) {
       if (this.$refs.form.validate()) {

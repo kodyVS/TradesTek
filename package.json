@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.20.0",
     "core-js": "^3.6.5",
+    "dragscroll": "0.0.8",
     "moment": "^2.29.1",
     "swiper": "^5.4.5",
     "v-lazy-image": "^1.4.0",
@@ -17,6 +18,7 @@
     "vue-awesome-swiper": "^4.1.1",
     "vue-cookie": "^1.1.4",
     "vue-custom-scrollbar": "^1.4.0",
+    "vue-dragscroll": "^2.1.0",
     "vue-router": "^3.2.0",
     "vue2-google-maps": "^0.10.7",
     "vuetify": "^2.3.16",

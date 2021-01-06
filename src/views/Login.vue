@@ -133,7 +133,8 @@ export default {
             this.$store.state.userRole = res.data.data.UserRole;
             this.$store.state.userEmployeeReference = res.data.data.EmployeeReference;
             this.$store.state.userName = res.data.data.Name;
-            await this.$store.dispatch("getSettings");
+            this.$store.state.userPhoto = res.data.data.Photo.iconURL;
+            this.$store.state.settings = res.data.settings;
           }
           if (this.$store.state.loggedIn) {
             if (this.$store.state.userRole === "admin") {

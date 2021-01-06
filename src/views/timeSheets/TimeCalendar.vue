@@ -13,244 +13,263 @@
 //todo showEvents() research a bit more how this works
 </script>
 <template>
-  <v-row justify="center">
-    <v-flex xs12 md4>
-      <!-- Employee search that returns the entire employee object -->
-      <v-autocomplete
-        v-model.lazy="employee"
-        :items="employees"
-        dense
-        outlined
-        hide-no-data
-        filled
-        label="Employee"
-        return-object
-        item-text="Name"
-        class="pt-5 pl-4"
-        @change="getEvents(storedLowRange, storedHighRange, true)"
-      ></v-autocomplete>
-    </v-flex>
-    <h4 v-if="!$vuetify.breakpoint.mdAndUp">{{ title }}</h4>
-    <v-col cols="12">
-      <v-sheet>
-        <!-- Top Bar of calendar -->
-        <v-toolbar flat color="white">
-          <v-btn color="primary" dark v-bind="size" @click="showNewTimeDialog()"> New Time </v-btn>
-          <v-btn outlined class="mr-4" v-bind="size" @click="focus = today"> Today </v-btn>
-          <v-btn fab text small @click="prev">
-            <v-icon small>mdi-chevron-left</v-icon>
-          </v-btn>
-          <v-btn fab text small @click="next">
-            <v-icon small>mdi-chevron-right</v-icon>
-          </v-btn>
-          <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">{{ title }}</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn-toggle v-if="$vuetify.breakpoint.mdAndUp" v-model="calendarView" mandatory>
-            <v-btn outlined class="mr-4" @click="type = 'day'"> Day </v-btn>
-            <v-btn outlined class="mr-4" @click="type = 'week'"> Week </v-btn>
-            <v-btn outlined class="mr-4" @click="type = 'month'"> Month </v-btn>
-          </v-btn-toggle>
-          <v-menu v-else offset-y>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn small color="primary" dark v-bind="attrs" v-on="on"> Range </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="type = 'day'">
-                <v-list-item-title> Day </v-list-item-title>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-title @click="type = 'month'"> month </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+  <v-container fluid class="pa-0 ma-0">
+    <v-row justify="center">
+      <v-flex v-show="$store.state.userRole === 'admin'" xs12 md4>
+        <!-- Employee search that returns the entire employee object -->
+        <v-autocomplete
+          v-model.lazy="employee"
+          :items="employees"
+          dense
+          outlined
+          hide-no-data
+          filled
+          label="Employee"
+          return-object
+          item-text="Name"
+          class="pt-5 pl-4"
+          @change="getEvents(storedLowRange, storedHighRange, true)"
+        ></v-autocomplete>
+      </v-flex>
+      <h4 v-if="!$vuetify.breakpoint.mdAndUp">{{ title }}</h4>
+      <v-col cols="12">
+        <v-sheet>
+          <!-- Top Bar of calendar -->
+          <v-toolbar flat color="white">
+            <v-btn
+              v-if="isAuthenticated"
+              color="primary"
+              dark
+              v-bind="size"
+              @click="showNewTimeDialog()"
+            >
+              New Time
+            </v-btn>
+            <v-btn outlined class="mr-4" v-bind="size" @click="focus = today"> Today </v-btn>
+            <v-btn fab text small @click="prev">
+              <v-icon small>mdi-chevron-left</v-icon>
+            </v-btn>
+            <v-btn fab text small @click="next">
+              <v-icon small>mdi-chevron-right</v-icon>
+            </v-btn>
+            <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">{{ title }}</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn-toggle v-if="$vuetify.breakpoint.mdAndUp" v-model="calendarView" mandatory>
+              <v-btn outlined class="mr-4" @click="type = 'day'"> Day </v-btn>
+              <v-btn outlined class="mr-4" @click="type = 'week'"> Week </v-btn>
+              <v-btn outlined class="mr-4" @click="type = 'month'"> Month </v-btn>
+            </v-btn-toggle>
+            <v-menu v-else offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn small color="primary" dark v-bind="attrs" v-on="on"> Range </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="type = 'day'">
+                  <v-list-item-title> Day </v-list-item-title>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title @click="type = 'month'"> month </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
 
-          <v-menu bottom right> </v-menu>
-        </v-toolbar>
-      </v-sheet>
+            <v-menu bottom right> </v-menu>
+          </v-toolbar>
+        </v-sheet>
 
-      <!-- Dialog for creating a work order -->
-      <v-dialog v-model="dialog" max-width="500">
-        <v-card>
-          <v-container class="px-12">
-            <v-form @submit.prevent="addTimeStamp">
-              <v-row>
-                <v-flex>
-                  <v-autocomplete
-                    v-model="newTime.workOrder"
-                    :filter="filterObject"
-                    :items="workOrders"
-                    clearable
-                    dense
-                    outlined
-                    hide-no-data
-                    filled
-                    label="Work Order"
-                    return-object
-                    item-text="Name"
-                    hint="Only shows active work orders"
-                    persistent-hint
-                    class="mb-2"
-                  >
-                    <!-- Template for the work order dropdown list -->
-                    <template v-slot:item="data">
-                      <v-list-item-content>
-                        <v-list-item-title>{{ data.item.Name }}</v-list-item-title>
-                        <v-list-item-subtitle>{{
-                          data.item.CustomerRef.FullName.split(":").splice(1).join("")
-                        }}</v-list-item-subtitle>
-                      </v-list-item-content>
-                    </template>
-                  </v-autocomplete>
-                </v-flex>
-                <v-flex xs12>
-                  <v-checkbox
-                    v-model="lunch"
-                    label="Is this a Lunch?"
-                    color="indigo darken-3"
-                    hide-details
-                  ></v-checkbox
-                ></v-flex>
-                <v-flex xs12>
-                  <v-text-field
-                    v-model="newTime.description"
-                    type="text"
-                    label="description"
-                  ></v-text-field>
-                </v-flex>
+        <!-- Dialog for creating a work order -->
+        <v-dialog v-model="dialog" max-width="500">
+          <v-card>
+            <v-card-text class="pa-6">
+              <v-container>
+                <v-form @submit.prevent="addTimeStamp">
+                  <v-row>
+                    <v-flex>
+                      <v-autocomplete
+                        v-model="newTime.workOrder"
+                        :filter="filterObject"
+                        :items="workOrders"
+                        clearable
+                        dense
+                        outlined
+                        hide-no-data
+                        filled
+                        label="Work Order"
+                        return-object
+                        item-text="Name"
+                        hint="Only shows active work orders"
+                        persistent-hint
+                        class="mb-2"
+                      >
+                        <!-- Template for the work order dropdown list -->
+                        <template v-slot:item="data">
+                          <v-list-item-content>
+                            <v-list-item-title>{{ data.item.Name }}</v-list-item-title>
+                            <v-list-item-subtitle>{{
+                              data.item.CustomerRef.FullName.split(":").splice(1).join("")
+                            }}</v-list-item-subtitle>
+                          </v-list-item-content>
+                        </template>
+                      </v-autocomplete>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-checkbox
+                        v-model="lunch"
+                        label="Is this a Lunch?"
+                        color="indigo darken-3"
+                        hide-details
+                      ></v-checkbox
+                    ></v-flex>
+                    <v-flex xs12>
+                      <v-text-field
+                        v-model="newTime.description"
+                        type="text"
+                        label="description"
+                      ></v-text-field>
+                    </v-flex>
 
-                <v-flex xs12 md5>
-                  <v-text-field
-                    v-model="newTime.start"
-                    type="time"
-                    label="Start Time (required)"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="newTime.date"
-                    type="date"
-                    label="Date (required)"
-                  ></v-text-field>
-                </v-flex>
-                <v-flex xs12 md5>
-                  <v-text-field
-                    v-model="newTime.end"
-                    type="time"
-                    label="End Time (required)"
-                  ></v-text-field>
-                </v-flex>
+                    <v-flex xs12 md5>
+                      <v-text-field
+                        v-model="newTime.start"
+                        type="time"
+                        label="Start Time (required)"
+                      ></v-text-field>
+                      <v-text-field
+                        v-model="newTime.date"
+                        type="date"
+                        label="Date (required)"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs12 md5>
+                      <v-text-field
+                        v-model="newTime.end"
+                        type="time"
+                        label="End Time (required)"
+                      ></v-text-field>
+                    </v-flex>
 
-                <v-autocomplete
-                  v-model="newTime.employee"
-                  :items="employees"
-                  dense
-                  outlined
-                  filled
-                  rounded
-                  label="Employee"
-                  return-object
-                  item-text="Name"
-                ></v-autocomplete>
-              </v-row>
+                    <v-autocomplete
+                      v-model="newTime.employee"
+                      v-if="$store.state.userRole === 'admin'"
+                      :items="employees"
+                      dense
+                      outlined
+                      filled
+                      rounded
+                      label="Employee"
+                      return-object
+                      item-text="Name"
+                    ></v-autocomplete>
+                  </v-row>
 
-              <v-btn type="submit" color="primary" class="mr-4"> create time entry </v-btn>
-            </v-form>
-          </v-container>
-        </v-card>
-      </v-dialog>
-      <v-sheet>
-        <!-- Code for calendar -->
-        <v-calendar
-          ref="calendar"
-          v-model="focus"
-          color="primary"
-          :events="events"
-          :event-color="getEventColor"
-          :event-margin-bottom="3"
-          :now="today"
-          :first-interval="0"
-          :interval-minutes="60"
-          :interval-count="24"
-          :event-more="false"
-          :type="type"
-          event-overlap-mode="column"
-          :event-overlap-threshold="30"
-          @click:event="showEvent"
-          @click:more="viewDay"
-          @click:date="viewDay"
-          @change="updateRange"
-        ></v-calendar>
-        <v-menu
-          v-model="selectedOpen"
-          :close-on-content-click="false"
-          :activator="selectedElement"
-          offset-x
-        >
-          <!-- Card that pops up when you click on an event -->
-          <v-card color="grey lighten-4" :width="350" flat>
-            <v-toolbar :color="selectedEvent.color" dark>
-              <v-btn icon @click="deleteEvent(selectedEvent)">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-              <v-toolbar-title v-text="selectedEvent.name"></v-toolbar-title>
-              <div class="flex-grow-1"></div>
-            </v-toolbar>
-
-            <v-card-text>
-              <v-form v-if="currentlyEditing !== selectedEvent.id && selectedEvent.name">
-                <p>
-                  {{ selectedEvent.start.substr(11, 8) }} - {{ selectedEvent.end.substr(11, 8) }}
-                </p>
-                <p>
-                  {{ selectedEvent.description }}
-                </p>
-              </v-form>
-              <v-form v-else ref="form">
-                <v-text-field v-model="selectedEventTime.start" dense type="time"></v-text-field>
-                <v-text-field v-model="selectedEventTime.end" dense type="time"></v-text-field>
-                <v-text-field v-model="selectedEventTime.date" dense type="date"></v-text-field>
-                <v-textarea
-                  v-model="selectedEvent.description"
-                  type="text"
-                  style="width: 100%"
-                  :min-height="100"
-                  hint="add note"
-                  persistent-hint
-                >
-                </v-textarea>
-              </v-form>
+                  <v-btn type="submit" color="primary" class="mr-4"> create time entry </v-btn>
+                </v-form>
+              </v-container>
             </v-card-text>
-
-            <v-card-actions>
-              <v-btn
-                text
-                color="secondary"
-                @click="
-                  selectedOpen = false;
-                  currentlyEditing = false;
-                "
-              >
-                close
-              </v-btn>
-              <v-btn
-                v-if="currentlyEditing !== selectedEvent.id"
-                text
-                @click.prevent="editTime(selectedEvent)"
-              >
-                edit
-              </v-btn>
-              <v-btn v-else text type="submit" @click.prevent="updateEvent(selectedEvent)">
-                Save
-              </v-btn>
-            </v-card-actions>
           </v-card>
-        </v-menu>
-      </v-sheet>
-    </v-col>
-  </v-row>
+        </v-dialog>
+        <v-sheet>
+          <!-- Code for calendar -->
+          <v-calendar
+            ref="calendar"
+            v-model="focus"
+            color="primary"
+            :events="events"
+            :event-color="getEventColor"
+            :event-margin-bottom="3"
+            :now="today"
+            :first-interval="0"
+            :interval-minutes="60"
+            :interval-count="24"
+            :event-more="false"
+            :type="type"
+            event-overlap-mode="column"
+            :event-overlap-threshold="30"
+            @click:event="showEvent"
+            @click:more="viewDay"
+            @click:date="viewDay"
+            @change="updateRange"
+          ></v-calendar>
+          <v-menu
+            v-model="selectedOpen"
+            :close-on-content-click="false"
+            :activator="selectedElement"
+            offset-x
+          >
+            <!-- Card that pops up when you click on an event -->
+            <v-card color="grey lighten-4" :width="350" flat>
+              <v-toolbar :color="selectedEvent.color" dark>
+                <v-btn v-if="isAuthenticated" icon @click="deleteEvent(selectedEvent)">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+                <v-toolbar-title v-text="selectedEvent.name"></v-toolbar-title>
+                <div class="flex-grow-1"></div>
+              </v-toolbar>
+
+              <v-card-text>
+                <v-form v-if="currentlyEditing !== selectedEvent.id && selectedEvent.name">
+                  <p>
+                    {{ selectedEvent.start.substr(11, 8) }} - {{ selectedEvent.end.substr(11, 8) }}
+                  </p>
+                  <p>
+                    {{ selectedEvent.description }}
+                  </p>
+                </v-form>
+                <v-form v-else ref="form">
+                  <v-text-field v-model="selectedEventTime.start" dense type="time"></v-text-field>
+                  <v-text-field v-model="selectedEventTime.end" dense type="time"></v-text-field>
+                  <v-text-field v-model="selectedEventTime.date" dense type="date"></v-text-field>
+                  <v-textarea
+                    v-model="selectedEvent.description"
+                    type="text"
+                    style="width: 100%"
+                    :min-height="100"
+                    hint="add note"
+                    persistent-hint
+                  >
+                  </v-textarea>
+                </v-form>
+              </v-card-text>
+
+              <v-card-actions>
+                <v-btn
+                  text
+                  color="secondary"
+                  @click="
+                    selectedOpen = false;
+                    currentlyEditing = false;
+                  "
+                >
+                  close
+                </v-btn>
+                <v-btn
+                  v-if="currentlyEditing !== selectedEvent.id && isAuthenticated"
+                  text
+                  @click.prevent="editTime(selectedEvent)"
+                >
+                  edit
+                </v-btn>
+                <v-btn
+                  v-if="currentlyEditing === selectedEvent.id && isAuthenticated"
+                  text
+                  type="submit"
+                  @click.prevent="updateEvent(selectedEvent)"
+                >
+                  Save
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-menu>
+        </v-sheet>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 export default {
   data: () => ({
+    isAuthenticated: false,
     //The stored Low range and high range for sending a filter request
     storedLowRange: null,
     storedHighRange: null,
@@ -312,6 +331,7 @@ export default {
   //When Created get employees
   created() {
     this.getEmployees();
+    this.getauthenticatedRoles();
   },
 
   computed: {
@@ -373,6 +393,15 @@ export default {
       }
     },
 
+    getauthenticatedRoles() {
+      this.isAuthenticated = this.$store.state.settings.permissions.access.timeSheetEdit.isAuthenticated;
+
+      // let authenticatedRoles = this.$store.state.settings.permissions.access.timeSheetEdit.roles;
+      // let userRole = this.$store.state.userRole;
+      // if (authenticatedRoles.indexOf(userRole) > -1 || userRole === "admin") {
+      //   this.isAuthenticated = true;
+      // }
+    },
     //gets events when then employee is selected. Sends a request to the database that will filter the times
     async getEvents(lowRange, highRange, boolean) {
       let calendarDateStart = new Date(this.start.date);
@@ -575,3 +604,11 @@ export default {
   },
 };
 </script>
+<style scoped>
+.container {
+  padding: 0px 0px 0px 0px !important;
+}
+.container--fluid {
+  padding: 0px 0px 0px 0px !important;
+}
+</style>

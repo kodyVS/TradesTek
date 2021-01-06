@@ -9,8 +9,20 @@
     </div>
 
     <v-row justify="center" align="center">
+      <v-progress-circular
+        v-if="imageIsLoading"
+        color="primary"
+        indeterminate
+      ></v-progress-circular>
       <v-col cols="12">
-        <v-file-input show-size label="Click here to upload" @change="selectFile"></v-file-input>
+        <v-img v-if="url" max-height="auto" max-width="250px" :src="url"></v-img>
+        <v-file-input
+          accept="image/png, image/jpeg, image/bmp"
+          prepend-icon="mdi-camera"
+          show-size
+          label="Click here to upload"
+          @change="selectFile"
+        ></v-file-input>
         <v-alert v-if="message" color="blue darken-4" dark>
           {{ message }}
         </v-alert>
@@ -40,9 +52,11 @@
 import UploadService from "../services/UploadService";
 export default {
   name: "upload-files",
-  props: ["workOrderID"],
+  props: ["imageModel"],
   data() {
     return {
+      imageIsLoading: false,
+      url: "",
       workOrder: "",
       currentFile: undefined,
       progress: 0,
@@ -51,14 +65,21 @@ export default {
     };
   },
   methods: {
-    selectFile(file) {
+    async selectFile(file) {
+      this.imageIsLoading = true;
+      if (file) {
+        this.url = await URL.createObjectURL(file);
+      } else this.url = "";
+
       this.progress = 0;
       this.currentFile = file;
       this.message = "";
+
+      this.imageIsLoading = false;
     },
     upload() {
-      if (!this.workOrderID) {
-        this.message = "No Work Order selected";
+      if (!this.imageModel) {
+        this.message = "Error no image model selected";
         return;
       }
       if (!this.currentFile) {
@@ -66,13 +87,13 @@ export default {
         return;
       }
       this.message = "";
-      UploadService.upload(this.currentFile, this.workOrderID, (event) => {
-        this.progress = Math.round((100 * event.loaded) / event.total) - 10;
+      UploadService.upload(this.currentFile, this.imageModel, (event) => {
+        this.progress = Math.round((100 * event.loaded) / event.total) - 15;
       })
         .then((files) => {
           this.fileInfos = files.data;
-          console.log(files);
           this.progress = 100;
+          this.$emit("finished");
         })
         .catch(() => {
           this.progress = 0;

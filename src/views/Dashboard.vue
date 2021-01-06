@@ -1,223 +1,228 @@
+<script>
+//todo FIX the position on the intervals
+</script>
 <template>
   <v-container fluid>
-    <v-row justify="center">
+    <v-row justify="center" noGutters>
       <v-col cols="12" sm="6">
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
           label="Search Employees"
           single-line
-          hide-detailsj
+          hide-details
+          dense
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-container fluid>
-      <v-row>
-        <v-col>
-          <div class="header-area">
-            <v-sheet>
-              <v-toolbar flat>
-                <v-btn outlined class="mr-4" color="grey darken-2" @click="setToday"> Today </v-btn>
-                <v-btn fab text small color="grey darken-2" @click="prev">
-                  <v-icon small> mdi-chevron-left </v-icon>
-                </v-btn>
-                <v-btn fab text small color="grey darken-2" @click="next">
-                  <v-icon small> mdi-chevron-right </v-icon>
-                </v-btn>
-                <v-toolbar-title v-if="$refs.calendar">
-                  {{ title }}
-                </v-toolbar-title>
-                <v-spacer></v-spacer>
-              </v-toolbar>
-            </v-sheet>
-          </div>
-          <v-progress-linear
-            v-show="isLoading"
-            color="blue"
-            indeterminate
-            rounded
-            height="4"
-            class="header-area"
-          ></v-progress-linear>
-
-          <vue-custom-scrollbar class="scroll-area" :settings="settings">
-            <v-sheet :width="tableWidth">
-              <v-calendar
-                ref="calendar"
-                v-model="focus"
-                color="primary"
-                type="category"
-                category-show-all
-                category-hide-dynamic
-                :categories="filteredList"
-                :category-days="1"
-                :event-color="getEventColor"
-                :events="events"
-                :interval-width="50"
-                :interval-height="60"
-                :event-height="60"
-                @click:event="showEvent"
-              >
-                <template v-slot:event="{ event }">
-                  <v-row class="ml-1 mt-1"> {{ event.name }}</v-row>
-                  <v-row class="ml-1">PO {{ event.PONumber }}</v-row>
-                  <v-row
-                    v-if="event.timedIn"
-                    justify="center"
-                    align="center"
-                    class="ml-1 white--text"
-                    ><b>Currently Timed In</b></v-row
+    <v-row>
+      <v-col>
+        <div class="header-area">
+          <v-sheet>
+            <v-toolbar flat dense width="100vh">
+              <v-btn outlined class="mr-4" color="grey darken-2" @click="setToday"> Today </v-btn>
+              <v-btn fab text small color="grey darken-2" @click="prev">
+                <v-icon small> mdi-chevron-left </v-icon>
+              </v-btn>
+              <v-btn fab text small color="grey darken-2" @click="next">
+                <v-icon small> mdi-chevron-right </v-icon>
+              </v-btn>
+              <v-toolbar-title v-if="$refs.calendar">
+                {{ title }}
+              </v-toolbar-title>
+              <v-spacer></v-spacer>
+            </v-toolbar>
+          </v-sheet>
+        </div>
+        <v-progress-linear
+          v-show="isLoading"
+          color="blue"
+          indeterminate
+          rounded
+          height="4"
+          class="header-area"
+        ></v-progress-linear>
+        <vue-custom-scrollbar :settings="settings" v-dragscroll>
+          <v-sheet height="70vh" :width="tableWidth" :max-width="tableWidth">
+            <v-calendar
+              ref="calendar"
+              v-model="focus"
+              color="primary"
+              type="category"
+              category-show-all
+              category-hide-dynamic
+              :categories="filteredList"
+              :event-color="getEventColor"
+              :events="events"
+              :interval-width="50"
+              :interval-height="50"
+              :event-height="50"
+              @click:event="showEvent"
+            >
+              <template v-slot:event="{ event }">
+                <v-row class="ml-1 mt-1" noGutters>
+                  <v-col v-if="!event.timedIn">
+                    {{ event.name }}
+                  </v-col>
+                  <v-col v-if="event.timedIn" justify="center" align="center" class="white--text">
+                    {{ event.name }} - Currently Timed In
+                  </v-col>
+                </v-row>
+                <v-row class="ml-1" noGutters>
+                  <v-col cols="6"> PO {{ event.PONumber }} </v-col>
+                  <v-col v-if="event.startTime" cols="3">
+                    {{ event.startTime }} - {{ event.endTime }}</v-col
                   >
-                </template>
-              </v-calendar>
+                </v-row>
+              </template>
+            </v-calendar>
+          </v-sheet>
+        </vue-custom-scrollbar>
 
-              <!-- Card that pops up when you click on an event -->
+        <!-- Card that pops up when you click on an event -->
 
-              <v-menu
-                v-model="selectedOpen"
-                :close-on-content-click="false"
-                :activator="selectedElement"
-                offset-x
-              >
-                <v-card color="grey lighten-4" :width="400" flat>
-                  <v-toolbar dark :color="selectedEvent.color">
-                    <v-btn icon>
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                    <v-toolbar-title v-text="selectedEvent.name"></v-toolbar-title>
-                    <div class="flex-grow-1"></div>
-                  </v-toolbar>
-                  <v-form ref="form">
-                    <v-card-text>
-                      <!-- Date Picker -->
-                      <p>{{ selectedEvent.PONumber }}</p>
+        <v-menu
+          v-model="selectedOpen"
+          :close-on-content-click="false"
+          :activator="selectedElement"
+          offset-x
+        >
+          <v-card color="grey lighten-4" :width="400" flat>
+            <v-toolbar dark :color="selectedEvent.color">
+              <v-btn icon>
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+              <v-toolbar-title v-text="selectedEvent.name"></v-toolbar-title>
+              <div class="flex-grow-1"></div>
+            </v-toolbar>
+            <v-form ref="form">
+              <v-card-text>
+                <!-- Date Picker -->
+                <p>{{ selectedEvent.PONumber }}</p>
 
-                      <v-flex>
-                        <v-row>
-                          <v-flex xs12 md8 offset-md1>
-                            <v-menu>
-                              <template v-slot:activator="{ on }">
-                                <v-text-field
-                                  :value="formattedStartDate"
-                                  label="Start Date"
-                                  prepend-icon="mdi-calendar-range"
-                                  dense
-                                  readonly
-                                  :rules="requiredRule"
-                                  v-on="on"
-                                ></v-text-field>
-                              </template>
-                              <v-date-picker v-model="selectedEvent.startDate"></v-date-picker>
-                            </v-menu>
-                          </v-flex>
-                          <v-flex xs12 md8 offset-md1>
-                            <v-menu v-if="!selectedEvent.includesTime">
-                              <template v-slot:activator="{ on }">
-                                <v-text-field
-                                  :value="formattedEndDate"
-                                  label="End Date"
-                                  readonly
-                                  prepend-icon="mdi-calendar-range"
-                                  dense
-                                  :rules="!selectedEvent.includesTime ? requiredRule : []"
-                                  v-on="on"
-                                ></v-text-field>
-                              </template>
-                              <v-date-picker v-model="selectedEvent.endDate"></v-date-picker>
-                            </v-menu>
-                          </v-flex>
-                        </v-row>
-                        <v-row>
-                          <v-flex xs12 md8 offset-md1 class="mb-2">
-                            <v-checkbox
-                              v-model="selectedEvent.includesTime"
-                              label="Include Time?"
-                              color="indigo darken-3"
-                              hide-details
-                              dense
-                            ></v-checkbox>
-                          </v-flex>
-                        </v-row>
-                        <v-row v-if="selectedEvent.includesTime">
-                          <v-flex xs12 md8 offset-md1>
-                            <v-text-field
-                              v-model="selectedEvent.startTime"
-                              type="time"
-                              dense
-                              :rules="selectedEvent.includesTime ? requiredRule : []"
-                            ></v-text-field>
-                          </v-flex>
-                          <v-flex xs12 md8 offset-md1>
-                            <v-text-field
-                              v-model="selectedEvent.endTime"
-                              type="time"
-                              dense
-                              :rules="selectedEvent.includesTime ? requiredRule : []"
-                            ></v-text-field>
-                          </v-flex>
-                        </v-row>
-                      </v-flex>
+                <v-flex>
+                  <v-row>
+                    <v-flex xs12 md8 offset-md1>
+                      <v-menu>
+                        <template v-slot:activator="{ on }">
+                          <v-text-field
+                            :value="formattedStartDate"
+                            label="Start Date"
+                            prepend-icon="mdi-calendar-range"
+                            dense
+                            readonly
+                            :rules="requiredRule"
+                            v-on="on"
+                          ></v-text-field>
+                        </template>
+                        <v-date-picker v-model="selectedEvent.startDate"></v-date-picker>
+                      </v-menu>
+                    </v-flex>
+                    <v-flex xs12 md8 offset-md1>
+                      <v-menu v-if="!selectedEvent.includesTime">
+                        <template v-slot:activator="{ on }">
+                          <v-text-field
+                            :value="formattedEndDate"
+                            label="End Date"
+                            readonly
+                            prepend-icon="mdi-calendar-range"
+                            dense
+                            :rules="!selectedEvent.includesTime ? requiredRule : []"
+                            v-on="on"
+                          ></v-text-field>
+                        </template>
+                        <v-date-picker v-model="selectedEvent.endDate"></v-date-picker>
+                      </v-menu>
+                    </v-flex>
+                  </v-row>
+                  <v-row>
+                    <v-flex xs12 md8 offset-md1 class="mb-2">
+                      <v-checkbox
+                        v-model="selectedEvent.includesTime"
+                        label="Include Time?"
+                        color="indigo darken-3"
+                        hide-details
+                        dense
+                      ></v-checkbox>
+                    </v-flex>
+                  </v-row>
+                  <v-row v-if="selectedEvent.includesTime">
+                    <v-flex xs12 md8 offset-md1>
+                      <v-text-field
+                        v-model="selectedEvent.startTime"
+                        type="time"
+                        dense
+                        :rules="selectedEvent.includesTime ? requiredRule : []"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs12 md8 offset-md1>
+                      <v-text-field
+                        v-model="selectedEvent.endTime"
+                        type="time"
+                        dense
+                        :rules="selectedEvent.includesTime ? requiredRule : []"
+                      ></v-text-field>
+                    </v-flex>
+                  </v-row>
+                </v-flex>
 
-                      <!-- Employee Filter -->
-                      <v-flex md12>
-                        <v-autocomplete
-                          v-model="selectedEvent.employees"
-                          :items="employees"
-                          filled
-                          chips
-                          clearable
-                          color="blue-grey lighten-2"
-                          label="Assign Employees"
-                          item-text="Name"
-                          item-value="Name"
-                          multiple
-                        >
-                          <template v-slot:selection="data">
-                            <v-chip
-                              v-bind="data.attrs"
-                              :input-value="data.selected"
-                              close
-                              small
-                              color="blue darken-3 white--text"
-                              @click="data.select"
-                              @click:close="remove(data.item)"
-                            >
-                              {{ data.item.Name }}
-                            </v-chip>
-                          </template>
-                          <template v-slot:item="data">
-                            <template v-if="typeof data.item !== 'object'">
-                              <v-list-item-content v-text="data.item"></v-list-item-content>
-                            </template>
-                            <template v-else>
-                              <v-list-item-content>
-                                <v-list-item-title>
-                                  {{ data.item.Name }}
-                                </v-list-item-title>
-                                <v-list-item-subtitle>
-                                  {{ data.item.FieldType }}
-                                </v-list-item-subtitle>
-                              </v-list-item-content>
-                            </template>
-                          </template>
-                        </v-autocomplete>
-                      </v-flex>
-                    </v-card-text>
+                <!-- Employee Filter -->
+                <v-flex md12>
+                  <v-autocomplete
+                    v-model="selectedEvent.employees"
+                    :items="employees"
+                    filled
+                    chips
+                    clearable
+                    color="blue-grey lighten-2"
+                    label="Assign Employees"
+                    item-text="Name"
+                    item-value="Name"
+                    multiple
+                  >
+                    <template v-slot:selection="data">
+                      <v-chip
+                        v-bind="data.attrs"
+                        :input-value="data.selected"
+                        close
+                        small
+                        color="blue darken-3 white--text"
+                        @click="data.select"
+                        @click:close="remove(data.item)"
+                      >
+                        {{ data.item.Name }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item="data">
+                      <template v-if="typeof data.item !== 'object'">
+                        <v-list-item-content v-text="data.item"></v-list-item-content>
+                      </template>
+                      <template v-else>
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            {{ data.item.Name }}
+                          </v-list-item-title>
+                          <v-list-item-subtitle>
+                            {{ data.item.FieldType }}
+                          </v-list-item-subtitle>
+                        </v-list-item-content>
+                      </template>
+                    </template>
+                  </v-autocomplete>
+                </v-flex>
+              </v-card-text>
 
-                    <v-card-actions>
-                      <v-btn text color="secondary" @click="selectedOpen = false"> close </v-btn>
-                      <v-btn text @click.prevent="editWorkOrder()"> Save Changes </v-btn>
-                      <v-spacer></v-spacer>
-                      <v-btn text @click.prevent="workOrderRoute()"> more... </v-btn>
-                    </v-card-actions>
-                  </v-form>
-                </v-card>
-              </v-menu>
-            </v-sheet></vue-custom-scrollbar
-          >
-        </v-col>
-      </v-row>
-    </v-container>
+              <v-card-actions>
+                <v-btn text color="secondary" @click="selectedOpen = false"> close </v-btn>
+                <v-btn text @click.prevent="editWorkOrder()"> Save Changes </v-btn>
+                <v-spacer></v-spacer>
+                <v-btn text @click.prevent="workOrderRoute()"> more... </v-btn>
+              </v-card-actions>
+            </v-form>
+          </v-card>
+        </v-menu>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -226,9 +231,13 @@ import axios from "axios";
 import vueCustomScrollbar from "vue-custom-scrollbar";
 import "vue-custom-scrollbar/dist/vueScrollbar.css";
 import moment from "moment";
+import { dragscroll } from "vue-dragscroll";
 export default {
   components: {
     vueCustomScrollbar,
+  },
+  directives: {
+    dragscroll,
   },
   data: () => ({
     isLoading: false,
@@ -240,7 +249,6 @@ export default {
     settings: {
       suppressScrollY: false,
       suppressScrollX: false,
-      wheelPropagation: false,
     },
     currentView: 1,
     workOrders: [],
@@ -461,7 +469,6 @@ export default {
           this.isLoading = false;
         }
       } else {
-        console.log(this.$refs.form);
         alert("Form is invalid, Check dates and Times");
       }
     },
@@ -501,27 +508,23 @@ export default {
 };
 </script>
 <style scoped>
-::v-deep v-calendar-category__column-header {
-  min-width: 1000px;
-}
-
 .header-area {
   position: auto;
   margin: auto;
-  width: 1500px;
 }
 
-.scroll-area {
-  position: auto;
-  margin: auto;
-  height: 700px;
-  width: 1500px;
-}
 ::v-deep .v-calendar-daily_head-weekday,
 ::v-deep .v-calendar-daily_head-day-label {
   display: none;
 }
-::v-deep .v-select__selections {
-  margin-top: 10px;
+::v-deep .v-calendar-daily__intervals-body {
+  left: 0px;
+  background-color: white;
+}
+::v-deep .v-calendar-daily__day {
+}
+::v-deep .v-calendar-daily__head {
+}
+::v-deep .v-calendar-daily__day {
 }
 </style>

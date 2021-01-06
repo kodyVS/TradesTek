@@ -116,7 +116,11 @@
                     }}</v-icon>
                   </v-btn>
                   <v-spacer></v-spacer>
-                  <v-btn v-if="person.Hidden" small class="warning mr-4" @click="readOnly = true"
+                  <v-btn
+                    v-if="person.Hidden"
+                    small
+                    class="warning mr-4"
+                    @click="restoreEmployee(person)"
                     >Restore hidden Employee</v-btn
                   >
                 </v-row>
@@ -173,21 +177,18 @@ export default {
   },
   watch: {
     showHidden() {
-      this.getData();
+      this.editData();
     },
   },
 
   methods: {
     async getData() {
       if (!this.showHidden) {
-        console.log("hello");
         this.team = await this.$store.dispatch("getEmployees");
       } else {
-        console.log("showing hidden employees");
         this.team = await this.$store.dispatch("getEmployees", true);
       }
       this.workOrders = await this.$store.dispatch("getAllActiveWorkOrders");
-      console.log(this.team);
     },
     async editData() {
       await this.getData().then(() => {
@@ -223,31 +224,69 @@ export default {
     },
     async employeeHide(employee) {
       //todo add a confirm method
-      try {
-        if (employee.workOrders.length > 0) {
-          throw new Error("Remove employee from all active work orders before deleting");
-        }
-        let data = {
-          _id: employee._id,
-          Hidden: true,
-        };
-        await axios.post(process.env.VUE_APP_API_URL + "/api/v1/employee/edit", data, {
-          params: { id: data._id },
-          withCredentials: true,
-        });
-        let payload = {
-          type: "success",
-          message: "Employee hidden",
-        };
-        this.$store.dispatch("snackBarAlert", payload);
-        this.editData();
-      } catch (error) {
-        if (error.message) {
+      let res = await this.$confirm("Are you sure you would like to hide this employee?", {
+        color: "warning",
+        title: "Are you sure?",
+      });
+      if (res) {
+        try {
+          if (employee.workOrders.length > 0) {
+            throw new Error("Remove employee from all active work orders before deleting");
+          }
+          let data = {
+            _id: employee._id,
+            Hidden: true,
+          };
+          await axios.post(process.env.VUE_APP_API_URL + "/api/v1/employee/edit", data, {
+            params: { id: data._id },
+            withCredentials: true,
+          });
           let payload = {
-            type: "error",
-            message: error.message,
+            type: "success",
+            message: "Employee hidden",
           };
           this.$store.dispatch("snackBarAlert", payload);
+          this.editData();
+        } catch (error) {
+          if (error.message) {
+            let payload = {
+              type: "error",
+              message: error.message,
+            };
+            this.$store.dispatch("snackBarAlert", payload);
+          }
+        }
+      }
+    },
+    async restoreEmployee(employee) {
+      let res = await this.$confirm("Are you sure you would like to restore this employee?", {
+        color: "warning",
+        title: "Are you sure?",
+      });
+      if (res) {
+        try {
+          let data = {
+            _id: employee._id,
+            Hidden: false,
+          };
+          await axios.post(process.env.VUE_APP_API_URL + "/api/v1/employee/edit", data, {
+            params: { id: data._id },
+            withCredentials: true,
+          });
+          let payload = {
+            type: "success",
+            message: "Employee Restored",
+          };
+          this.$store.dispatch("snackBarAlert", payload);
+          this.editData();
+        } catch (error) {
+          if (error.message) {
+            let payload = {
+              type: "error",
+              message: error.message,
+            };
+            this.$store.dispatch("snackBarAlert", payload);
+          }
         }
       }
     },

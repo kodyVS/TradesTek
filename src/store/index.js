@@ -56,7 +56,6 @@ export default new Vuex.Store({
       if (param) {
         showHidden = param;
       }
-      console.log(showHidden);
       let employees = await axios
         .get(process.env.VUE_APP_API_URL + "/api/v1/employee/all", {
           params: { ShowHidden: showHidden },
@@ -264,6 +263,7 @@ export default new Vuex.Store({
               this.state.loggedIn = true;
               this.state.userRole = res.data.data.UserRole;
               this.state.userEmployeeReference = res.data.data.EmployeeReference;
+              this.state.userPhoto = res.data.data.Photo;
               this.state.userName = res.data.data.Name;
               this.state.settings = res.data.data.Settings;
             }

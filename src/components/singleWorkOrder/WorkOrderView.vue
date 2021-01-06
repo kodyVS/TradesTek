@@ -1,129 +1,127 @@
 <template>
-  <v-container fluid>
-    <v-card hover v-if="workOrder.Job">
-      <v-row class="ml-4" noGutters>
-        <v-col md="12">
-          <v-card-title>
-            <h3>
-              <i>{{ workOrder.Name }}</i>
-            </h3>
-            <v-chip v-if="!workOrder.Complete" class="ml-4 white--text" color="warning">
-              - Active
-            </v-chip>
-            <v-chip v-if="workOrder.Complete" class="ml-4 white--text" color="success"
-              >- Complete
-            </v-chip>
-          </v-card-title>
+  <v-card hover v-if="workOrder.Job" class="mt-4">
+    <v-row class="ml-4" noGutters>
+      <v-col md="12">
+        <v-card-title>
+          <h3>
+            <i>{{ workOrder.Name }}</i>
+          </h3>
+          <v-chip v-if="!workOrder.Complete" class="ml-4 white--text" color="warning">
+            - Active
+          </v-chip>
+          <v-chip v-if="workOrder.Complete" class="ml-4 white--text" color="success"
+            >- Complete
+          </v-chip>
+        </v-card-title>
+      </v-col>
+    </v-row>
+    <v-row class="ml-4">
+      <v-col md="6">
+        <p class="intro">{{ workOrder.Description }}</p>
+      </v-col>
+    </v-row>
+
+    <v-card-text>
+      <v-row noGutters>
+        <v-col cols="12" sm="3">
+          <h4 class="intro">Start Date</h4>
+          <h3 class="dataText">
+            {{ formattedStartDate }}
+          </h3>
+        </v-col>
+        <v-col cols="12 mt-2" class="mt-sm-0" sm="3">
+          <h4>Expected End Date</h4>
+          <h3 class="dataText">
+            {{ formattedEndDate }}
+          </h3>
+        </v-col>
+        <v-col cols="12 mt-2" sm="3 mt-sm-0">
+          <h4>PO Number</h4>
+          <h3 class="dataText">
+            {{ workOrder.PONumber }}
+          </h3>
         </v-col>
       </v-row>
-      <v-row class="ml-4">
-        <v-col md="6">
-          <p class="intro">{{ workOrder.Description }}</p>
+      <v-row class="mt-12 mb-1 ml-1">
+        <h2 class="dataText">Customer Information</h2>
+      </v-row>
+
+      <v-row>
+        <v-col cols="6 " sm="3">
+          <h4>Customer</h4>
+          <h3 class="dataText">
+            {{ workOrder.Job.ParentRef.FullName }}
+          </h3>
+        </v-col>
+
+        <v-col cols="6" sm="3">
+          <h4>Job Site</h4>
+          <h3 class="dataText">
+            {{ workOrder.Job.Name }}
+          </h3>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12" md="3">
+          <h4>Contact Name</h4>
+          <h3 class="dataText">
+            {{ `${workOrder.Job.FirstName + " " + workOrder.Job.LastName}` }}
+          </h3>
+        </v-col>
+
+        <v-col cols="12" md="3">
+          <h4>
+            <v-icon left>mdi-email</v-icon>
+            <span>Email</span>
+          </h4>
+          <h3 class="dataText">{{ workOrder.Job.Email }}</h3>
+        </v-col>
+        <v-col cols="12" md="3">
+          <h4>
+            <v-icon left>mdi-phone</v-icon>
+            <span>Phone</span>
+          </h4>
+          <h3 class="dataText">{{ workOrder.Job.Phone }}</h3>
         </v-col>
       </v-row>
 
-      <v-card-text>
-        <v-row noGutters>
-          <v-col md="2">
-            <h4 class="intro">Start Date</h4>
-            <h3 class="dataText">
-              {{ formattedStartDate }}
-            </h3>
-          </v-col>
-          <v-col md="2">
-            <h4>Expected End Date</h4>
-            <h3 class="dataText">
-              {{ formattedEndDate }}
-            </h3>
-          </v-col>
-          <v-col md="2">
-            <h4>PO Number</h4>
-            <h3 class="dataText">
-              {{ workOrder.PONumber }}
-            </h3>
-          </v-col>
-        </v-row>
-        <v-row class="mt-12 mb-1 ml-1">
-          <h2 class="dataText">Customer Information</h2>
-        </v-row>
+      <v-row noGutters class="mt-3">
+        <v-col cols="12">
+          <h4>
+            <v-icon color="grey darken-2">mdi-map-marker </v-icon>
+            <span> Location </span>
+          </h4>
+          <h4 class="ml-5 dataText">
+            <span>{{ getAddressString }}</span>
+          </h4>
+        </v-col>
 
-        <v-row>
-          <v-col md="1">
-            <h4>Customer</h4>
-            <h3 class="dataText">
-              {{ workOrder.Job.ParentRef.FullName }}
-            </h3>
-          </v-col>
+        <v-col>
+          <v-btn
+            small
+            text
+            text-align="center"
+            color="success"
+            :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString}`"
+            ><b>Open on google maps</b>
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-row class="ml-2 mt-4">
+        <GmapMap :center="mapData" :zoom="14" style="width: 640px; height: 200px" ref="mapRef">
+          <gmap-marker :position="mapData"> </gmap-marker
+        ></GmapMap>
+      </v-row>
+    </v-card-text>
 
-          <v-col md="1">
-            <h4>Job Site</h4>
-            <h3 class="dataText">
-              {{ workOrder.Job.Name }}
-            </h3>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col md="2">
-            <h4>Contact Name</h4>
-            <h3 class="dataText">
-              {{ `${workOrder.Job.FirstName + " " + workOrder.Job.LastName}` }}
-            </h3>
-          </v-col>
-
-          <v-col md="2">
-            <h4>
-              <v-icon left>mdi-email</v-icon>
-              <span>Email</span>
-            </h4>
-            <h3 class="dataText">{{ workOrder.Job.Email }}</h3>
-          </v-col>
-          <v-col md="2">
-            <h4>
-              <v-icon left>mdi-phone</v-icon>
-              <span>Phone</span>
-            </h4>
-            <h3 class="dataText">{{ workOrder.Job.Phone }}</h3>
-          </v-col>
-        </v-row>
-
-        <v-row noGutters class="mt-8">
-          <v-col xs="12" md="12">
-            <h4>
-              <v-icon color="grey darken-2">mdi-map-marker </v-icon>
-              <span> Location </span>
-            </h4>
-            <h4 class="ml-5 dataText">
-              <span>{{ getAddressString }}</span>
-            </h4>
-          </v-col>
-
-          <v-col>
-            <v-btn
-              small
-              text
-              text-align="center"
-              color="success"
-              :href="`https://www.google.com/maps/search/?api=1&query=${getAddressString}`"
-              ><b>Open on google maps</b>
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-row class="ml-2 mt-4">
-          <GmapMap :center="mapData" :zoom="14" style="width: 640px; height: 200px" ref="mapRef">
-            <gmap-marker :position="mapData"> </gmap-marker
-          ></GmapMap>
-        </v-row>
-      </v-card-text>
-
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" v-if="$store.state.userRole === 'admin'" @click="editWorkOrder()"
-          >Edit</v-btn
-        >
-        <v-btn>View all Images</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-container>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="primary" v-if="$store.state.userRole === 'admin'" @click="editWorkOrder()"
+        >Edit</v-btn
+      >
+      <v-btn>View all Images</v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>

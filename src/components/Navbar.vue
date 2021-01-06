@@ -61,12 +61,13 @@
     >
       <v-layout column align-center>
         <v-avatar size="70%" class="mt-12">
-          <img src="../../public/Images/Geoffrey.jpg" alt />
+          <img v-if="$store.state.userPhoto" :src="$store.state.userPhoto" />
+          <img v-else src="../../public/Images/Geoffrey.jpg" alt />
         </v-avatar>
         <p class="white--text subheading mt-2">{{ $store.state.userName }}</p>
 
         <v-flex class="mt-4">
-          <v-btn class="success" @click="$router.push('WorkOrderForum')">New Work Order</v-btn>
+          <v-btn class="success" @click="$router.push('Profile')">View Profile</v-btn>
         </v-flex>
       </v-layout>
 
@@ -187,6 +188,7 @@ export default {
             { icon: "mdi-folder", text: "Projects", route: "/projects" },
             { icon: "mdi-account", text: "Register New User", route: "/RegisterUser" },
             { icon: "mdi-cog", text: "Settings", route: "/Settings" },
+            { icon: "mdi-cog", text: "User Management", route: "/UserManagement" },
           ];
           //Links for the dropdown folder which is set to be open atm
           this.dropDownLinks = [
