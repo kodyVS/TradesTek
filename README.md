@@ -17,7 +17,7 @@ npm run serve:test for test DB
 
 Times may be messed up for you on the time in and out feature as I hard coded my timezone. Adjust this line to fix : ./views/TimeManager.vue line 150 and 188 and change the number of hours subtracted for UTC time.
 
-Employees are normally made in quickbooks and then imported into my app.
+Employees are normally made in quickbooks and then imported into this app.
 
 I use better comments vs-code extension for commenting
 
