@@ -1,4 +1,4 @@
-# trades-tek-v1.0.0
+# Trades Tek
 ![workorder](https://i.imgur.com/3dI0Hcx.png)
 ![workorder list](https://i.imgur.com/ibC9JT3.png)
 ![calendar](https://i.imgur.com/BxKlbY5.png)
