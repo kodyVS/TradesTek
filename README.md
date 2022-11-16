@@ -24,11 +24,8 @@ I use better comments vs-code extension for commenting
 if you could use //chris for all your comments I will make them red so I can see your comments easier.
 
 If some of the Capitalization seems weird, all the Models are stored in capitals because they match the structure that quickbooks uses
-Even with that I know that there are alot of issues with the capital letters still.
 
-I still need to do some error handling on the front end
 
-Vetur needs to be disabled. I ran into more issues than it fixed
 Extensions I use in this project are
 Auto Close Tag
 Babel Javascript
