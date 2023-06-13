@@ -1,0 +1,19 @@
+<!-- <?xml version="1.0" encoding="utf-8"?>
+<?qbxml version="13.0"?>
+<QBXML>
+    <QBXMLMsgsRq onError="stopOnError">
+        <InvoiceAddRq requestID="1">
+            <InvoiceAdd>
+                <CustomerRef>
+                    <FullName>John Smith</FullName>
+                </CustomerRef>
+                <InvoiceLineAdd>
+                    <ItemRef>
+                        <FullName>tops</FullName>
+                    </ItemRef>
+                    <Desc>software</Desc>
+                </InvoiceLineAdd>
+            </InvoiceAdd>
+        </InvoiceAddRq>
+    </QBXMLMsgsRq>
+</QBXML> -->

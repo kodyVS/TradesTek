@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?qbxml version="13.0"?>
+<QBXML>
+  <QBXMLMsgsRq onError="stopOnError">
+    <TimeTrackingAddRq>
+      <TimeTrackingAdd>
+        <TxnDate>2020-08-12</TxnDate>
+        <EntityRef>
+          <FullName>john smith</FullName>
+        </EntityRef>
+        <Duration>PT5H30M0S</Duration>
+      </TimeTrackingAdd>
+    </TimeTrackingAddRq>
+  </QBXMLMsgsRq>
+</QBXML>

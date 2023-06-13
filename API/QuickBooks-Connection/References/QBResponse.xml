@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<QBXML>
+   <QBXMLMsgsRs>
+      <InvoiceAddRs requestID="1" statusCode="0" statusSeverity="Info" statusMessage="Status OK">
+         <InvoiceRet>
+            <TxnID>10-1547507581</TxnID>
+            <TimeCreated>2019-01-14T18:13:01-05:00</TimeCreated>
+            <TimeModified>2019-01-14T18:13:01-05:00</TimeModified>
+            <EditSequence>1547507581</EditSequence>
+            <TxnNumber>6</TxnNumber>
+            <CustomerRef>
+               <ListID>80000002-1547506721</ListID>
+               <FullName>juan castellon</FullName>
+            </CustomerRef>
+            <ARAccountRef>
+               <ListID>80000026-1547493474</ListID>
+               <FullName>Accounts Receivable</FullName>
+            </ARAccountRef>
+            <TemplateRef>
+               <ListID>8000000B-1547226191</ListID>
+               <FullName>Time &amp; Expense Invoice</FullName>
+            </TemplateRef>
+            <TxnDate>2019-01-14</TxnDate>
+            <RefNumber>4</RefNumber>
+            <BillAddress>
+               <Addr1>ulter</Addr1>
+            </BillAddress>
+            <BillAddressBlock>
+               <Addr1>ulter</Addr1>
+            </BillAddressBlock>
+            <IsPending>false</IsPending>
+            <IsFinanceCharge>false</IsFinanceCharge>
+            <DueDate>2019-01-14</DueDate>
+            <ShipDate>2019-01-14</ShipDate>
+            <Subtotal>12345.00</Subtotal>
+            <SalesTaxPercentage>0.00</SalesTaxPercentage>
+            <SalesTaxTotal>0.00</SalesTaxTotal>
+            <AppliedAmount>0.00</AppliedAmount>
+            <BalanceRemaining>12345.00</BalanceRemaining>
+            <IsPaid>false</IsPaid>
+            <IsToBePrinted>true</IsToBePrinted>
+            <IsToBeEmailed>false</IsToBeEmailed>
+            <InvoiceLineRet>
+               <TxnLineID>12-1547507581</TxnLineID>
+               <ItemRef>
+                  <ListID>80000001-1547226286</ListID>
+                  <FullName>tops</FullName>
+               </ItemRef>
+               <Desc>software</Desc>
+               <Rate>12345.00</Rate>
+               <Amount>12345.00</Amount>
+               <SalesTaxCodeRef>
+                  <ListID>80000002-1547226191</ListID>
+                  <FullName>Non</FullName>
+               </SalesTaxCodeRef>
+            </InvoiceLineRet>
+         </InvoiceRet>
+      </InvoiceAddRs>
+   </QBXMLMsgsRs>
+</QBXML>
